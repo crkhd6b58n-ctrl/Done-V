@@ -557,6 +557,36 @@ const migrateChecks = old => {
   return n;
 };
 
+//  PRESCRIPCION Y NOMBRE DEL EJERCICIO 
+// Los items vienen escritos como texto ("Ring dips 5x15 -- récord actual: 30
+// reps"). De ahi se saca cuantas series precargar y con que numeros, y un
+// nombre normalizado para poder comparar el mismo movimiento entre semanas.
+const presPart = t => String(t).split(" -- ")[0];
+const parsePresc = text => {
+  const t = presPart(text);
+  const m = t.match(/(\d+)\s*x\s*(\d+)\s*(s\b|seg)?/i);
+  const kg = t.match(/\+\s*(\d+(?:[.,]\d+)?)\s*kg/i);
+  const reps = !m ? (t.match(/(\d+)\s*\+?\s*reps/i) || [])[1] : null;
+  return {
+    sets: m ? Math.min(12, Math.max(1, +m[1])) : 3,
+    reps: m ? +m[2] : reps ? +reps : null,
+    secs: !!(m && m[3]),
+    kg: kg ? Number(String(kg[1]).replace(",", ".")) : null
+  };
+};
+
+// El nombre es lo que va ANTES del esquema: "Ring dips 3x12 suaves" y
+// "Ring dips 4x21 y una última serie AL FALLO" son el mismo movimiento, y
+// limpiando por partes quedaban con nombres distintos.
+const exName = text => {
+  let t = presPart(text);
+  const m = t.match(/\d+\s*x\s*\d+/i);
+  if (m && m.index > 0) t = t.slice(0, m.index);
+  const out = t.replace(/^[^\p{L}\p{N}]+/u, "") // emoji inicial fuera del nombre
+  .replace(/\+\s*\d+(?:[.,]\d+)?\s*kg/ig, "").replace(/\bc\/lado\b/ig, "").replace(/[.,:;\-–—]+\s*$/, "").replace(/\s+/g, " ").trim().toLowerCase();
+  return out || presPart(text).trim().toLowerCase();
+};
+
 //  MEJOR MARCA 
 // lower:true = metricas donde menos es mejor (tiempo de 5K)
 const bestOf = (hist, lower) => {
@@ -565,7 +595,7 @@ const bestOf = (hist, lower) => {
 };
 
 //  BACKUP / RESTORE 
-const DVF_KEYS = ["dvfit_checks", "dvfit_prs", "dvfit_streak", "dvfit_path", "dvfit_week", "dvfit_start", "dvfit_log", "dvfit_subpath"];
+const DVF_KEYS = ["dvfit_checks", "dvfit_prs", "dvfit_streak", "dvfit_path", "dvfit_week", "dvfit_start", "dvfit_log", "dvfit_subpath", "dvfit_sets", "dvfit_notes"];
 const BACKUP_VERSION = 1;
 const buildBackup = () => {
   const data = {};
@@ -2920,6 +2950,9 @@ function App() {
   const [cw, setCw] = useState(() => load("dvfit_week", 0));
   const [startD, setStartD] = useState(() => load("dvfit_start", null));
   const [cSub, setCSub] = useState(() => load("dvfit_subpath", null));
+  const [exSets, setExSets] = useState(() => load("dvfit_sets", {}));
+  const [notes, setNotes] = useState(() => load("dvfit_notes", {}));
+  const [openSets, setOpenSets] = useState(null);
 
   //  Non-persistent UI state 
   const [sd, setSd] = useState(null);
@@ -3049,6 +3082,66 @@ function App() {
     r.readAsText(f);
     e.target.value = "";
   }, [doRestore, flash]);
+
+  //  Series por ejercicio 
+  const rowsFor = useCallback((k, item) => {
+    const rec = exSets[k];
+    if (rec && rec.s && rec.s.length) return rec.s;
+    const pr = parsePresc(item);
+    return Array.from({
+      length: pr.sets
+    }, () => ({
+      r: pr.reps,
+      w: pr.kg
+    }));
+  }, [exSets]);
+  const writeSets = useCallback((k, item, rows) => {
+    setExSets(p => {
+      const n = {
+        ...p
+      };
+      const clean = rows.filter(r => r.r !== null && r.r !== "" && !isNaN(Number(r.r)));
+      if (clean.length === 0) delete n[k];else n[k] = {
+        n: exName(item),
+        d: dateStr(),
+        s: rows
+      };
+      save("dvfit_sets", n);
+      return n;
+    });
+  }, []);
+
+  // Qué hiciste la última vez en ESTE MISMO movimiento, en otra sesión
+  const lastTimeFor = useCallback((k, item) => {
+    const name = exName(item);
+    let best = null;
+    Object.keys(exSets).forEach(key => {
+      if (key === k) return;
+      const r = exSets[key];
+      if (!r || r.n !== name || !r.s || !r.s.length) return;
+      if (!best || String(r.d) > String(best.d)) best = r;
+    });
+    return best;
+  }, [exSets]);
+
+  //  Notas de sesion 
+  const dayScope = useCallback((r, di) => {
+    if (!r || !r.week) return null;
+    return r.src === "base" ? `w${r.week.week}-d${di}` : r.src === "path" ? `pa-${r.pathId}-w${r.week.week}-d${di}` : r.src === "sub" ? `sb-${r.subId}-w${r.week.week}-d${di}` : `cy-${r.subId}-w${r.week.week}-d${di}`;
+  }, []);
+  const saveNote = useCallback((scope, text) => {
+    setNotes(p => {
+      const n = {
+        ...p
+      };
+      if (!text || !text.trim()) delete n[scope];else n[scope] = {
+        t: text,
+        d: dateStr()
+      };
+      save("dvfit_notes", n);
+      return n;
+    });
+  }, []);
 
   //  Calendario del plan 
   const saveStart = useCallback(iso => {
@@ -3821,6 +3914,7 @@ function App() {
       done,
       total
     } = dcRes(res, di);
+    const hasNote = !!notes[dayScope(res, di)];
     return /*#__PURE__*/React.createElement("div", {
       key: di,
       onClick: () => {
@@ -3871,7 +3965,12 @@ function App() {
         padding: "1px 5px",
         borderRadius: 4
       }
-    }, day.dur)), /*#__PURE__*/React.createElement("div", {
+    }, day.dur), hasNote && /*#__PURE__*/React.createElement("span", {
+      title: "tiene nota",
+      style: {
+        fontSize: 9
+      }
+    }, "\uD83D\uDCDD")), /*#__PURE__*/React.createElement("div", {
       style: {
         fontSize: 10,
         color: C.muted,
@@ -4102,18 +4201,27 @@ function App() {
       }, block.i.map((item, ii) => {
         const k = wkKey(res, sd, bi, ii);
         const done = chk[k];
+        const pr = parsePresc(item);
+        const rec = exSets[k];
+        const logged = rec && rec.s ? rec.s.filter(x => x.r !== null && x.r !== "").length : 0;
+        const isOpen = openSets === k;
+        const rows = rowsFor(k, item);
+        const prev = isOpen ? lastTimeFor(k, item) : null;
+        const unit = pr.secs ? "s" : "reps";
         return /*#__PURE__*/React.createElement("div", {
           key: ii,
-          onClick: () => tick(k),
+          style: {
+            borderBottom: ii < block.i.length - 1 ? `1px solid ${C.border}` : "none",
+            padding: "8px 0"
+          }
+        }, /*#__PURE__*/React.createElement("div", {
           style: {
             display: "flex",
             gap: 9,
-            alignItems: "flex-start",
-            padding: "8px 0",
-            borderBottom: ii < block.i.length - 1 ? `1px solid ${C.border}` : "none",
-            cursor: "pointer"
+            alignItems: "flex-start"
           }
         }, /*#__PURE__*/React.createElement("div", {
+          onClick: () => tick(k),
           style: {
             width: 19,
             height: 19,
@@ -4125,7 +4233,8 @@ function App() {
             background: done ? col : "transparent",
             display: "flex",
             alignItems: "center",
-            justifyContent: "center"
+            justifyContent: "center",
+            cursor: "pointer"
           }
         }, done && /*#__PURE__*/React.createElement("span", {
           style: {
@@ -4134,13 +4243,187 @@ function App() {
             fontWeight: "bold"
           }
         }, "\u2713")), /*#__PURE__*/React.createElement("span", {
+          onClick: () => tick(k),
           style: {
+            flex: 1,
             fontSize: 12,
             color: done ? col : "#D0D0D0",
             lineHeight: 1.5,
-            textDecoration: done ? "line-through" : "none"
+            textDecoration: done ? "line-through" : "none",
+            cursor: "pointer"
           }
-        }, item));
+        }, item), /*#__PURE__*/React.createElement("button", {
+          onClick: () => setOpenSets(v => v === k ? null : k),
+          style: {
+            flexShrink: 0,
+            background: logged > 0 ? col + "20" : "transparent",
+            border: `1px solid ${logged > 0 ? col + "50" : C.border}`,
+            borderRadius: 6,
+            padding: "3px 7px",
+            color: logged > 0 ? col : C.muted,
+            fontFamily: "inherit",
+            fontSize: 9,
+            fontWeight: "bold",
+            cursor: "pointer",
+            letterSpacing: .5
+          }
+        }, logged > 0 ? `${logged} ✎` : "✎")), isOpen && /*#__PURE__*/React.createElement("div", {
+          style: {
+            marginTop: 9,
+            marginLeft: 28,
+            background: C.card2,
+            borderRadius: 8,
+            padding: "10px 11px",
+            border: `1px solid ${C.border}`
+          }
+        }, prev ? /*#__PURE__*/React.createElement("div", {
+          style: {
+            fontSize: 9,
+            color: C.teal,
+            marginBottom: 9,
+            lineHeight: 1.5
+          }
+        }, "La vez pasada (", prev.d, "): ", prev.s.filter(x => x.r !== null && x.r !== "").map(x => `${x.r}${x.w ? `×${x.w}kg` : ""}`).join(" · ")) : /*#__PURE__*/React.createElement("div", {
+          style: {
+            fontSize: 9,
+            color: C.dim,
+            marginBottom: 9
+          }
+        }, "Primera vez que registras este movimiento."), /*#__PURE__*/React.createElement("div", {
+          style: {
+            display: "flex",
+            gap: 6,
+            fontSize: 8,
+            color: C.muted,
+            letterSpacing: 1,
+            marginBottom: 5,
+            paddingLeft: 24
+          }
+        }, /*#__PURE__*/React.createElement("span", {
+          style: {
+            width: 62
+          }
+        }, unit.toUpperCase()), /*#__PURE__*/React.createElement("span", {
+          style: {
+            width: 62
+          }
+        }, "KG")), rows.map((row, si) => /*#__PURE__*/React.createElement("div", {
+          key: si,
+          style: {
+            display: "flex",
+            gap: 6,
+            alignItems: "center",
+            marginBottom: 5
+          }
+        }, /*#__PURE__*/React.createElement("span", {
+          style: {
+            width: 18,
+            fontSize: 9,
+            color: C.muted,
+            flexShrink: 0
+          }
+        }, si + 1), /*#__PURE__*/React.createElement("input", {
+          inputMode: "numeric",
+          value: row.r === null ? "" : row.r,
+          onChange: e => {
+            const v = e.target.value;
+            const n = rows.map((x, j) => j === si ? {
+              ...x,
+              r: v === "" ? null : v
+            } : x);
+            writeSets(k, item, n);
+          },
+          placeholder: pr.reps !== null ? String(pr.reps) : "--",
+          style: {
+            width: 62,
+            background: C.card,
+            border: `1px solid ${C.border}`,
+            borderRadius: 6,
+            color: C.text,
+            fontFamily: "inherit",
+            fontSize: 14,
+            padding: "7px 8px",
+            outline: "none",
+            textAlign: "center"
+          }
+        }), /*#__PURE__*/React.createElement("input", {
+          inputMode: "decimal",
+          value: row.w === null || row.w === undefined ? "" : row.w,
+          onChange: e => {
+            const v = e.target.value;
+            const n = rows.map((x, j) => j === si ? {
+              ...x,
+              w: v === "" ? null : v
+            } : x);
+            writeSets(k, item, n);
+          },
+          placeholder: "--",
+          style: {
+            width: 62,
+            background: C.card,
+            border: `1px solid ${C.border}`,
+            borderRadius: 6,
+            color: C.text,
+            fontFamily: "inherit",
+            fontSize: 14,
+            padding: "7px 8px",
+            outline: "none",
+            textAlign: "center"
+          }
+        }), rows.length > 1 && /*#__PURE__*/React.createElement("button", {
+          onClick: () => writeSets(k, item, rows.filter((_, j) => j !== si)),
+          style: {
+            background: "none",
+            border: "none",
+            color: C.dim,
+            cursor: "pointer",
+            fontSize: 13,
+            fontFamily: "inherit",
+            padding: "0 4px"
+          }
+        }, "\u2715"))), /*#__PURE__*/React.createElement("div", {
+          style: {
+            display: "flex",
+            gap: 6,
+            marginTop: 8
+          }
+        }, /*#__PURE__*/React.createElement("button", {
+          onClick: () => writeSets(k, item, [...rows, {
+            r: pr.reps,
+            w: pr.kg
+          }]),
+          style: {
+            flex: 1,
+            background: "transparent",
+            border: `1px solid ${C.border}`,
+            borderRadius: 7,
+            padding: "8px 6px",
+            color: C.muted,
+            fontFamily: "inherit",
+            fontSize: 10,
+            fontWeight: "bold",
+            cursor: "pointer",
+            letterSpacing: 1
+          }
+        }, "+ SERIE"), /*#__PURE__*/React.createElement("button", {
+          onClick: () => {
+            if (!done) tick(k);
+            setOpenSets(null);
+          },
+          style: {
+            flex: 1,
+            background: col + "18",
+            border: `1px solid ${col}50`,
+            borderRadius: 7,
+            padding: "8px 6px",
+            color: col,
+            fontFamily: "inherit",
+            fontSize: 10,
+            fontWeight: "bold",
+            cursor: "pointer",
+            letterSpacing: 1
+          }
+        }, "\u2713 LISTO"))));
       })));
     }), done === total && total > 0 ? /*#__PURE__*/React.createElement("div", {
       style: {
@@ -4166,7 +4449,63 @@ function App() {
         cursor: "pointer",
         letterSpacing: 1
       }
-    }, "MARCAR TODO COMPLETADO \u2713"));
+    }, "MARCAR TODO COMPLETADO \u2713"), (() => {
+      const scope = dayScope(res, sd);
+      if (!scope) return null;
+      const note = notes[scope];
+      return /*#__PURE__*/React.createElement("div", {
+        style: {
+          background: C.card,
+          borderRadius: 12,
+          padding: 13,
+          marginTop: 14,
+          border: `1px solid ${note ? col + "40" : C.border}`
+        }
+      }, /*#__PURE__*/React.createElement("div", {
+        style: {
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "baseline",
+          marginBottom: 7
+        }
+      }, /*#__PURE__*/React.createElement("span", {
+        style: {
+          fontSize: 8,
+          color: C.muted,
+          letterSpacing: 3,
+          fontWeight: "bold"
+        }
+      }, "NOTAS DE LA SESI\xD3N"), note && /*#__PURE__*/React.createElement("span", {
+        style: {
+          fontSize: 8,
+          color: C.dim
+        }
+      }, note.d)), /*#__PURE__*/React.createElement("textarea", {
+        value: note ? note.t : "",
+        onChange: e => saveNote(scope, e.target.value),
+        placeholder: "C\xF3mo te sentiste, qu\xE9 peso usaste, qu\xE9 fall\xF3, qu\xE9 ajustar la pr\xF3xima vez...",
+        style: {
+          width: "100%",
+          minHeight: 74,
+          background: C.card2,
+          border: `1px solid ${C.border}`,
+          borderRadius: 8,
+          color: C.text,
+          fontFamily: "inherit",
+          fontSize: 12,
+          lineHeight: 1.6,
+          padding: 10,
+          resize: "vertical",
+          outline: "none"
+        }
+      }), /*#__PURE__*/React.createElement("div", {
+        style: {
+          fontSize: 8,
+          color: C.dim,
+          marginTop: 5
+        }
+      }, "Se guarda solo."));
+    })());
   })(), tab === "prs" && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     style: {
       background: C.card,
