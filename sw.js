@@ -1,6 +1,6 @@
 // Dan&Van Fit - service worker
-// Build: 3792e9bce84d
-const CACHE = "danvanfit-3792e9bce84d";
+// Build: 01dd0a63cecc
+const CACHE = "danvanfit-01dd0a63cecc";
 const SHELL = "./__app_shell__";   // copia del HTML para responder navegaciones sin red
 
 self.addEventListener("install", (e) => self.skipWaiting());
@@ -52,7 +52,9 @@ self.addEventListener("fetch", (e) => {
 
   e.respondWith(
     caches.match(req).then(hit => hit || fetch(req).then(res => {
-      if (res.ok && res.type === "basic") {
+      // 206 es una respuesta parcial (video pedido por rangos): res.ok es
+      // true pero la Cache API la rechaza y lanza. Hay que excluirla.
+      if (res.ok && res.status !== 206 && res.type === "basic") {
         const copy = res.clone();
         caches.open(CACHE).then(c => c.put(req, copy));
       }

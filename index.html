@@ -587,6 +587,76 @@ const exName = text => {
   return out || presPart(text).trim().toLowerCase();
 };
 
+//  SCOPE DE UNA NOTA -> SEMANA Y DIA 
+// Los scopes son "w3-d0", "pa-strength-w13-d2", "sb-ring-w21-d4", "cy-ring-w47-d1".
+// El numero de semana del scope ES la semana del plan, asi que se puede saltar
+// directo a ella desde la lista de notas.
+const parseScope = scope => {
+  const m = String(scope).match(/w(\d+)-d(\d+)$/);
+  if (!m) return null;
+  const week = +m[1],
+    day = +m[2];
+  if (!(week >= 1) || !(day >= 0 && day <= 6)) return null;
+  const src = scope.startsWith("pa-") ? "path" : scope.startsWith("sb-") ? "sub" : scope.startsWith("cy-") ? "cycle" : "base";
+  return {
+    week,
+    day,
+    src
+  };
+};
+
+//  VOLUMEN SEMANAL 
+// Tres medidas con unidades distintas, asi que NUNCA van juntas en una misma
+// grafica: se elige cual ver. Reps y tonelaje solo cuentan series de
+// repeticiones; el tiempo bajo tension solo las de segundos.
+const VOL_MEASURES = [{
+  id: "reps",
+  label: "REPS",
+  unit: "reps"
+}, {
+  id: "kg",
+  label: "TONELAJE",
+  unit: "kg"
+}, {
+  id: "secs",
+  label: "SEGUNDOS",
+  unit: "s"
+}];
+const weeklyVolume = (sets, weeksBack) => {
+  const buckets = {};
+  const start = mondayOf();
+  for (let i = weeksBack - 1; i >= 0; i--) {
+    const m = addDays(start, -i * 7);
+    buckets[dateStr(m)] = {
+      key: dateStr(m),
+      date: m,
+      reps: 0,
+      kg: 0,
+      secs: 0
+    };
+  }
+  Object.keys(sets || {}).forEach(k => {
+    const rec = sets[k];
+    if (!rec || !rec.s || !rec.d) return;
+    const b = buckets[dateStr(mondayOf(parseDay(rec.d)))];
+    if (!b) return;
+    const isSecs = rec.u === "s";
+    rec.s.forEach(row => {
+      const r = Number(row.r);
+      if (!row.r && row.r !== 0) return;
+      if (isNaN(r)) return;
+      if (isSecs) {
+        b.secs += r;
+        return;
+      }
+      b.reps += r;
+      const w = Number(row.w);
+      if (row.w && !isNaN(w)) b.kg += r * w;
+    });
+  });
+  return Object.keys(buckets).map(k => buckets[k]);
+};
+
 //  MEJOR MARCA 
 // lower:true = metricas donde menos es mejor (tiempo de 5K)
 const bestOf = (hist, lower) => {
@@ -2852,6 +2922,845 @@ function Timer({
   }, running ? "⏸ PAUSA" : left === 0 ? "↺ OTRA VEZ" : "▶ START"))));
 }
 
+//  BARRAS DE VOLUMEN 
+// Una sola serie, un solo eje. Las tres medidas tienen unidades distintas
+// (reps, kg, segundos) asi que se eligen, nunca se superponen.
+const barPath = (x, y, w, h, r) => {
+  const rr = Math.max(0, Math.min(r, w / 2, h));
+  return `M${x},${y + h} L${x},${y + rr} Q${x},${y} ${x + rr},${y} L${x + w - rr},${y} Q${x + w},${y} ${x + w},${y + rr} L${x + w},${y + h} Z`;
+};
+function VolumeBars({
+  data,
+  measure,
+  color,
+  sel,
+  onSelect
+}) {
+  const W = 300,
+    H = 92,
+    GAP = 3;
+  const vals = data.map(d => d[measure]);
+  const max = Math.max(1, ...vals);
+  const hot = vals.filter(v => v > 0);
+  const avg = hot.length ? hot.reduce((a, v) => a + v, 0) / hot.length : 0;
+  const bw = (W - GAP * (data.length - 1)) / data.length;
+  const avgY = avg > 0 ? H - avg / max * (H - 6) : null;
+  return /*#__PURE__*/React.createElement("svg", {
+    viewBox: `0 0 ${W} ${H + 13}`,
+    width: "100%",
+    height: H + 13,
+    preserveAspectRatio: "none",
+    style: {
+      display: "block",
+      overflow: "visible"
+    }
+  }, avgY !== null && /*#__PURE__*/React.createElement("line", {
+    x1: "0",
+    y1: avgY,
+    x2: W,
+    y2: avgY,
+    stroke: C.dim,
+    strokeWidth: "1",
+    strokeDasharray: "2 3"
+  }), /*#__PURE__*/React.createElement("line", {
+    x1: "0",
+    y1: H,
+    x2: W,
+    y2: H,
+    stroke: C.border,
+    strokeWidth: "1"
+  }), data.map((d, i) => {
+    const v = d[measure];
+    const h = v > 0 ? Math.max(3, v / max * (H - 6)) : 0;
+    const x = i * (bw + GAP);
+    const isSel = sel === i;
+    return /*#__PURE__*/React.createElement("g", {
+      key: d.key,
+      onClick: () => onSelect(i),
+      style: {
+        cursor: "pointer"
+      }
+    }, /*#__PURE__*/React.createElement("rect", {
+      x: x - GAP / 2,
+      y: "0",
+      width: bw + GAP,
+      height: H + 13,
+      fill: "transparent"
+    }), v > 0 && /*#__PURE__*/React.createElement("path", {
+      d: barPath(x, H - h, bw, h, 4),
+      fill: isSel ? color : color + "66"
+    }), v === 0 && /*#__PURE__*/React.createElement("line", {
+      x1: x + bw / 2,
+      y1: H - 2,
+      x2: x + bw / 2,
+      y2: H,
+      stroke: C.dim,
+      strokeWidth: "1"
+    }), isSel && /*#__PURE__*/React.createElement("line", {
+      x1: x + bw / 2,
+      y1: H + 2,
+      x2: x + bw / 2,
+      y2: H + 5,
+      stroke: color,
+      strokeWidth: "1.5"
+    }));
+  }));
+}
+
+//  ANIMACIONES DE LOS EJERCICIOS 
+// Figura articulada parametrica: las poses se escriben por EXTREMOS (donde van
+// las manos y los pies) y la cinematica inversa coloca codos y rodillas, asi
+// los segmentos nunca se estiran. Todo el set de 18 pesa ~4.5 KB y funciona
+// sin conexion, porque va dentro del propio HTML.
+const SEG = {
+  torso: 30,
+  uarm: 19,
+  farm: 19,
+  thigh: 23,
+  shin: 23,
+  head: 6,
+  foot: 7
+};
+const _rad = d => d * Math.PI / 180;
+const along = (p, deg, len) => [p[0] + Math.cos(_rad(deg)) * len, p[1] - Math.sin(_rad(deg)) * len];
+
+// Dos huesos: dado origen y destino devuelve la articulacion intermedia.
+const ik = (a, b, l1, l2, s) => {
+  const dx = b[0] - a[0],
+    dy = b[1] - a[1];
+  const raw = Math.hypot(dx, dy) || 0.001;
+  const ux = dx / raw,
+    uy = dy / raw;
+  const d = Math.max(Math.abs(l1 - l2) + 0.01, Math.min(l1 + l2 - 0.01, raw));
+  const x = (d * d + l1 * l1 - l2 * l2) / (2 * d);
+  const h = Math.sqrt(Math.max(0, l1 * l1 - x * x));
+  return {
+    joint: [a[0] + ux * x - uy * h * s, a[1] + uy * x + ux * h * s],
+    end: [a[0] + ux * d, a[1] + uy * d]
+  };
+};
+const buildFig = p => {
+  const neck = along(p.hip, p.torso, SEG.torso);
+  const shoulder = along(p.hip, p.torso, SEG.torso * 0.86);
+  const arm = ik(shoulder, p.hand, SEG.uarm, SEG.farm, p.eb === undefined ? 1 : p.eb);
+  const leg = ik(p.hip, p.ankle, SEG.thigh, SEG.shin, p.kb === undefined ? 1 : p.kb);
+  const f = {
+    hip: p.hip,
+    neck,
+    shoulder,
+    elbow: arm.joint,
+    hand: arm.end,
+    knee: leg.joint,
+    ankle: leg.end,
+    head: along(neck, p.torso + (p.headT || 0), SEG.head + 4.5)
+  };
+  f.toe = along(f.ankle, p.footT === undefined ? p.torso : p.footT, SEG.foot);
+  if (p.hand2) {
+    const a2 = ik(shoulder, p.hand2, SEG.uarm, SEG.farm, p.eb2 === undefined ? 1 : p.eb2);
+    f.elbow2 = a2.joint;
+    f.hand2 = a2.end;
+  }
+  if (p.ankle2) {
+    const l2 = ik(p.hip, p.ankle2, SEG.thigh, SEG.shin, p.kb2 === undefined ? 1 : p.kb2);
+    f.knee2 = l2.joint;
+    f.ankle2 = l2.end;
+  }
+  return f;
+};
+const _lerp = (a, b, t) => a + (b - a) * t;
+const _lerpP = (a, b, t) => [_lerp(a[0], b[0], t), _lerp(a[1], b[1], t)];
+const _ease = t => t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+const mixPose = (a, b, t) => {
+  const e = _ease(t);
+  const o = {
+    hip: _lerpP(a.hip, b.hip, e),
+    hand: _lerpP(a.hand, b.hand, e),
+    ankle: _lerpP(a.ankle, b.ankle, e),
+    torso: _lerp(a.torso, b.torso, e),
+    headT: _lerp(a.headT || 0, b.headT || 0, e),
+    eb: a.eb,
+    eb2: a.eb2,
+    kb: a.kb,
+    kb2: a.kb2
+  };
+  if (a.hand2 && b.hand2) o.hand2 = _lerpP(a.hand2, b.hand2, e);
+  if (a.ankle2 && b.ankle2) o.ankle2 = _lerpP(a.ankle2, b.ankle2, e);
+  if (a.footT !== undefined || b.footT !== undefined) o.footT = _lerp(a.footT === undefined ? a.torso : a.footT, b.footT === undefined ? b.torso : b.footT, e);
+  return o;
+};
+
+// "hold" = isometrico, oscila poquito. "rep" = va y viene entre keyframes.
+const poseAt = (spec, t) => {
+  const f = spec.f;
+  if (f.length === 1) return f[0];
+  if (spec.m === "hold") return mixPose(f[0], f[1] || f[0], (Math.sin(t * Math.PI * 2) + 1) / 2 * 0.35);
+  const c = t % 1,
+    pp = c < 0.5 ? c * 2 : (1 - c) * 2,
+    seg = pp * (f.length - 1);
+  const i = Math.min(f.length - 2, Math.floor(seg));
+  return mixPose(f[i], f[i + 1], seg - i);
+};
+const ANIM = {
+  plank: {
+    v: "0 30 100 80",
+    m: "hold",
+    s: 3,
+    p: [{
+      "t": "floor",
+      "y": 98
+    }],
+    f: [{
+      hip: [50.9, 74.6],
+      torso: 32,
+      hand: [76, 98],
+      ankle: [11, 97],
+      eb: -1,
+      kb: 1,
+      footT: 212
+    }, {
+      hip: [50.9, 74.8],
+      torso: 34,
+      hand: [76, 98],
+      ankle: [11, 97],
+      eb: -1,
+      kb: 1,
+      footT: 212
+    }]
+  },
+  "push-up": {
+    v: "0 30 100 80",
+    m: "rep",
+    s: 2.4,
+    p: [{
+      "t": "floor",
+      "y": 98
+    }],
+    f: [{
+      hip: [50.9, 74.6],
+      torso: 32,
+      hand: [76, 98],
+      ankle: [11, 97],
+      eb: -1,
+      kb: 1,
+      footT: 212
+    }, {
+      hip: [56.2, 89.3],
+      torso: 11,
+      hand: [76, 98],
+      ankle: [11, 97],
+      eb: 1,
+      kb: 1,
+      footT: 191
+    }]
+  },
+  archer: {
+    v: "0 30 110 80",
+    m: "rep",
+    s: 2.8,
+    p: [{
+      "t": "floor",
+      "y": 98
+    }],
+    f: [{
+      hip: [51, 74.7],
+      torso: 32,
+      hand: [74, 98],
+      ankle: [11, 97],
+      hand2: [80, 98],
+      eb: 1,
+      eb2: 1,
+      kb: 1,
+      footT: 212
+    }, {
+      hip: [57.8, 86.5],
+      torso: 14,
+      hand: [86, 98],
+      ankle: [13, 96],
+      hand2: [52, 98],
+      eb: 1,
+      eb2: 1,
+      kb: 1,
+      footT: 194
+    }]
+  },
+  oapu: {
+    v: "0 30 100 80",
+    m: "rep",
+    s: 3,
+    p: [{
+      "t": "floor",
+      "y": 98
+    }],
+    f: [{
+      hip: [50.9, 74.6],
+      torso: 32,
+      hand: [74, 98],
+      ankle: [11, 97],
+      hand2: [48, 66],
+      eb: 1,
+      eb2: -1,
+      kb: 1,
+      footT: 212
+    }, {
+      hip: [56, 88.4],
+      torso: 13,
+      hand: [74, 98],
+      ankle: [11, 97],
+      hand2: [50, 78],
+      eb: 1,
+      eb2: -1,
+      kb: 1,
+      footT: 193
+    }]
+  },
+  "pike-push": {
+    v: "0 20 100 90",
+    m: "rep",
+    s: 2.6,
+    p: [{
+      "t": "floor",
+      "y": 98
+    }],
+    f: [{
+      hip: [38.9, 55.3],
+      torso: -58,
+      hand: [80, 98],
+      ankle: [20, 97],
+      eb: -1,
+      kb: -1,
+      footT: 250
+    }, {
+      hip: [41.6, 56.6],
+      torso: -70,
+      hand: [80, 98],
+      ankle: [20, 97],
+      eb: -1,
+      kb: -1,
+      footT: 250
+    }]
+  },
+  pullup: {
+    v: "0 0 100 118",
+    m: "rep",
+    s: 2.6,
+    p: [{
+      "t": "bar",
+      "y": 12,
+      "x1": 28,
+      "x2": 92
+    }],
+    f: [{
+      hip: [64.2, 75.1],
+      torso: 100,
+      hand: [62, 12],
+      ankle: [44, 102],
+      eb: 1,
+      kb: -1,
+      footT: -40
+    }, {
+      hip: [68, 52],
+      torso: 104,
+      hand: [62, 12],
+      ankle: [48, 78],
+      eb: 1,
+      kb: -1,
+      footT: -40
+    }]
+  },
+  "neg-pull": {
+    v: "0 0 100 118",
+    m: "rep",
+    s: 4.5,
+    p: [{
+      "t": "bar",
+      "y": 12,
+      "x1": 28,
+      "x2": 92
+    }],
+    f: [{
+      hip: [68, 52],
+      torso: 104,
+      hand: [62, 12],
+      ankle: [48, 78],
+      eb: 1,
+      kb: -1,
+      footT: -40
+    }, {
+      hip: [64.2, 75.1],
+      torso: 100,
+      hand: [62, 12],
+      ankle: [44, 102],
+      eb: 1,
+      kb: -1,
+      footT: -40
+    }]
+  },
+  "muscle-up": {
+    v: "0 -14 100 132",
+    m: "rep",
+    s: 3.4,
+    p: [{
+      "t": "bar",
+      "y": 20,
+      "x1": 28,
+      "x2": 92
+    }],
+    f: [{
+      hip: [64.2, 83.1],
+      torso: 100,
+      hand: [62, 20],
+      ankle: [44, 110],
+      eb: 1,
+      kb: -1,
+      footT: -40
+    }, {
+      hip: [68, 58],
+      torso: 106,
+      hand: [62, 20],
+      ankle: [48, 86],
+      eb: 1,
+      kb: -1,
+      footT: -40
+    }, {
+      hip: [66, 48],
+      torso: 84,
+      hand: [62, 22],
+      ankle: [54, 88],
+      eb: -1,
+      kb: -1,
+      footT: -50
+    }, {
+      hip: [62, 30],
+      torso: 88,
+      hand: [62, 22],
+      ankle: [56, 72],
+      eb: -1,
+      kb: -1,
+      footT: -55
+    }]
+  },
+  "deep-squat": {
+    v: "0 20 100 90",
+    m: "rep",
+    s: 3,
+    p: [{
+      "t": "floor",
+      "y": 98
+    }],
+    f: [{
+      hip: [48, 54],
+      torso: 90,
+      hand: [60, 62],
+      ankle: [48, 97],
+      eb: 1,
+      kb: -1,
+      footT: 0
+    }, {
+      hip: [44, 80],
+      torso: 58,
+      hand: [70, 70],
+      ankle: [48, 97],
+      eb: 1,
+      kb: -1,
+      footT: 0
+    }]
+  },
+  pistol: {
+    v: "0 20 110 90",
+    m: "rep",
+    s: 3.4,
+    p: [{
+      "t": "floor",
+      "y": 98
+    }],
+    f: [{
+      hip: [46, 54],
+      torso: 88,
+      hand: [56, 60],
+      ankle: [46, 97],
+      hand2: [56, 64],
+      ankle2: [52, 97],
+      eb: 1,
+      eb2: 1,
+      kb: -1,
+      kb2: -1,
+      footT: 0
+    }, {
+      hip: [42.4, 81.8],
+      torso: 56,
+      hand: [76, 60],
+      ankle: [46, 97],
+      hand2: [76, 64],
+      ankle2: [88, 78],
+      eb: 1,
+      eb2: 1,
+      kb: -1,
+      kb2: 1,
+      footT: 0
+    }]
+  },
+  lsit: {
+    v: "0 30 110 80",
+    m: "hold",
+    s: 3,
+    p: [{
+      "t": "parallettes",
+      "y": 88,
+      "x1": 44,
+      "x2": 60
+    }],
+    f: [{
+      hip: [50.2, 75],
+      torso: 88,
+      hand: [52, 87],
+      ankle: [96, 73],
+      eb: 1,
+      kb: 1,
+      footT: 10
+    }, {
+      hip: [51.5, 75],
+      torso: 90,
+      hand: [52, 87],
+      ankle: [97, 70],
+      eb: 1,
+      kb: 1,
+      footT: 14
+    }]
+  },
+  hollow: {
+    v: "0 40 110 70",
+    m: "hold",
+    s: 3.2,
+    p: [{
+      "t": "floor",
+      "y": 98
+    }],
+    f: [{
+      hip: [54, 92],
+      torso: 172,
+      hand: [8, 80],
+      ankle: [98, 80],
+      eb: -1,
+      kb: 1,
+      footT: -10
+    }, {
+      hip: [57.3, 92.7],
+      torso: 174,
+      hand: [6, 76],
+      ankle: [100, 76],
+      eb: -1,
+      kb: 1,
+      footT: -8
+    }]
+  },
+  handstand: {
+    v: "26 -16 48 118",
+    m: "hold",
+    s: 3.4,
+    p: [{
+      "t": "floor",
+      "y": 98
+    }],
+    f: [{
+      hip: [47.6, 34.1],
+      torso: -93,
+      hand: [55, 97],
+      ankle: [45, -12],
+      eb: 1,
+      kb: -1,
+      footT: 96
+    }, {
+      hip: [50.4, 33.2],
+      torso: -89,
+      hand: [55, 97],
+      ankle: [51, -13],
+      eb: 1,
+      kb: -1,
+      footT: 92
+    }]
+  },
+  "front-lever": {
+    v: "0 4 110 84",
+    m: "hold",
+    s: 3.2,
+    p: [{
+      "t": "bar",
+      "y": 18,
+      "x1": 56,
+      "x2": 104
+    }],
+    f: [{
+      hip: [54.3, 55.6],
+      torso: 0,
+      hand: [84, 18],
+      ankle: [9, 58],
+      eb: 1,
+      kb: 1,
+      headT: 22,
+      footT: 186
+    }, {
+      hip: [54.2, 54.7],
+      torso: -2,
+      hand: [84, 18],
+      ankle: [9, 62],
+      eb: 1,
+      kb: 1,
+      headT: 20,
+      footT: 184
+    }]
+  },
+  "back-lever": {
+    v: "0 4 110 84",
+    m: "hold",
+    s: 3.2,
+    p: [{
+      "t": "bar",
+      "y": 18,
+      "x1": 56,
+      "x2": 104
+    }],
+    f: [{
+      hip: [54.4, 55.6],
+      torso: 0,
+      hand: [84, 18],
+      ankle: [9, 60],
+      eb: -1,
+      kb: -1,
+      headT: -24,
+      footT: 172
+    }, {
+      hip: [54.1, 56.5],
+      torso: 2,
+      hand: [84, 18],
+      ankle: [9, 56],
+      eb: -1,
+      kb: -1,
+      headT: -22,
+      footT: 174
+    }]
+  },
+  planche: {
+    v: "0 30 116 80",
+    m: "hold",
+    s: 3,
+    p: [{
+      "t": "floor",
+      "y": 98
+    }],
+    f: [{
+      hip: [74, 68],
+      torso: 180,
+      hand: [26, 98],
+      ankle: [112, 66],
+      eb: 1,
+      kb: 1,
+      headT: 26,
+      footT: 10
+    }, {
+      hip: [72.5, 67.3],
+      torso: 178,
+      hand: [26, 98],
+      ankle: [112, 62],
+      eb: 1,
+      kb: 1,
+      headT: 24,
+      footT: 12
+    }]
+  },
+  "running-form": {
+    v: "0 10 100 100",
+    m: "rep",
+    s: 1.1,
+    p: [{
+      "t": "floor",
+      "y": 98
+    }],
+    f: [{
+      hip: [47.3, 59.4],
+      torso: 84,
+      hand: [64, 62],
+      ankle: [40, 97],
+      hand2: [34, 68],
+      ankle2: [64, 80],
+      eb: 1,
+      eb2: -1,
+      kb: -1,
+      kb2: -1,
+      footT: -20
+    }, {
+      hip: [49.5, 56.9],
+      torso: 82,
+      hand: [34, 64],
+      ankle: [62, 92],
+      hand2: [64, 66],
+      ankle2: [36, 74],
+      eb: -1,
+      eb2: 1,
+      kb: -1,
+      kb2: -1,
+      footT: -20
+    }]
+  },
+  "hip-mob": {
+    v: "0 20 110 90",
+    m: "rep",
+    s: 3.4,
+    p: [{
+      "t": "floor",
+      "y": 98
+    }],
+    f: [{
+      hip: [52, 64],
+      torso: 86,
+      hand: [66, 72],
+      ankle: [46, 97],
+      ankle2: [60, 97],
+      eb: 1,
+      kb: -1,
+      kb2: -1,
+      footT: 0
+    }, {
+      hip: [54.3, 67],
+      torso: 80,
+      hand: [70, 74],
+      ankle: [46, 97],
+      ankle2: [96, 86],
+      eb: 1,
+      kb: -1,
+      kb2: 1,
+      footT: 0
+    }]
+  }
+};
+const _reduceMotion = () => {
+  try {
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  } catch {
+    return false;
+  }
+};
+function ExAnim({
+  id,
+  height = 168,
+  animate = false,
+  color
+}) {
+  const spec = ANIM[id];
+  const [t, setT] = useState(0.3);
+  useEffect(() => {
+    if (!spec || !animate || _reduceMotion()) return;
+    let raf,
+      t0 = null;
+    const loop = ts => {
+      if (t0 === null) t0 = ts;
+      setT((ts - t0) / 1000 / spec.s % 1);
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, [spec, animate]);
+  if (!spec) return null;
+  const col = color || C.yellow;
+  const s = buildFig(poseAt(spec, t));
+  const P = a => `${a[0].toFixed(1)},${a[1].toFixed(1)}`;
+  const limb = (pts, far, k) => /*#__PURE__*/React.createElement("polyline", {
+    key: k,
+    points: pts.map(P).join(" "),
+    fill: "none",
+    stroke: col,
+    strokeOpacity: far ? 0.33 : 1,
+    strokeWidth: far ? 3.6 : 5,
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
+  });
+  return /*#__PURE__*/React.createElement("svg", {
+    viewBox: spec.v,
+    width: "100%",
+    height: height,
+    preserveAspectRatio: "xMidYMid meet",
+    style: {
+      display: "block"
+    },
+    "aria-hidden": "true"
+  }, spec.p.map((pr, i) => {
+    if (pr.t === "floor") return /*#__PURE__*/React.createElement("line", {
+      key: i,
+      x1: "-30",
+      y1: pr.y,
+      x2: "150",
+      y2: pr.y,
+      stroke: C.dim,
+      strokeWidth: "1.5"
+    });
+    if (pr.t === "bar") return /*#__PURE__*/React.createElement("line", {
+      key: i,
+      x1: pr.x1,
+      y1: pr.y,
+      x2: pr.x2,
+      y2: pr.y,
+      stroke: C.dim,
+      strokeWidth: "3",
+      strokeLinecap: "round"
+    });
+    return /*#__PURE__*/React.createElement("g", {
+      key: i
+    }, /*#__PURE__*/React.createElement("line", {
+      x1: "-30",
+      y1: "98",
+      x2: "150",
+      y2: "98",
+      stroke: C.dim,
+      strokeWidth: "1.5"
+    }), /*#__PURE__*/React.createElement("line", {
+      x1: pr.x1,
+      y1: pr.y,
+      x2: pr.x2,
+      y2: pr.y,
+      stroke: C.dim,
+      strokeWidth: "3",
+      strokeLinecap: "round"
+    }), /*#__PURE__*/React.createElement("line", {
+      x1: pr.x1 + 3,
+      y1: pr.y,
+      x2: pr.x1 + 3,
+      y2: "98",
+      stroke: C.dim,
+      strokeWidth: "2"
+    }), /*#__PURE__*/React.createElement("line", {
+      x1: pr.x2 - 3,
+      y1: pr.y,
+      x2: pr.x2 - 3,
+      y2: "98",
+      stroke: C.dim,
+      strokeWidth: "2"
+    }));
+  }), s.hand2 && limb([s.shoulder, s.elbow2, s.hand2], true, "a2"), s.ankle2 && limb([s.hip, s.knee2, s.ankle2], true, "l2"), limb([s.hip, s.knee, s.ankle], false, "l1"), limb([s.hip, s.neck], false, "tr"), limb([s.shoulder, s.elbow, s.hand], false, "a1"), /*#__PURE__*/React.createElement("line", {
+    x1: s.ankle[0],
+    y1: s.ankle[1],
+    x2: s.toe[0],
+    y2: s.toe[1],
+    stroke: col,
+    strokeWidth: "4",
+    strokeLinecap: "round"
+  }), s.hand2 && /*#__PURE__*/React.createElement("circle", {
+    cx: s.hand2[0],
+    cy: s.hand2[1],
+    r: "3",
+    fill: col,
+    fillOpacity: "0.33"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: s.hand[0],
+    cy: s.hand[1],
+    r: "3",
+    fill: col
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: s.head[0],
+    cy: s.head[1],
+    r: "7",
+    fill: col
+  }));
+}
+
 //  SPARKLINE CHART 
 function Sparkline({
   data,
@@ -2953,6 +3862,9 @@ function App() {
   const [exSets, setExSets] = useState(() => load("dvfit_sets", {}));
   const [notes, setNotes] = useState(() => load("dvfit_notes", {}));
   const [openSets, setOpenSets] = useState(null);
+  const [volMeasure, setVolMeasure] = useState("reps");
+  const [volSel, setVolSel] = useState(null);
+  const [showNotes, setShowNotes] = useState(false);
 
   //  Non-persistent UI state 
   const [sd, setSd] = useState(null);
@@ -3101,9 +4013,13 @@ function App() {
         ...p
       };
       const clean = rows.filter(r => r.r !== null && r.r !== "" && !isNaN(Number(r.r)));
-      if (clean.length === 0) delete n[k];else n[k] = {
+      if (clean.length === 0) delete n[k];
+      // u distingue reps de segundos: sin esto, un hold de 45s contaria como
+      // 45 repeticiones e inflaria el volumen semanal.
+      else n[k] = {
         n: exName(item),
         d: dateStr(),
+        u: parsePresc(item).secs ? "s" : "reps",
         s: rows
       };
       save("dvfit_sets", n);
@@ -3224,6 +4140,12 @@ function App() {
       };
     }));
   }, [alog, clockTick]);
+
+  //  Volumen semanal 
+  const volData = useMemo(() => weeklyVolume(exSets, 8), [exSets, clockTick]);
+  const volIdx = volSel === null ? volData.length - 1 : Math.min(volSel, volData.length - 1);
+  const volMeta = VOL_MEASURES.find(m => m.id === volMeasure) || VOL_MEASURES[0];
+  const volAny = volData.some(d => d.reps > 0 || d.kg > 0 || d.secs > 0);
 
   //  Requisitos del arbol, derivados de tus PRs 
   const reqState = useMemo(() => BASE_REQS.map((r, i) => {
@@ -4667,6 +5589,228 @@ function App() {
     }
   }, "m\xE1s")))), /*#__PURE__*/React.createElement("div", {
     style: {
+      background: C.card,
+      borderRadius: 12,
+      padding: 14,
+      marginBottom: 14,
+      border: `1px solid ${C.border}`
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 9,
+      color: C.muted,
+      letterSpacing: 3,
+      fontWeight: "bold",
+      marginBottom: 10
+    }
+  }, "VOLUMEN POR SEMANA"), !volAny ? /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted,
+      lineHeight: 1.6
+    }
+  }, "Todav\xEDa no hay series registradas. Abre un ejercicio del d\xEDa y toca ", /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.teal
+    }
+  }, "\u270E"), " para anotar reps y peso reales; el volumen aparece aqu\xED solo.") : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 5,
+      marginBottom: 11
+    }
+  }, VOL_MEASURES.map(m => {
+    const on = m.id === volMeasure;
+    return /*#__PURE__*/React.createElement("button", {
+      key: m.id,
+      onClick: () => setVolMeasure(m.id),
+      style: {
+        flex: 1,
+        padding: "6px 4px",
+        borderRadius: 7,
+        border: `1px solid ${on ? C.teal : C.border}`,
+        background: on ? C.teal + "18" : "transparent",
+        color: on ? C.teal : C.muted,
+        fontFamily: "inherit",
+        fontSize: 9,
+        fontWeight: "bold",
+        letterSpacing: 1,
+        cursor: "pointer"
+      }
+    }, m.label);
+  })), (() => {
+    const d = volData[volIdx];
+    const prev = volIdx > 0 ? volData[volIdx - 1] : null;
+    const v = d ? d[volMeasure] : 0;
+    const pv = prev ? prev[volMeasure] : 0;
+    const diff = pv > 0 ? Math.round((v - pv) / pv * 100) : null;
+    const isLast = volIdx === volData.length - 1;
+    return /*#__PURE__*/React.createElement("div", {
+      style: {
+        marginBottom: 9
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 8,
+        color: C.muted,
+        letterSpacing: 2,
+        marginBottom: 2
+      }
+    }, isLast ? "ESTA SEMANA" : `SEMANA DEL ${d ? d.date.toLocaleDateString("es-MX", {
+      day: "numeric",
+      month: "short"
+    }).toUpperCase() : ""}`), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        alignItems: "baseline",
+        gap: 7
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 24,
+        fontWeight: "bold",
+        color: C.text,
+        lineHeight: 1
+      }
+    }, v.toLocaleString("es-MX")), /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 11,
+        color: C.muted
+      }
+    }, volMeta.unit), diff !== null && v > 0 && /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 10,
+        fontWeight: "bold",
+        color: diff > 0 ? C.teal : diff < 0 ? C.orange : C.muted
+      }
+    }, diff > 0 ? "↑" : diff < 0 ? "↓" : "=", " ", Math.abs(diff), "% vs la anterior")));
+  })(), /*#__PURE__*/React.createElement(VolumeBars, {
+    data: volData,
+    measure: volMeasure,
+    color: C.teal,
+    sel: volIdx,
+    onSelect: setVolSel
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      marginTop: 4
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 8,
+      color: C.dim
+    }
+  }, volData[0] ? volData[0].date.toLocaleDateString("es-MX", {
+    day: "numeric",
+    month: "short"
+  }) : ""), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 8,
+      color: C.dim
+    }
+  }, "l\xEDnea punteada = promedio"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 8,
+      color: C.dim
+    }
+  }, "esta semana")))), (() => {
+    const list = Object.keys(notes).map(k => ({
+      scope: k,
+      ...notes[k],
+      loc: parseScope(k)
+    })).filter(x => x.loc).sort((a, b) => String(b.d).localeCompare(String(a.d)) || b.loc.week - a.loc.week);
+    if (list.length === 0) return null;
+    return /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: C.card,
+        borderRadius: 12,
+        border: `1px solid ${C.border}`,
+        marginBottom: 14,
+        overflow: "hidden"
+      }
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: () => setShowNotes(v => !v),
+      style: {
+        width: "100%",
+        background: "none",
+        border: "none",
+        padding: "13px 14px",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        cursor: "pointer",
+        fontFamily: "inherit"
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 9,
+        color: C.muted,
+        letterSpacing: 3,
+        fontWeight: "bold"
+      }
+    }, "\uD83D\uDCDD NOTAS (", list.length, ")"), /*#__PURE__*/React.createElement("span", {
+      style: {
+        color: C.dim,
+        fontSize: 12
+      }
+    }, showNotes ? "▲" : "▼")), showNotes && /*#__PURE__*/React.createElement("div", {
+      style: {
+        padding: "0 14px 12px"
+      }
+    }, list.map((x, i) => /*#__PURE__*/React.createElement("div", {
+      key: x.scope
+      // changeTab limpia el dia seleccionado, asi que el salto
+      // tiene que fijarse DESPUES de cambiar de pestana.
+      ,
+      onClick: () => {
+        changeTab("semana");
+        saveCw(x.loc.week - 1);
+        setSd(x.loc.day);
+      },
+      style: {
+        padding: "10px 0",
+        borderTop: `1px solid ${C.border}`,
+        cursor: "pointer"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        gap: 7,
+        alignItems: "center",
+        marginBottom: 4
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 9,
+        color: C.teal,
+        fontWeight: "bold",
+        letterSpacing: 1
+      }
+    }, "SEM ", x.loc.week, " \xB7 ", WD[x.loc.day]), /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 9,
+        color: C.muted
+      }
+    }, x.d), /*#__PURE__*/React.createElement("span", {
+      style: {
+        flex: 1
+      }
+    }), /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 10,
+        color: C.dim
+      }
+    }, "\u2192")), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 11,
+        color: "#CCC",
+        lineHeight: 1.6,
+        whiteSpace: "pre-wrap"
+      }
+    }, x.t)))));
+  })(), /*#__PURE__*/React.createElement("div", {
+    style: {
       fontSize: 9,
       color: C.muted,
       letterSpacing: 3,
@@ -5987,7 +7131,17 @@ function App() {
         textAlign: "left",
         fontFamily: "inherit"
       }
-    }, /*#__PURE__*/React.createElement("div", {
+    }, ANIM[ex.id] && /*#__PURE__*/React.createElement("div", {
+      style: {
+        width: 46,
+        flexShrink: 0,
+        opacity: isO ? 1 : 0.75
+      }
+    }, /*#__PURE__*/React.createElement(ExAnim, {
+      id: ex.id,
+      animate: false,
+      height: 42
+    })), /*#__PURE__*/React.createElement("div", {
       style: {
         flex: 1
       }
@@ -6030,7 +7184,27 @@ function App() {
       style: {
         padding: "0 14px 12px"
       }
-    }, /*#__PURE__*/React.createElement("div", {
+    }, ANIM[ex.id] && /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: C.card2,
+        borderRadius: 9,
+        border: `1px solid ${C.border}`,
+        marginBottom: 10,
+        padding: "8px 6px 4px"
+      }
+    }, /*#__PURE__*/React.createElement(ExAnim, {
+      id: ex.id,
+      animate: true,
+      height: 168
+    }), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 8,
+        color: C.dim,
+        textAlign: "center",
+        letterSpacing: 1,
+        padding: "2px 0 3px"
+      }
+    }, "ESQUEMA DEL MOVIMIENTO")), /*#__PURE__*/React.createElement("div", {
       style: {
         marginBottom: 9
       }
