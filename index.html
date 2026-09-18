@@ -665,7 +665,7 @@ const bestOf = (hist, lower) => {
 };
 
 //  BACKUP / RESTORE 
-const DVF_KEYS = ["dvfit_checks", "dvfit_prs", "dvfit_streak", "dvfit_path", "dvfit_week", "dvfit_start", "dvfit_log", "dvfit_subpath", "dvfit_sets", "dvfit_notes"];
+const DVF_KEYS = ["dvfit_checks", "dvfit_prs", "dvfit_streak", "dvfit_path", "dvfit_week", "dvfit_start", "dvfit_log", "dvfit_subpath", "dvfit_sets", "dvfit_notes", "dvfit_split"];
 const BACKUP_VERSION = 1;
 const buildBackup = () => {
   const data = {};
@@ -3859,6 +3859,12 @@ function App() {
   const [cw, setCw] = useState(() => load("dvfit_week", 0));
   const [startD, setStartD] = useState(() => load("dvfit_start", null));
   const [cSub, setCSub] = useState(() => load("dvfit_subpath", null));
+  const [split, setSplit] = useState(() => {
+    const v = load("dvfit_split", null);
+    if (!Array.isArray(v) || v.length < 1 || v.length > 7) return DEFAULT_SPLIT;
+    // Siempre ascendente: la semana se lee de lunes a domingo
+    return [...new Set(v.filter(x => x >= 0 && x <= 6))].sort((a, b) => a - b);
+  });
   const [exSets, setExSets] = useState(() => load("dvfit_sets", {}));
   const [notes, setNotes] = useState(() => load("dvfit_notes", {}));
   const [openSets, setOpenSets] = useState(null);
@@ -3925,6 +3931,13 @@ function App() {
   const saveSub = useCallback(id => {
     setCSub(id);
     save("dvfit_subpath", id);
+  }, []);
+  const saveSplit = useCallback(arr => {
+    const v = [...new Set(arr)].sort((a, b) => a - b);
+    if (v.length === 0) return; // al menos un día
+    setSplit(v);
+    save("dvfit_split", v);
+    setSd(null);
   }, []);
 
   //  PR helpers 
@@ -4043,8 +4056,9 @@ function App() {
   //  Notas de sesion 
   const dayScope = useCallback((r, di) => {
     if (!r || !r.week) return null;
+    di = split[di] === undefined ? di : split[di];
     return r.src === "base" ? `w${r.week.week}-d${di}` : r.src === "path" ? `pa-${r.pathId}-w${r.week.week}-d${di}` : r.src === "sub" ? `sb-${r.subId}-w${r.week.week}-d${di}` : `cy-${r.subId}-w${r.week.week}-d${di}`;
-  }, []);
+  }, [split]);
   const saveNote = useCallback((scope, text) => {
     setNotes(p => {
       const n = {
@@ -4075,12 +4089,22 @@ function App() {
   }, []);
   const planWeek = useMemo(() => startD ? weeksSince(startD) : null, [startD, clockTick]);
   const autoWeek = planWeek === null ? null : Math.max(0, planWeek); // sin tope: el plan ya no se acaba
-  const tdIdx = useMemo(() => todayIdx(), [clockTick]);
+  const tdIdx = useMemo(() => todayIdx(), [clockTick]); // 0=lunes .. 6=domingo
+  const tdPos = split.indexOf(tdIdx); // -1 = hoy no entrenas
+  const restToday = tdPos === -1;
+  // Próximo día de entrenamiento, para el caso de descanso
+  const nextTd = useMemo(() => {
+    for (let i = 1; i <= 7; i++) {
+      const d = (tdIdx + i) % 7;
+      if (split.includes(d)) return d;
+    }
+    return null;
+  }, [tdIdx, split]);
   const onToday = autoWeek !== null && cw === autoWeek;
 
   // Resolucion de la semana visible y de la de hoy
-  const res = useMemo(() => weekFor(cw + 1, cPath, cSub, prs), [cw, cPath, cSub, prs]);
-  const todayRes = useMemo(() => autoWeek === null ? null : weekFor(autoWeek + 1, cPath, cSub, prs), [autoWeek, cPath, cSub, prs]);
+  const res = useMemo(() => weekFor(cw + 1, cPath, cSub, prs, split), [cw, cPath, cSub, prs, split]);
+  const todayRes = useMemo(() => autoWeek === null ? null : weekFor(autoWeek + 1, cPath, cSub, prs, split), [autoWeek, cPath, cSub, prs, split]);
   const maxWeek = autoWeek === null ? WEEKS.length - 1 : autoWeek + 8; // se puede ojear un par de meses adelante
 
   const STAGES = [{
@@ -4178,12 +4202,17 @@ function App() {
   // generan a partir de tus PRs, asi que su texto cambia: ahi la llave va por
   // posicion, no por contenido, para que las palomitas no se pierdan al subir
   // un record.
+  // di es la posicion dentro de la semana condensada; la llave usa el dia de
+  // la semana REAL (0=lunes) para que cambiar el split no desplace todo.
   const wkKey = useCallback((res, di, bi, ii) => {
     if (!res || !res.week) return `none-${di}-${bi}-${ii}`;
-    if (res.src === "cycle") return `cy-${res.subId}-w${res.week.week}-d${di}-b${bi}-i${ii}`;
-    const scope = res.src === "base" ? `w${res.week.week}-d${di}` : res.src === "path" ? `pa-${res.pathId}-w${res.week.week}-d${di}` : `sb-${res.subId}-w${res.week.week}-d${di}`;
-    return dayKeys(scope, res.week.days[di])[bi][ii];
-  }, []);
+    const day = res.week.days[di]; // di = posicion en la semana
+    if (!day) return `none-${di}-${bi}-${ii}`;
+    const wdi = split[di] === undefined ? di : split[di]; // dia de la semana, solo para la llave
+    if (res.src === "cycle") return `cy-${res.subId}-w${res.week.week}-d${wdi}-b${bi}-i${ii}`;
+    const scope = res.src === "base" ? `w${res.week.week}-d${wdi}` : res.src === "path" ? `pa-${res.pathId}-w${res.week.week}-d${wdi}` : `sb-${res.subId}-w${res.week.week}-d${wdi}`;
+    return dayKeys(scope, day)[bi][ii];
+  }, [split]);
   const dcRes = useCallback((res, di) => {
     if (!res || !res.week) return {
       done: 0,
@@ -4213,7 +4242,7 @@ function App() {
     const upTo = Math.max(BASE_N + PATH_N + SUB_N, autoWeek === null ? 0 : autoWeek + 1);
     let done = 0;
     for (let n = 1; n <= upTo; n++) {
-      const r = weekFor(n, cPath, cSub, prs);
+      const r = weekFor(n, cPath, cSub, prs, split);
       if (!r.week) continue;
       r.week.days.forEach((_, di) => {
         const c = dcRes(r, di);
@@ -4224,7 +4253,7 @@ function App() {
       done
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chk, cPath, cSub, prs, autoWeek]);
+  }, [chk, cPath, cSub, prs, autoWeek, split]);
   const changeTab = id => {
     setTab(id);
     setSd(null);
@@ -4405,7 +4434,76 @@ function App() {
   }, (_, i) => /*#__PURE__*/React.createElement("option", {
     key: i,
     value: i + 1
-  }, "Semana ", i + 1)))), /*#__PURE__*/React.createElement("button", {
+  }, "Semana ", i + 1)))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 8,
+      color: C.yellow,
+      letterSpacing: 3,
+      fontWeight: "bold",
+      margin: "14px 0 5px"
+    }
+  }, "D\xCDAS QUE ENTRENAS"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 10,
+      color: C.muted,
+      lineHeight: 1.5,
+      marginBottom: 8
+    }
+  }, "El plan se condensa solo a los d\xEDas que marques. No pierdes contenido: las sesiones que salen absorben lo importante de las que no caben."), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 4,
+      marginBottom: 8
+    }
+  }, WD.map((d, i) => {
+    const on = split.includes(i);
+    return /*#__PURE__*/React.createElement("button", {
+      key: i,
+      onClick: () => saveSplit(on ? split.filter(x => x !== i) : [...split, i]),
+      style: {
+        flex: 1,
+        padding: "9px 0",
+        borderRadius: 7,
+        border: `1px solid ${on ? C.yellow : C.border}`,
+        background: on ? C.yellow + "20" : "transparent",
+        color: on ? C.yellow : C.dim,
+        fontFamily: "inherit",
+        fontSize: 10,
+        fontWeight: "bold",
+        cursor: "pointer"
+      }
+    }, WD2[i]);
+  })), (() => {
+    const prev = weekFor(Math.max(1, anchorWeek), cPath, cSub, prs, split);
+    if (!prev.week) return null;
+    const min = prev.week.days.reduce((a, d) => a + (parseInt(d.dur) || 0), 0);
+    const full = weekForRaw(Math.max(1, anchorWeek), cPath, cSub, prs);
+    const fmin = full.week ? full.week.days.reduce((a, d) => a + (parseInt(d.dur) || 0), 0) : 0;
+    return /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: C.card2,
+        borderRadius: 8,
+        padding: "9px 11px",
+        marginBottom: 10,
+        fontSize: 10,
+        color: "#AAA",
+        lineHeight: 1.6
+      }
+    }, /*#__PURE__*/React.createElement("b", {
+      style: {
+        color: C.text
+      }
+    }, split.length, " ", split.length === 1 ? "sesión" : "sesiones", " \xB7 ", min, " min/semana"), fmin > min && /*#__PURE__*/React.createElement("span", {
+      style: {
+        color: C.muted
+      }
+    }, " (el plan completo son ", fmin, ")"), /*#__PURE__*/React.createElement("div", {
+      style: {
+        marginTop: 4,
+        color: C.muted
+      }
+    }, prev.week.days.map((d, i) => `${WD[split[i]]} ${d.type === "Long Run" ? "long run" : d.type.toLowerCase()}`).join(" · ")));
+  })(), /*#__PURE__*/React.createElement("button", {
     onClick: () => {
       saveStart(startForWeek(anchorWeek));
       setShowAnchor(false);
@@ -4438,12 +4536,14 @@ function App() {
       letterSpacing: 1
     }
   }, "CANCELAR")), startD && !showAnchor && todayRes && todayRes.week && (() => {
-    const day = todayRes.week.days[tdIdx];
+    if (restToday) return null;
+    const day = todayRes.week.days[tdPos];
+    if (!day) return null;
     const col = TC[day.type] || C.dim;
     const {
       done,
       total
-    } = dcRes(todayRes, tdIdx);
+    } = dcRes(todayRes, tdPos);
     const complete = total > 0 && done === total;
     return /*#__PURE__*/React.createElement("div", {
       style: {
@@ -4494,7 +4594,7 @@ function App() {
       }
     }, day.dur, " \xB7 ", complete ? "completado ✓" : `${done}/${total} items`)), /*#__PURE__*/React.createElement("button", {
       onClick: () => {
-        setSd(tdIdx);
+        setSd(tdPos);
         setEb(null);
       },
       style: {
@@ -4552,7 +4652,67 @@ function App() {
         textDecoration: "underline"
       }
     }, "AJUSTAR")));
-  })(), startD && !showAnchor && res.needs && (() => {
+  })(), startD && !showAnchor && restToday && todayRes && todayRes.week && /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: C.card,
+      borderRadius: 12,
+      marginBottom: 12,
+      border: `1px solid ${C.border}`,
+      padding: "13px 14px",
+      display: "flex",
+      gap: 12,
+      alignItems: "center"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 30,
+      lineHeight: 1
+    }
+  }, "\uD83C\uDF3F"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      minWidth: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 8,
+      color: C.muted,
+      letterSpacing: 3,
+      marginBottom: 2
+    }
+  }, "HOY \xB7 ", WDL[tdIdx].toUpperCase(), " ", new Date().toLocaleDateString("es-MX", {
+    day: "numeric",
+    month: "short"
+  }).toUpperCase()), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 15,
+      fontWeight: "bold",
+      color: C.purple
+    }
+  }, "DESCANSO"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 10,
+      color: C.muted,
+      marginTop: 2
+    }
+  }, nextTd !== null ? `Vuelves el ${WD_FULL[nextTd].toLowerCase()}` : "Sin días de entrenamiento configurados")), /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      setAnchorWeek(cw + 1);
+      setShowAnchor(true);
+    },
+    style: {
+      flexShrink: 0,
+      background: "transparent",
+      border: `1px solid ${C.border}`,
+      borderRadius: 9,
+      padding: "10px 13px",
+      color: C.muted,
+      fontFamily: "inherit",
+      fontSize: 10,
+      fontWeight: "bold",
+      cursor: "pointer"
+    }
+  }, "D\xCDAS")), startD && !showAnchor && res.needs && (() => {
     const isPath = res.needs === "path";
     const col = isPath ? C.pink : C.blue;
     return /*#__PURE__*/React.createElement("div", {
@@ -4747,11 +4907,12 @@ function App() {
   }, wd.focus)), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "grid",
-      gridTemplateColumns: "repeat(7,1fr)",
+      gridTemplateColumns: `repeat(${Math.min(7, split.length)},1fr)`,
       gap: 4,
       marginBottom: 14
     }
-  }, ["LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB", "DOM"].map((d, di) => {
+  }, split.map((wdi, di) => {
+    const d = WD[wdi];
     const day = wd.days[di];
     const col = TC[day.type] || C.dim;
     const {
@@ -4759,7 +4920,7 @@ function App() {
       total
     } = dcRes(res, di);
     const pct = total > 0 ? done / total : 0;
-    const isToday = onToday && di === tdIdx;
+    const isToday = onToday && wdi === tdIdx;
     return /*#__PURE__*/React.createElement("button", {
       key: di,
       onClick: () => {
@@ -4873,7 +5034,7 @@ function App() {
         fontSize: 13,
         fontWeight: "bold"
       }
-    }, ["LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB", "DOM"][di]), /*#__PURE__*/React.createElement("span", {
+    }, WD[split[di]]), /*#__PURE__*/React.createElement("span", {
       style: {
         fontSize: 9,
         color: col,
@@ -4982,7 +5143,7 @@ function App() {
       }
     }, "\u23F1 Timer"), /*#__PURE__*/React.createElement("button", {
       onClick: () => {
-        setSd(d => Math.min(6, d + 1));
+        setSd(d => Math.min(split.length - 1, d + 1));
         setEb(null);
       },
       style: {
@@ -5023,7 +5184,7 @@ function App() {
         letterSpacing: 3,
         fontWeight: "bold"
       }
-    }, ["LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB", "DOM"][sd], " \xB7 ", dd.type.toUpperCase(), dd.dur ? ` · ${dd.dur}` : ""), /*#__PURE__*/React.createElement("div", {
+    }, WD[split[sd]], " \xB7 ", dd.type.toUpperCase(), dd.dur ? ` · ${dd.dur}` : ""), /*#__PURE__*/React.createElement("div", {
       style: {
         fontSize: 16,
         fontWeight: "bold",
@@ -5766,7 +5927,8 @@ function App() {
       onClick: () => {
         changeTab("semana");
         saveCw(x.loc.week - 1);
-        setSd(x.loc.day);
+        const q = split.indexOf(x.loc.day);
+        setSd(q < 0 ? null : q);
       },
       style: {
         padding: "10px 0",
@@ -6417,14 +6579,17 @@ function App() {
     const pathWeeks = PATH_WEEKS[path.id] || [];
     const selPathWeek = pathWeeks[pw] || null;
     const reqsDone = reqsMet;
-    const week12Done = WEEKS[11].days.reduce((acc, _, di) => {
+    const w12 = weekFor(12, cPath, cSub, prs, split);
+    const w12n = w12.week ? w12.week.days.length : 7;
+    const week12Done = w12.week ? w12.week.days.reduce((acc, _, di) => {
       const {
         done,
         total
-      } = dc(11, di);
+      } = dcRes(w12, di);
       return acc + (done === total && total > 0 ? 1 : 0);
-    }, 0);
-    const isUnlocked = reqsDone >= 4 && week12Done >= 5;
+    }, 0) : 0;
+    const need12 = Math.max(2, Math.ceil(w12n * 5 / 7)); // mismo listón, escalado al split
+    const isUnlocked = reqsDone >= 4 && week12Done >= need12;
     return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
       onClick: () => {
         setTn(null);
@@ -6790,10 +6955,10 @@ function App() {
       }
     }, reqsDone, "/6")), /*#__PURE__*/React.createElement("span", null, "Semana 12: ", /*#__PURE__*/React.createElement("span", {
       style: {
-        color: week12Done >= 5 ? C.teal : C.orange,
+        color: week12Done >= need12 ? C.teal : C.orange,
         fontWeight: "bold"
       }
-    }, week12Done, "/7 dias")))), isUnlocked && selPathWeek && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    }, week12Done, "/", w12n, " d\xEDas")))), isUnlocked && selPathWeek && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
       style: {
         fontSize: 9,
         color: C.muted,
@@ -8426,12 +8591,96 @@ const genCycleWeek = (w, subId, prs) => {
   };
 };
 
+// ─── SPLIT SEMANAL ─────────────────────────────────────────────────────────
+// El plan está escrito en 7 días, pero no todos pueden entrenar diario. En vez
+// de reescribir 20 semanas + ciclos infinitos, se CONDENSA: la forma de la
+// semana es idéntica en todas las etapas (cali|run|HS|run-o-track|cali|long|
+// descanso), así que una sola regla por tipo de día sirve para todo.
+const WD_FULL = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+const WD2 = ["LU", "MA", "MI", "JU", "VI", "SA", "DO"];
+const DEFAULT_SPLIT = [0, 1, 2, 3, 4, 5, 6];
+const dayRole = t => t === "Calistenia" ? "cali" : t === "Long Run" ? "long" : t === "HS Practice" ? "hs" : t === "Recovery" ? "rest" : t === "Track" ? "quality" : "run";
+const blockMin = b => {
+  const m = String(b.t).match(/\((\d+)\s*min\)/);
+  return m ? +m[1] : 0;
+};
+const addMin = (dur, add, sub) => {
+  const base = parseInt(dur) || 0;
+  const d = add.reduce((a, b) => a + blockMin(b), 0) - (sub || []).reduce((a, b) => a + blockMin(b), 0);
+  return Math.max(10, base + d) + " min";
+};
+
+// El handstand entra DESPUÉS del calentamiento: es trabajo de skill y se hace
+// con el sistema nervioso fresco, no de último.
+const withSkill = (d, blk) => {
+  if (!blk) return d;
+  const drop = d.blocks.filter(b => /Skill \+ Core/i.test(b.t));
+  const bs = d.blocks.filter(b => !/Skill \+ Core/i.test(b.t));
+  return {
+    ...d,
+    dur: addMin(d.dur, [blk], drop),
+    blocks: [bs[0], blk, ...bs.slice(1)]
+  };
+};
+
+// El core grande sustituye al bloque chico de "Skill + Core", antes del enfriamiento.
+const withCore = (d, blk) => {
+  if (!blk) return d;
+  const drop = d.blocks.filter(b => /Skill \+ Core/i.test(b.t));
+  const bs = d.blocks.filter(b => !/Skill \+ Core/i.test(b.t));
+  const at = Math.max(1, bs.length - 1);
+  return {
+    ...d,
+    dur: addMin(d.dur, [blk], drop),
+    blocks: [...bs.slice(0, at), blk, ...bs.slice(at)]
+  };
+};
+const withReview = (d, blk) => !blk ? d : {
+  ...d,
+  blocks: [...d.blocks, blk]
+};
+const condenseWeek = (week, split) => {
+  const n = (split || DEFAULT_SPLIT).length;
+  if (!week || n >= 7) return week;
+  const by = {
+    cali: [],
+    run: [],
+    quality: [],
+    hs: [],
+    long: [],
+    rest: []
+  };
+  week.days.forEach(d => by[dayRole(d.type)].push(d));
+  const cali1 = by.cali[0],
+    cali2 = by.cali[1] || by.cali[0];
+  const hs = by.hs[0],
+    long = by.long[0],
+    rest = by.rest[0];
+  const quality = by.quality[0] || by.run[1] || by.run[0]; // Track si la semana lo trae
+  const easy = by.run[0];
+  const skill = hs && hs.blocks[0],
+    core = hs && hs.blocks[1];
+  // Del día de descanso sólo sobrevive el cierre de semana, que es lo útil
+  const rev = rest && rest.blocks[0] ? {
+    t: "📋 Cierre de semana",
+    i: rest.blocks[0].i.filter(x => /PR|planifica/i.test(x))
+  } : null;
+  const L = long ? withReview(long, rev) : null;
+  const A = withSkill(cali1, skill),
+    B = withCore(cali2, core);
+  const days = n === 1 ? [A] : n === 2 ? [A, B] : n === 3 ? [A, B, L] : n === 4 ? [A, quality, B, L] : n === 5 ? [A, quality, B, easy, L] : [cali1, easy, hs, quality, cali2, L];
+  return {
+    ...week,
+    days: days.filter(Boolean)
+  };
+};
+
 // ─── RESOLUCIÓN DE CUALQUIER SEMANA DEL PLAN ───────────────────────────────
 // n es 1-based. Devuelve {week, src, needs} — needs dice qué falta elegir.
 const BASE_N = WEEKS.length; // 12
 const PATH_N = 8; // 13-20
 const SUB_N = 8; // 21-28
-const weekFor = (n, pathId, subId, prs) => {
+const weekForRaw = (n, pathId, subId, prs) => {
   if (n <= BASE_N) return {
     week: WEEKS[n - 1],
     src: "base",
@@ -8475,6 +8724,15 @@ const weekFor = (n, pathId, subId, prs) => {
     src: "cycle",
     subId
   };
+};
+
+// Envoltura pública: resuelve la semana y la condensa a los días elegidos.
+const weekFor = (n, pathId, subId, prs, split) => {
+  const r = weekForRaw(n, pathId, subId, prs);
+  return r.week ? {
+    ...r,
+    week: condenseWeek(r.week, split)
+  } : r;
 };
 ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
   </script>
