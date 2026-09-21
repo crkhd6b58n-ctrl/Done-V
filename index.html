@@ -665,7 +665,7 @@ const bestOf = (hist, lower) => {
 };
 
 //  BACKUP / RESTORE 
-const DVF_KEYS = ["dvfit_checks", "dvfit_prs", "dvfit_streak", "dvfit_path", "dvfit_week", "dvfit_start", "dvfit_log", "dvfit_subpath", "dvfit_sets", "dvfit_notes", "dvfit_split"];
+const DVF_KEYS = ["dvfit_checks", "dvfit_prs", "dvfit_streak", "dvfit_path", "dvfit_week", "dvfit_start", "dvfit_log", "dvfit_subpath", "dvfit_sets", "dvfit_notes", "dvfit_split", "dvfit_gear"];
 const BACKUP_VERSION = 1;
 const buildBackup = () => {
   const data = {};
@@ -3867,6 +3867,23 @@ function App() {
   });
   const [exSets, setExSets] = useState(() => load("dvfit_sets", {}));
   const [notes, setNotes] = useState(() => load("dvfit_notes", {}));
+  const [gear, setGear] = useState(() => {
+    const v = load("dvfit_gear", null);
+    return v && typeof v === "object" ? {
+      ...DEFAULT_GEAR,
+      ...v
+    } : DEFAULT_GEAR;
+  });
+  const saveGear = useCallback((id, on) => {
+    setGear(p => {
+      const n = {
+        ...p,
+        [id]: on
+      };
+      save("dvfit_gear", n);
+      return n;
+    });
+  }, []);
   const [openSets, setOpenSets] = useState(null);
   const [volMeasure, setVolMeasure] = useState("reps");
   const [volSel, setVolSel] = useState(null);
@@ -4219,9 +4236,14 @@ function App() {
       total: 0
     };
     const day = res.week.days[di];
+    if (!day) return {
+      done: 0,
+      total: 0
+    };
     let total = 0,
       done = 0;
-    day.blocks.forEach((b, bi) => b.i.forEach((_, ii) => {
+    day.blocks.forEach((b, bi) => b.i.forEach((item, ii) => {
+      if (subFor(item, gear).kind === "blocked") return; // sin equipo no cuenta contra ti
       total++;
       if (chk[wkKey(res, di, bi, ii)]) done++;
     }));
@@ -4229,7 +4251,7 @@ function App() {
       done,
       total
     };
-  }, [chk, wkKey]);
+  }, [chk, wkKey, gear]);
   const dc = (wi, di) => dcRes({
     week: WEEKS[wi],
     src: "base",
@@ -5282,9 +5304,13 @@ function App() {
           padding: "0 14px 12px"
         }
       }, block.i.map((item, ii) => {
+        // La llave sale del texto ORIGINAL: cambiar de equipo
+        // nunca mueve las palomitas.
         const k = wkKey(res, sd, bi, ii);
         const done = chk[k];
-        const pr = parsePresc(item);
+        const sb = subFor(item, gear);
+        const shown = sb.text;
+        const pr = parsePresc(shown);
         const rec = exSets[k];
         const logged = rec && rec.s ? rec.s.filter(x => x.r !== null && x.r !== "").length : 0;
         const isOpen = openSets === k;
@@ -5304,7 +5330,7 @@ function App() {
             alignItems: "flex-start"
           }
         }, /*#__PURE__*/React.createElement("div", {
-          onClick: () => tick(k),
+          onClick: () => sb.kind !== "blocked" && tick(k),
           style: {
             width: 19,
             height: 19,
@@ -5312,12 +5338,13 @@ function App() {
             flexShrink: 0,
             marginTop: 1,
             transition: "all .15s",
-            border: `2px solid ${done ? col : C.dim}`,
+            border: `2px solid ${sb.kind === "blocked" ? C.border : done ? col : C.dim}`,
             background: done ? col : "transparent",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            cursor: "pointer"
+            cursor: sb.kind === "blocked" ? "default" : "pointer",
+            opacity: sb.kind === "blocked" ? 0.4 : 1
           }
         }, done && /*#__PURE__*/React.createElement("span", {
           style: {
@@ -5326,16 +5353,36 @@ function App() {
             fontWeight: "bold"
           }
         }, "\u2713")), /*#__PURE__*/React.createElement("span", {
-          onClick: () => tick(k),
+          onClick: () => sb.kind !== "blocked" && tick(k),
           style: {
             flex: 1,
             fontSize: 12,
-            color: done ? col : "#D0D0D0",
+            color: sb.kind === "blocked" ? C.dim : done ? col : "#D0D0D0",
             lineHeight: 1.5,
             textDecoration: done ? "line-through" : "none",
-            cursor: "pointer"
+            cursor: sb.kind === "blocked" ? "default" : "pointer"
           }
-        }, item), /*#__PURE__*/React.createElement("button", {
+        }, shown, sb.kind === "sub" && /*#__PURE__*/React.createElement("span", {
+          style: {
+            display: "block",
+            fontSize: 9,
+            color: C.muted,
+            marginTop: 2
+          }
+        }, /*#__PURE__*/React.createElement("span", {
+          style: {
+            color: C.teal,
+            fontWeight: "bold",
+            letterSpacing: 1
+          }
+        }, "SUSTITUYE"), " ", sb.orig), sb.kind === "blocked" && /*#__PURE__*/React.createElement("span", {
+          style: {
+            display: "block",
+            fontSize: 9,
+            color: C.orange,
+            marginTop: 2
+          }
+        }, "Necesita ", sb.need === "dip" ? "paralelas o anillas" : "barra o anillas", " \u2014 no cuenta para el d\xEDa")), /*#__PURE__*/React.createElement("button", {
           onClick: () => setOpenSets(v => v === k ? null : k),
           style: {
             flexShrink: 0,
@@ -5517,7 +5564,9 @@ function App() {
         fontWeight: "bold"
       }
     }, "\uD83C\uDF89 \xA1D\xCDA COMPLETADO!") : /*#__PURE__*/React.createElement("button", {
-      onClick: () => dd.blocks.forEach((b, bi) => b.i.forEach((_, ii) => tick(wkKey(res, sd, bi, ii)))),
+      onClick: () => dd.blocks.forEach((b, bi) => b.i.forEach((it, ii) => {
+        if (subFor(it, gear).kind !== "blocked") tick(wkKey(res, sd, bi, ii));
+      })),
       style: {
         width: "100%",
         marginTop: 9,
@@ -7490,6 +7539,127 @@ function App() {
         letterSpacing: 3,
         marginBottom: 3
       }
+    }, "QU\xC9 TIENES A LA MANO"), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 11,
+        color: "#AAA",
+        lineHeight: 1.5,
+        marginBottom: 11
+      }
+    }, "Desmarca lo que no tengas y el plan sustituye los ejercicios. Lo que no se pueda sustituir se marca y ", /*#__PURE__*/React.createElement("span", {
+      style: {
+        color: C.text
+      }
+    }, "deja de contar"), " para completar el d\xEDa."), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "grid",
+        gridTemplateColumns: "1fr 1fr",
+        gap: 6
+      }
+    }, GEAR_ITEMS.map(it => {
+      const on = !!gear[it.id];
+      return /*#__PURE__*/React.createElement("button", {
+        key: it.id,
+        onClick: () => saveGear(it.id, !on),
+        style: {
+          display: "flex",
+          gap: 8,
+          alignItems: "center",
+          padding: "10px 10px",
+          borderRadius: 9,
+          cursor: "pointer",
+          fontFamily: "inherit",
+          textAlign: "left",
+          background: on ? C.teal + "15" : C.card2,
+          border: `1px solid ${on ? C.teal + "50" : C.border}`
+        }
+      }, /*#__PURE__*/React.createElement("div", {
+        style: {
+          width: 16,
+          height: 16,
+          borderRadius: 4,
+          flexShrink: 0,
+          border: `2px solid ${on ? C.teal : C.dim}`,
+          background: on ? C.teal : "transparent",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center"
+        }
+      }, on && /*#__PURE__*/React.createElement("span", {
+        style: {
+          color: C.bg,
+          fontSize: 10,
+          fontWeight: "bold"
+        }
+      }, "\u2713")), /*#__PURE__*/React.createElement("span", {
+        style: {
+          fontSize: 14
+        }
+      }, it.emoji), /*#__PURE__*/React.createElement("span", {
+        style: {
+          fontSize: 11,
+          color: on ? C.teal : C.muted,
+          lineHeight: 1.3
+        }
+      }, it.label));
+    })), (() => {
+      const w = res && res.week;
+      if (!w) return null;
+      let sub = 0,
+        blk = 0,
+        tot = 0;
+      w.days.forEach(d => d.blocks.forEach(b => b.i.forEach(i => {
+        tot++;
+        const r = subFor(i, gear);
+        if (r.kind === "sub") sub++;else if (r.kind === "blocked") blk++;
+      })));
+      if (sub + blk === 0) return /*#__PURE__*/React.createElement("div", {
+        style: {
+          marginTop: 10,
+          fontSize: 10,
+          color: C.teal,
+          lineHeight: 1.5
+        }
+      }, "\u2713 Con este equipo la semana ", cw + 1, " corre completa, sin sustituciones.");
+      return /*#__PURE__*/React.createElement("div", {
+        style: {
+          marginTop: 10,
+          background: C.card2,
+          borderRadius: 8,
+          padding: "9px 11px",
+          fontSize: 10,
+          color: "#AAA",
+          lineHeight: 1.6
+        }
+      }, "En la semana ", cw + 1, ": ", /*#__PURE__*/React.createElement("b", {
+        style: {
+          color: C.teal
+        }
+      }, sub), " ejercicios sustituidos", blk > 0 && /*#__PURE__*/React.createElement(React.Fragment, null, " y ", /*#__PURE__*/React.createElement("b", {
+        style: {
+          color: C.orange
+        }
+      }, blk), " que necesitan barra o anillas"), ", de ", tot, ".", !gear.bar && !gear.rings && /*#__PURE__*/React.createElement("div", {
+        style: {
+          marginTop: 5,
+          color: C.orange
+        }
+      }, "Sin barra ni anillas no hay patr\xF3n de jal\xF3n real. Los remos bajo la mesa lo sostienen, pero no lo progresan \u2014 consigue de d\xF3nde colgarte en cuanto puedas."));
+    })()), /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: C.card,
+        borderRadius: 12,
+        padding: 14,
+        marginBottom: 14,
+        border: `1px solid ${C.border}`
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 8,
+        color: C.muted,
+        letterSpacing: 3,
+        marginBottom: 3
+      }
     }, "RESPALDO"), /*#__PURE__*/React.createElement("div", {
       style: {
         fontSize: 11,
@@ -8588,6 +8758,176 @@ const genCycleWeek = (w, subId, prs) => {
     label: `Ciclo ${wf.cy} · Semana ${wf.p + 1}/4 -- ${wf.tag}`,
     focus: wf.focus,
     days: genPathDays(SUB_OF[subId].parent, wf)
+  };
+};
+
+// ─── EQUIPO Y SUSTITUCIONES ────────────────────────────────────────────────
+// Si no tienes barra, el plan no se rompe: se sustituye el ejercicio. Esto es
+// SOLO CAPA DE PRESENTACIÓN — la llave del check sale del texto ORIGINAL, así
+// que marcar o desmarcar equipo nunca mueve tu progreso.
+const GEAR_ITEMS = [{
+  id: "bar",
+  label: "Barra de dominadas",
+  emoji: "🏋️"
+}, {
+  id: "rings",
+  label: "Anillas",
+  emoji: "⭕"
+}, {
+  id: "bars",
+  label: "Paralelas / fondos",
+  emoji: "🤸"
+}, {
+  id: "bands",
+  label: "Bandas elásticas",
+  emoji: "🎗️"
+}];
+const DEFAULT_GEAR = {
+  bar: true,
+  rings: true,
+  bars: true,
+  bands: true
+};
+
+// Qué hace falta para cada patrón
+const canPull = g => !!(g.bar || g.rings); // colgarse y jalar
+const canDip = g => !!(g.bars || g.rings); // fondos en paralelo real
+const canLever = g => !!(g.bar || g.rings); // palancas: necesitan colgarse
+
+// Se sustituye SOLO el nombre del ejercicio; reps, esquema y cues se conservan.
+// El orden importa: lo específico va primero.
+const SUBS = [
+// --- anillas ---
+{
+  need: "dip",
+  re: /ring dips?/i,
+  to: "Fondos entre dos sillas",
+  ok: g => g.rings
+}, {
+  need: "pull",
+  re: /ring rows?( RTO)?/i,
+  to: "Remo bajo la mesa",
+  ok: g => g.rings
+}, {
+  need: "pull",
+  re: /ring (muscle ups?|pull-?ups?)/i,
+  blocked: true,
+  ok: g => g.rings
+},
+// --- palancas y muscle up: no hay sustituto real ---
+{
+  need: "lever",
+  re: /muscle ?ups?/i,
+  blocked: true
+}, {
+  need: "lever",
+  re: /(front|back) lever/i,
+  blocked: true
+}, {
+  need: "lever",
+  re: /skin the cat|german hang/i,
+  blocked: true
+}, {
+  need: "lever",
+  re: /one-?arm pull-?up/i,
+  blocked: true
+},
+// --- colgarse ---
+{
+  need: "pull",
+  re: /passive hang|dead hang|hang pasivo/i,
+  blocked: true
+}, {
+  need: "pull",
+  re: /hanging knee raises?/i,
+  to: "Elevaciones de rodillas tumbado"
+}, {
+  need: "pull",
+  re: /scapula circles en barra/i,
+  to: "Wall slides contra la pared"
+},
+// --- jalón: el remo bajo la mesa ES el australian pull-up ---
+{
+  need: "pull",
+  re: /australian pull-?ups?/i,
+  to: "Remo bajo la mesa"
+}, {
+  need: "pull",
+  re: /scapula pull-?ups?/i,
+  to: "Scapula rows bajo la mesa",
+  band: "Scapula pull-downs con banda"
+}, {
+  need: "pull",
+  re: /negative pull-?ups?/i,
+  to: "Remo bajo la mesa con pies elevados",
+  band: "Pull-downs con banda, fase excéntrica lenta"
+}, {
+  need: "pull",
+  re: /weighted pull-?ups?/i,
+  to: "Remo bajo la mesa con mochila"
+}, {
+  need: "pull",
+  re: /chest-?to-?bar/i,
+  to: "Remo bajo la mesa, pecho al borde"
+}, {
+  need: "pull",
+  re: /pull-?ups?|dominadas?/i,
+  to: "Remo bajo la mesa con pies elevados",
+  band: "Pull-downs con banda"
+},
+// --- fondos y paralelas ---
+{
+  need: "dip",
+  re: /weighted dips?/i,
+  to: "Fondos entre dos sillas con mochila"
+}, {
+  need: "dip",
+  re: /\bdips?\b|fondos en paralelas/i,
+  to: "Fondos entre dos sillas"
+}, {
+  need: "dip",
+  re: /l-?sit (en )?paralelas/i,
+  to: "L-sit en el suelo, sobre los puños"
+}, {
+  need: "dip",
+  re: /tuck hold (en )?paralelas/i,
+  to: "Tuck hold en el suelo, sobre los puños"
+}];
+const HAVE = {
+  pull: canPull,
+  dip: canDip,
+  lever: canLever
+};
+
+// Devuelve {text, orig, kind} — kind: null | "sub" | "blocked"
+const subFor = (item, gear) => {
+  const g = gear || DEFAULT_GEAR;
+  for (const r of SUBS) {
+    if (!r.re.test(item)) continue;
+    if (r.ok ? r.ok(g) : HAVE[r.need](g)) return {
+      text: item,
+      orig: item,
+      kind: null
+    }; // sí lo tienes
+    if (r.blocked) return {
+      text: item,
+      orig: item,
+      kind: "blocked",
+      need: r.need
+    };
+    const name = r.band && g.bands ? r.band : r.to;
+    // el cue posterior también habla de la barra
+    const txt = item.replace(r.re, name).replace(/a la barra/gi, "al borde").replace(/en la barra/gi, "en el borde");
+    return {
+      text: txt,
+      orig: item,
+      kind: "sub"
+    };
+  }
+  return {
+    text: item,
+    orig: item,
+    kind: null
   };
 };
 
