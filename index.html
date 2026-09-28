@@ -1040,6 +1040,24 @@ const EXERCISES = [{
   cues: ["Hombros BIEN adelante de las manos", "Protrae los omóplatos", "Cuerpo de plancha", "Dedos hacia afuera"],
   mistakes: ["Doblar los codos", "Perder la protracción", "Cadera arriba"],
   tip: "Más inclinación = más difícil. Avanza de a 2-3 cm."
+}, {
+  id: "pigeon",
+  name: "Pigeon Pose",
+  cat: "mobility",
+  src: "📘 David",
+  muscles: ["Glúteos", "Rotadores de cadera", "Flexores de cadera"],
+  cues: ["Rodilla delantera al frente, pie hacia la cadera contraria", "Pierna de atrás recta, empeine al suelo", "Cadera cuadrada, sin caer de lado", "Exhala y baja el pecho poco a poco"],
+  mistakes: ["Cadera girada hacia un lado", "Forzar la rodilla con dolor", "Aguantar la respiración"],
+  tip: "Si la cadera no llega al suelo, pon un cojín debajo del glúteo delantero."
+}, {
+  id: "foam-roll",
+  name: "Foam Roll Piernas",
+  cat: "mobility",
+  src: "🔍 Research",
+  muscles: ["Pantorrillas", "Isquios", "Cuádriceps"],
+  cues: ["Rodillo bajo el músculo, nunca sobre la articulación", "Rueda lento: 2-3 cm por segundo", "Pausa 20-30 s en los puntos tensos", "Cruza la otra pierna encima para más presión"],
+  mistakes: ["Rodar rápido de un lado a otro", "Rodar sobre rodilla o espalda baja", "Aguantar dolor agudo"],
+  tip: "Mejor después de correr: 1-2 min por músculo."
 }];
 const RUNNING_MILESTONES = [{
   dist: "5 km",
@@ -3186,14 +3204,17 @@ function VolumeBars({
 // las manos y los pies) y la cinematica inversa coloca codos y rodillas, asi
 // los segmentos nunca se estiran. Todo el set de 18 pesa ~4.5 KB y funciona
 // sin conexion, porque va dentro del propio HTML.
+// Proporciones: brazo (hombro->centro de la mano) ~ 0.45 del largo
+// hombro->tobillo, como en una persona real. Con brazos mas largos la
+// plancha y el push-up quedaban con la cadera demasiado alta.
 const SEG = {
   torso: 30,
-  uarm: 19,
-  farm: 19,
+  uarm: 16.5,
+  farm: 15.5,
   thigh: 23,
-  shin: 23,
+  shin: 22,
   head: 6,
-  foot: 7
+  foot: 6
 };
 const _rad = d => d * Math.PI / 180;
 const along = (p, deg, len) => [p[0] + Math.cos(_rad(deg)) * len, p[1] - Math.sin(_rad(deg)) * len];
@@ -3215,10 +3236,13 @@ const ik = (a, b, l1, l2, s) => {
 };
 const buildFig = p => {
   const neck = along(p.hip, p.torso, SEG.torso);
-  const shoulder = along(p.hip, p.torso, SEG.torso * 0.86);
+  // sh: desplaza el hombro sobre el torso (+ encogido a las orejas, - hundido)
+  const shoulder = along(p.hip, p.torso, SEG.torso * 0.86 + (p.sh || 0));
   const arm = ik(shoulder, p.hand, SEG.uarm, SEG.farm, p.eb === undefined ? 1 : p.eb);
   const leg = ik(p.hip, p.ankle, SEG.thigh, SEG.shin, p.kb === undefined ? 1 : p.kb);
   const f = {
+    torsoA: p.torso,
+    headT: p.headT || 0,
     hip: p.hip,
     neck,
     shoulder,
@@ -3251,6 +3275,7 @@ const mixPose = (a, b, t) => {
     hand: _lerpP(a.hand, b.hand, e),
     ankle: _lerpP(a.ankle, b.ankle, e),
     torso: _lerp(a.torso, b.torso, e),
+    sh: _lerp(a.sh || 0, b.sh || 0, e),
     headT: _lerp(a.headT || 0, b.headT || 0, e),
     eb: a.eb,
     eb2: a.eb2,
@@ -3278,715 +3303,3506 @@ const poseAt = (spec, t) => {
   const i = Math.min(f.length - 2, Math.floor(seg));
   return mixPose(f[i], f[i + 1], seg - i);
 };
+// Poses generadas por angulos de articulacion (cinematica directa) para que
+// la tecnica sea correcta: brazos rectos de verdad, manos y pies apoyados, y
+// proporciones humanas. Por ejercicio:
+//   f   frames (extremos: cadera, torso, mano, tobillo; eb/kb = lado del codo/rodilla)
+//   g   guias de tecnica que se dibujan encima (linea, plomada, angulo, flecha)
+//   st  pasos que se leen en cada fase     bad  el error comun, en rojo
+//   fc  -1 si la cara mira al lado contrario del torso (levers, parada de manos)
 const ANIM = {
-  plank: {
-    v: "0 30 100 80",
-    m: "hold",
-    s: 3,
-    p: [{
-      "t": "floor",
-      "y": 98
-    }],
-    f: [{
-      hip: [50.9, 74.6],
-      torso: 32,
-      hand: [76, 98],
-      ankle: [11, 97],
-      eb: -1,
-      kb: 1,
-      footT: 212
-    }, {
-      hip: [50.9, 74.8],
-      torso: 34,
-      hand: [76, 98],
-      ankle: [11, 97],
-      eb: -1,
-      kb: 1,
-      footT: 212
-    }]
-  },
-  "push-up": {
-    v: "0 30 100 80",
-    m: "rep",
-    s: 2.4,
-    p: [{
-      "t": "floor",
-      "y": 98
-    }],
-    f: [{
-      hip: [50.9, 74.6],
-      torso: 32,
-      hand: [76, 98],
-      ankle: [11, 97],
-      eb: -1,
-      kb: 1,
-      footT: 212
-    }, {
-      hip: [56.2, 89.3],
-      torso: 11,
-      hand: [76, 98],
-      ankle: [11, 97],
-      eb: 1,
-      kb: 1,
-      footT: 191
-    }]
-  },
-  archer: {
-    v: "0 30 110 80",
-    m: "rep",
-    s: 2.8,
-    p: [{
-      "t": "floor",
-      "y": 98
-    }],
-    f: [{
-      hip: [51, 74.7],
-      torso: 32,
-      hand: [74, 98],
-      ankle: [11, 97],
-      hand2: [80, 98],
-      eb: 1,
-      eb2: 1,
-      kb: 1,
-      footT: 212
-    }, {
-      hip: [57.8, 86.5],
-      torso: 14,
-      hand: [86, 98],
-      ankle: [13, 96],
-      hand2: [52, 98],
-      eb: 1,
-      eb2: 1,
-      kb: 1,
-      footT: 194
-    }]
-  },
-  oapu: {
-    v: "0 30 100 80",
-    m: "rep",
-    s: 3,
-    p: [{
-      "t": "floor",
-      "y": 98
-    }],
-    f: [{
-      hip: [50.9, 74.6],
-      torso: 32,
-      hand: [74, 98],
-      ankle: [11, 97],
-      hand2: [48, 66],
-      eb: 1,
-      eb2: -1,
-      kb: 1,
-      footT: 212
-    }, {
-      hip: [56, 88.4],
-      torso: 13,
-      hand: [74, 98],
-      ankle: [11, 97],
-      hand2: [50, 78],
-      eb: 1,
-      eb2: -1,
-      kb: 1,
-      footT: 193
-    }]
-  },
-  "pike-push": {
-    v: "0 20 100 90",
-    m: "rep",
-    s: 2.6,
-    p: [{
-      "t": "floor",
-      "y": 98
-    }],
-    f: [{
-      hip: [38.9, 55.3],
-      torso: -58,
-      hand: [80, 98],
-      ankle: [20, 97],
-      eb: -1,
-      kb: -1,
-      footT: 250
-    }, {
-      hip: [41.6, 56.6],
-      torso: -70,
-      hand: [80, 98],
-      ankle: [20, 97],
-      eb: -1,
-      kb: -1,
-      footT: 250
-    }]
-  },
-  pullup: {
-    v: "0 0 100 118",
-    m: "rep",
-    s: 2.6,
-    p: [{
-      "t": "bar",
-      "y": 12,
-      "x1": 28,
-      "x2": 92
-    }],
-    f: [{
-      hip: [64.2, 75.1],
-      torso: 100,
-      hand: [62, 12],
-      ankle: [44, 102],
-      eb: 1,
-      kb: -1,
-      footT: -40
-    }, {
-      hip: [68, 52],
-      torso: 104,
-      hand: [62, 12],
-      ankle: [48, 78],
-      eb: 1,
-      kb: -1,
-      footT: -40
-    }]
-  },
-  "neg-pull": {
-    v: "0 0 100 118",
-    m: "rep",
-    s: 4.5,
-    p: [{
-      "t": "bar",
-      "y": 12,
-      "x1": 28,
-      "x2": 92
-    }],
-    f: [{
-      hip: [68, 52],
-      torso: 104,
-      hand: [62, 12],
-      ankle: [48, 78],
-      eb: 1,
-      kb: -1,
-      footT: -40
-    }, {
-      hip: [64.2, 75.1],
-      torso: 100,
-      hand: [62, 12],
-      ankle: [44, 102],
-      eb: 1,
-      kb: -1,
-      footT: -40
-    }]
-  },
-  "muscle-up": {
-    v: "0 -14 100 132",
-    m: "rep",
-    s: 3.4,
-    p: [{
-      "t": "bar",
-      "y": 20,
-      "x1": 28,
-      "x2": 92
-    }],
-    f: [{
-      hip: [64.2, 83.1],
-      torso: 100,
-      hand: [62, 20],
-      ankle: [44, 110],
-      eb: 1,
-      kb: -1,
-      footT: -40
-    }, {
-      hip: [68, 58],
-      torso: 106,
-      hand: [62, 20],
-      ankle: [48, 86],
-      eb: 1,
-      kb: -1,
-      footT: -40
-    }, {
-      hip: [66, 48],
-      torso: 84,
-      hand: [62, 22],
-      ankle: [54, 88],
-      eb: -1,
-      kb: -1,
-      footT: -50
-    }, {
-      hip: [62, 30],
-      torso: 88,
-      hand: [62, 22],
-      ankle: [56, 72],
-      eb: -1,
-      kb: -1,
-      footT: -55
-    }]
-  },
-  "deep-squat": {
-    v: "0 20 100 90",
-    m: "rep",
-    s: 3,
-    p: [{
-      "t": "floor",
-      "y": 98
-    }],
-    f: [{
-      hip: [48, 54],
-      torso: 90,
-      hand: [60, 62],
-      ankle: [48, 97],
-      eb: 1,
-      kb: -1,
-      footT: 0
-    }, {
-      hip: [44, 80],
-      torso: 58,
-      hand: [70, 70],
-      ankle: [48, 97],
-      eb: 1,
-      kb: -1,
-      footT: 0
-    }]
-  },
-  pistol: {
-    v: "0 20 110 90",
-    m: "rep",
-    s: 3.4,
-    p: [{
-      "t": "floor",
-      "y": 98
-    }],
-    f: [{
-      hip: [46, 54],
-      torso: 88,
-      hand: [56, 60],
-      ankle: [46, 97],
-      hand2: [56, 64],
-      ankle2: [52, 97],
-      eb: 1,
-      eb2: 1,
-      kb: -1,
-      kb2: -1,
-      footT: 0
-    }, {
-      hip: [42.4, 81.8],
-      torso: 56,
-      hand: [76, 60],
-      ankle: [46, 97],
-      hand2: [76, 64],
-      ankle2: [88, 78],
-      eb: 1,
-      eb2: 1,
-      kb: -1,
-      kb2: 1,
-      footT: 0
-    }]
-  },
-  lsit: {
-    v: "0 30 110 80",
-    m: "hold",
-    s: 3,
-    p: [{
-      "t": "parallettes",
-      "y": 88,
-      "x1": 44,
-      "x2": 60
-    }],
-    f: [{
-      hip: [50.2, 75],
-      torso: 88,
-      hand: [52, 87],
-      ankle: [96, 73],
-      eb: 1,
-      kb: 1,
-      footT: 10
-    }, {
-      hip: [51.5, 75],
-      torso: 90,
-      hand: [52, 87],
-      ankle: [97, 70],
-      eb: 1,
-      kb: 1,
-      footT: 14
-    }]
-  },
-  hollow: {
-    v: "0 40 110 70",
-    m: "hold",
-    s: 3.2,
-    p: [{
-      "t": "floor",
-      "y": 98
-    }],
-    f: [{
-      hip: [54, 92],
-      torso: 172,
-      hand: [8, 80],
-      ankle: [98, 80],
-      eb: -1,
-      kb: 1,
-      footT: -10
-    }, {
-      hip: [57.3, 92.7],
-      torso: 174,
-      hand: [6, 76],
-      ankle: [100, 76],
-      eb: -1,
-      kb: 1,
-      footT: -8
-    }]
-  },
-  handstand: {
-    v: "26 -16 48 118",
-    m: "hold",
-    s: 3.4,
-    p: [{
-      "t": "floor",
-      "y": 98
-    }],
-    f: [{
-      hip: [47.6, 34.1],
-      torso: -93,
-      hand: [55, 97],
-      ankle: [45, -12],
-      eb: 1,
-      kb: -1,
-      footT: 96
-    }, {
-      hip: [50.4, 33.2],
-      torso: -89,
-      hand: [55, 97],
-      ankle: [51, -13],
-      eb: 1,
-      kb: -1,
-      footT: 92
-    }]
-  },
-  "front-lever": {
-    v: "0 4 110 84",
-    m: "hold",
-    s: 3.2,
-    p: [{
-      "t": "bar",
-      "y": 18,
-      "x1": 56,
-      "x2": 104
-    }],
-    f: [{
-      hip: [54.3, 55.6],
-      torso: 0,
-      hand: [84, 18],
-      ankle: [9, 58],
-      eb: 1,
-      kb: 1,
-      headT: 22,
-      footT: 186
-    }, {
-      hip: [54.2, 54.7],
-      torso: -2,
-      hand: [84, 18],
-      ankle: [9, 62],
-      eb: 1,
-      kb: 1,
-      headT: 20,
-      footT: 184
-    }]
-  },
-  "back-lever": {
-    v: "0 4 110 84",
-    m: "hold",
-    s: 3.2,
-    p: [{
-      "t": "bar",
-      "y": 18,
-      "x1": 56,
-      "x2": 104
-    }],
-    f: [{
-      hip: [54.4, 55.6],
-      torso: 0,
-      hand: [84, 18],
-      ankle: [9, 60],
-      eb: -1,
-      kb: -1,
-      headT: -24,
-      footT: 172
-    }, {
-      hip: [54.1, 56.5],
-      torso: 2,
-      hand: [84, 18],
-      ankle: [9, 56],
-      eb: -1,
-      kb: -1,
-      headT: -22,
-      footT: 174
-    }]
-  },
-  planche: {
-    v: "0 30 116 80",
-    m: "hold",
-    s: 3,
-    p: [{
-      "t": "floor",
-      "y": 98
-    }],
-    f: [{
-      hip: [74, 68],
-      torso: 180,
-      hand: [26, 98],
-      ankle: [112, 66],
-      eb: 1,
-      kb: 1,
-      headT: 26,
-      footT: 10
-    }, {
-      hip: [72.5, 67.3],
-      torso: 178,
-      hand: [26, 98],
-      ankle: [112, 62],
-      eb: 1,
-      kb: 1,
-      headT: 24,
-      footT: 12
-    }]
-  },
-  "running-form": {
-    v: "0 10 100 100",
-    m: "rep",
-    s: 1.1,
-    p: [{
-      "t": "floor",
-      "y": 98
-    }],
-    f: [{
-      hip: [47.3, 59.4],
-      torso: 84,
-      hand: [64, 62],
-      ankle: [40, 97],
-      hand2: [34, 68],
-      ankle2: [64, 80],
-      eb: 1,
-      eb2: -1,
-      kb: -1,
-      kb2: -1,
-      footT: -20
-    }, {
-      hip: [49.5, 56.9],
-      torso: 82,
-      hand: [34, 64],
-      ankle: [62, 92],
-      hand2: [64, 66],
-      ankle2: [36, 74],
-      eb: -1,
-      eb2: 1,
-      kb: -1,
-      kb2: -1,
-      footT: -20
-    }]
-  },
-  "hip-mob": {
-    v: "0 20 110 90",
-    m: "rep",
-    s: 3.4,
-    p: [{
-      "t": "floor",
-      "y": 98
-    }],
-    f: [{
-      hip: [52, 64],
-      torso: 86,
-      hand: [66, 72],
-      ankle: [46, 97],
-      ankle2: [60, 97],
-      eb: 1,
-      kb: -1,
-      kb2: -1,
-      footT: 0
-    }, {
-      hip: [54.3, 67],
-      torso: 80,
-      hand: [70, 74],
-      ankle: [46, 97],
-      ankle2: [96, 86],
-      eb: 1,
-      kb: -1,
-      kb2: 1,
-      footT: 0
-    }]
-  },
-  // ---- Set ampliado: los movimientos que mas aparecen en el plan ----
-  dips: {
-    v: "0 6 100 96",
-    m: "rep",
-    s: 2.8,
-    ph: ["BAJA", "EMPUJA"],
-    p: [{ t: "parallettes", y: 56, x1: 44, x2: 66 }],
-    f: [{ hip: [51, 44], torso: 94, hand: [54, 56], ankle: [36, 78], eb: 1, kb: -1, footT: 235 },
-        { hip: [55, 62], torso: 78, hand: [54, 56], ankle: [40, 94], eb: 1, kb: -1, footT: 235 }]
-  },
-  australian: {
-    v: "0 30 104 74",
-    m: "rep",
-    s: 2.6,
-    ph: ["JALA", "BAJA"],
-    p: [{ t: "parallettes", y: 52, x1: 70, x2: 98 }],
-    f: [{ hip: [59.3, 90.3], torso: 7, hand: [83, 52], ankle: [13, 96], eb: 1, kb: 1, footT: 84 },
-        { hip: [54, 74], torso: 29, hand: [83, 52], ankle: [13, 96], eb: 1, kb: 1, footT: 84 }]
-  },
-  hang: {
-    v: "0 0 100 118",
-    m: "hold",
-    s: 3.6,
-    p: [{ t: "bar", y: 12, x1: 28, x2: 92 }],
-    f: [{ hip: [62, 75.5], torso: 94, hand: [60, 12], ankle: [58, 114], eb: 1, kb: -1, footT: -80 },
-        { hip: [62.4, 75.5], torso: 95, hand: [60, 12], ankle: [57, 114], eb: 1, kb: -1, footT: -80 }]
-  },
-  "scap-pull": {
-    v: "0 0 100 118",
-    m: "rep",
-    s: 2.4,
-    ph: ["HOMBROS ABAJO", "SUELTA"],
-    p: [{ t: "bar", y: 12, x1: 28, x2: 92 }],
-    f: [{ hip: [62, 75.5], torso: 94, hand: [60, 12], ankle: [58, 114], eb: 1, kb: -1, headT: 0, footT: -80 },
-        { hip: [63, 70.5], torso: 100, hand: [60, 12], ankle: [58, 109], eb: 1, kb: -1, headT: -8, footT: -80 }]
-  },
-  "knee-raise": {
-    v: "0 0 100 118",
-    m: "rep",
-    s: 2.8,
-    ph: ["SUBE RODILLAS", "BAJA LENTO"],
-    p: [{ t: "bar", y: 12, x1: 28, x2: 92 }],
-    f: [{ hip: [62, 75.5], torso: 94, hand: [60, 12], ankle: [58, 114], eb: 1, kb: -1, footT: -80 },
-        { hip: [64, 74], torso: 102, hand: [60, 12], ankle: [70, 94], eb: 1, kb: -1, footT: -60 }]
-  },
-  lunge: {
-    v: "0 16 100 90",
-    m: "rep",
-    s: 3,
-    ph: ["BAJA", "SUBE"],
-    p: [{ t: "floor", y: 98 }],
-    f: [{ hip: [46, 56], torso: 88, hand: [52, 62], ankle: [64, 97], ankle2: [26, 97], eb: 1, kb: -1, kb2: -1, footT: 0 },
-        { hip: [44, 72], torso: 86, hand: [50, 78], ankle: [66, 97], ankle2: [24, 97], eb: 1, kb: -1, kb2: -1, footT: 0 }]
-  },
-  bulgarian: {
-    v: "0 16 100 90",
-    m: "rep",
-    s: 3.2,
-    ph: ["BAJA", "SUBE"],
-    p: [{ t: "box", y: 80, x1: 6, x2: 28 }],
-    f: [{ hip: [46, 55], torso: 86, hand: [52, 61], ankle: [64, 97], ankle2: [22, 80], eb: 1, kb: -1, kb2: -1, footT: 0 },
-        { hip: [44, 71], torso: 80, hand: [52, 76], ankle: [66, 97], ankle2: [22, 80], eb: 1, kb: -1, kb2: -1, footT: 0 }]
-  },
-  "step-up": {
-    v: "0 -2 110 104",
-    m: "rep",
-    s: 3,
-    ph: ["SUBE", "BAJA"],
-    p: [{ t: "box", y: 78, x1: 52, x2: 86 }],
-    f: [{ hip: [42, 56], torso: 84, hand: [48, 64], ankle: [64, 77], ankle2: [40, 97], eb: 1, kb: -1, kb2: -1, footT: 0 },
-        { hip: [64, 35], torso: 90, hand: [68, 42], ankle: [64, 77], ankle2: [58, 70], eb: 1, kb: -1, kb2: 1, footT: 0 }]
-  },
-  "mountain-climber": {
-    v: "-4 30 104 76",
-    m: "rep",
-    s: 1.2,
-    ph: ["RODILLA", "CAMBIA"],
-    p: [{ t: "floor", y: 98 }],
-    f: [{ hip: [51, 73], torso: 30, hand: [76, 98], ankle: [10, 96], ankle2: [48, 92], eb: -1, kb: -1, kb2: -1, footT: 212 },
-        { hip: [51, 73], torso: 30, hand: [76, 98], ankle: [48, 92], ankle2: [10, 96], eb: -1, kb: -1, kb2: -1, footT: 212 }]
-  },
-  burpee: {
-    v: "-6 -12 112 114",
-    m: "rep",
-    s: 3.6,
-    d: 0.04,
-    ph: ["ABAJO", "SALTA"],
-    p: [{ t: "floor", y: 98 }],
-    f: [{ hip: [50, 46], torso: 90, hand: [52, -17], ankle: [50, 88], eb: 1, kb: -1, footT: -70 },
-        { hip: [44, 80], torso: 42, hand: [68, 97], ankle: [48, 97], eb: 1, kb: -1, footT: 0 },
-        { hip: [42, 74.6], torso: 32, hand: [67, 98], ankle: [2, 97], eb: -1, kb: 1, footT: 212 }]
-  },
-  jump: {
-    v: "0 -12 100 112",
-    m: "rep",
-    s: 1.8,
-    ph: ["CARGA", "EXPLOTA"],
-    p: [{ t: "floor", y: 98 }],
-    f: [{ hip: [44, 76], torso: 56, hand: [30, 84], ankle: [48, 97], eb: 1, kb: -1, footT: 0 },
-        { hip: [50, 44], torso: 88, hand: [56, -19], ankle: [50, 88], eb: 1, kb: -1, footT: -70 }]
-  },
-  rope: {
-    v: "0 10 100 96",
-    m: "rep",
-    s: 0.55,
-    d: 0,
-    p: [{ t: "floor", y: 98 }],
-    f: [{ hip: [48, 55], torso: 90, hand: [62, 66], ankle: [48, 97], eb: 1, kb: -1, footT: 0 },
-        { hip: [48, 50], torso: 90, hand: [62, 61], ankle: [48, 92], eb: 1, kb: -1, footT: -60 }]
-  },
-  bridge: {
-    v: "0 40 100 64",
-    m: "rep",
-    s: 3,
-    ph: ["SUBE CADERA", "BAJA"],
-    p: [{ t: "floor", y: 98 }],
-    f: [{ hip: [54, 93], torso: 180, hand: [68, 96], ankle: [76, 97], eb: 1, kb: -1, headT: 0, footT: 0 },
-        { hip: [54, 76], torso: 212, hand: [68, 96], ankle: [76, 97], eb: 1, kb: -1, headT: -26, footT: 0 }]
-  },
-  fold: {
-    v: "0 16 100 90",
-    m: "rep",
-    s: 4,
-    d: 0.2,
-    ph: ["BISAGRA", "SUBE"],
-    p: [{ t: "floor", y: 98 }],
-    f: [{ hip: [48, 54], torso: 90, hand: [52, 90], ankle: [48, 97], eb: 1, kb: -1, footT: 0 },
-        { hip: [40, 55], torso: -72, hand: [56, 95], ankle: [48, 97], eb: 1, kb: -1, headT: 10, footT: 0 }]
-  },
-  "tuck-planche": {
-    v: "0 30 110 80",
-    m: "hold",
-    s: 3,
-    p: [{ t: "floor", y: 98 }],
-    f: [{ hip: [60, 62], torso: 176, hand: [42, 98], ankle: [66, 84], eb: 1, kb: 1, headT: 12, footT: 10 },
-        { hip: [60, 61], torso: 175, hand: [42, 98], ankle: [66, 83], eb: 1, kb: 1, headT: 10, footT: 10 }]
-  },
-  "tuck-fl": {
-    v: "0 4 110 84",
-    m: "hold",
-    s: 3.2,
-    p: [{ t: "bar", y: 18, x1: 56, x2: 104 }],
-    f: [{ hip: [58.3, 57.7], torso: 4, hand: [84, 18], ankle: [54.3, 50.8], eb: 1, kb: 1, headT: 22, footT: 170 },
-        { hip: [58.3, 57.2], torso: 3, hand: [84, 18], ankle: [54.3, 50.3], eb: 1, kb: 1, headT: 20, footT: 170 }]
-  },
-  hspu: {
-    v: "22 -16 56 118",
-    m: "rep",
-    s: 3.2,
-    ph: ["BAJA", "EMPUJA"],
-    p: [{ t: "floor", y: 98 }],
-    f: [{ hip: [47.6, 34.1], torso: -93, hand: [55, 97], ankle: [45, -12], eb: 1, kb: -1, headT: 0, footT: 90 },
-        { hip: [44, 52], torso: -98, hand: [55, 97], ankle: [41, 6], eb: 1, kb: -1, headT: 0, footT: 90 }]
-  },
-  "arm-circle": {
-    v: "0 -14 100 116",
-    m: "rep",
-    s: 3.4,
-    d: 0.05,
-    ph: ["ARRIBA", "ATRÁS"],
-    p: [{ t: "floor", y: 98 }],
-    f: [{ hip: [48, 54], torso: 90, hand: [61, 63.7], ankle: [48, 97], eb: 1, kb: -1, footT: 0 },
-        { hip: [48, 54], torso: 90, hand: [85.4, 34.6], ankle: [48, 97], eb: 1, kb: -1, footT: 0 },
-        { hip: [48, 54], torso: 90, hand: [72.4, -1.1], ankle: [48, 97], eb: 1, kb: -1, footT: 0 },
-        { hip: [48, 54], torso: 90, hand: [41.4, -9.4], ankle: [48, 97], eb: 1, kb: -1, footT: 0 },
-        { hip: [48, 54], torso: 90, hand: [14.6, 9.8], ankle: [48, 97], eb: 1, kb: -1, footT: 0 },
-        { hip: [48, 54], torso: 90, hand: [16.4, 50.8], ankle: [48, 97], eb: 1, kb: -1, footT: 0 }]
-  },
-  "planche-lean": {
-    v: "0 30 110 80",
-    m: "rep",
-    s: 3.4,
-    d: 0.2,
-    ph: ["INCLINA", "REGRESA"],
-    p: [{ t: "floor", y: 98 }],
-    f: [{ hip: [50.9, 74.6], torso: 32, hand: [72, 98], ankle: [11, 97], eb: -1, kb: 1, footT: 212 },
-        { hip: [62, 77], torso: 26, hand: [72, 98], ankle: [20, 97], eb: -1, kb: 1, footT: 200 }]
+ "plank": {
+  "m": "hold",
+  "s": 3.2,
+  "p": [
+   {
+    "t": "floor",
+    "y": 98
+   }
+  ],
+  "f": [
+   {
+    "hip": [
+     52.5,
+     74.2
+    ],
+    "torso": 24.6,
+    "hand": [
+     76.0,
+     95.5
+    ],
+    "ankle": [
+     11.6,
+     93.0
+    ],
+    "eb": 1,
+    "kb": 1,
+    "footT": 235
+   },
+   {
+    "hip": [
+     52.5,
+     74.2
+    ],
+    "torso": 25.2,
+    "hand": [
+     76.0,
+     95.5
+    ],
+    "ankle": [
+     11.6,
+     93.0
+    ],
+    "eb": 1,
+    "kb": 1,
+    "footT": 235
+   }
+  ],
+  "g": [
+   {
+    "t": "line",
+    "j": [
+     "ankle",
+     "shoulder"
+    ],
+    "l": "LÍNEA RECTA"
+   },
+   {
+    "t": "plumb",
+    "j": "shoulder",
+    "l": "HOMBRO SOBRE MANO"
+   }
+  ],
+  "st": [
+   "Hombros encima de las manos; empuja el suelo y separa los omóplatos",
+   "Aprieta glúteos y abdomen: talón, cadera y cabeza en una línea"
+  ],
+  "bad": {
+   "n": "Cadera caída (espalda baja cargada)",
+   "fix": "Mete la pelvis y aprieta glúteos",
+   "f": [
+    {
+     "hip": [
+      56.0,
+      79.8
+     ],
+     "torso": 39.1,
+     "hand": [
+      76.0,
+      95.5
+     ],
+     "ankle": [
+      13.0,
+      93.0
+     ],
+     "eb": 1,
+     "kb": 1,
+     "footT": 235
+    },
+    {
+     "hip": [
+      56.4,
+      80.2
+     ],
+     "torso": 40.5,
+     "hand": [
+      76.0,
+      95.5
+     ],
+     "ankle": [
+      13.2,
+      93.0
+     ],
+     "eb": 1,
+     "kb": 1,
+     "footT": 235
+    }
+   ]
   }
+ },
+ "push-up": {
+  "m": "rep",
+  "s": 2.8,
+  "p": [
+   {
+    "t": "floor",
+    "y": 98
+   }
+  ],
+  "f": [
+   {
+    "hip": [
+     52.5,
+     74.2
+    ],
+    "torso": 24.6,
+    "hand": [
+     76.0,
+     95.5
+    ],
+    "ankle": [
+     11.6,
+     93.0
+    ],
+    "eb": 1,
+    "kb": 1,
+    "footT": 235
+   },
+   {
+    "hip": [
+     56.1,
+     86.3
+    ],
+    "torso": 8.5,
+    "hand": [
+     76,
+     95.5
+    ],
+    "ankle": [
+     11.6,
+     93.0
+    ],
+    "eb": 1,
+    "kb": 1,
+    "footT": 235
+   }
+  ],
+  "ph": [
+   "BAJA 2-3 s",
+   "EMPUJA"
+  ],
+  "g": [
+   {
+    "t": "line",
+    "j": [
+     "ankle",
+     "shoulder"
+    ]
+   },
+   {
+    "t": "ang",
+    "j": [
+     "shoulder",
+     "elbow",
+     "hand"
+    ],
+    "on": "end"
+   },
+   {
+    "t": "arr",
+    "j": "shoulder",
+    "a": -90,
+    "on": "a"
+   },
+   {
+    "t": "arr",
+    "j": "shoulder",
+    "a": 90,
+    "on": "b"
+   }
+  ],
+  "st": [
+   "Baja el cuerpo EN BLOQUE hasta que el pecho casi toque; codos a 45° hacia atrás",
+   "Empuja el suelo hasta brazos rectos sin que la cadera se quede abajo"
+  ],
+  "bad": {
+   "n": "Cadera caída: baja primero la panza",
+   "fix": "Glúteos apretados, todo el cuerpo baja junto",
+   "f": [
+    {
+     "hip": [
+      55.6,
+      79.3
+     ],
+     "torso": 37.7,
+     "hand": [
+      76.0,
+      95.5
+     ],
+     "ankle": [
+      12.7,
+      93.0
+     ],
+     "eb": 1,
+     "kb": 1,
+     "footT": 235
+    },
+    {
+     "hip": [
+      57.7,
+      91.9
+     ],
+     "torso": 21.4,
+     "hand": [
+      76,
+      95.5
+     ],
+     "ankle": [
+      12.7,
+      93.0
+     ],
+     "eb": 1,
+     "kb": 1,
+     "footT": 235
+    }
+   ]
+  }
+ },
+ "archer": {
+  "m": "rep",
+  "s": 3.2,
+  "p": [
+   {
+    "t": "floor",
+    "y": 98
+   }
+  ],
+  "f": [
+   {
+    "hip": [
+     48.5,
+     74.2
+    ],
+    "torso": 24.6,
+    "hand": [
+     72.0,
+     95.5
+    ],
+    "ankle": [
+     7.6,
+     93.0
+    ],
+    "hand2": [
+     81.8,
+     93.7
+    ],
+    "eb": 1,
+    "kb": 1,
+    "eb2": 1,
+    "footT": 235
+   },
+   {
+    "hip": [
+     52.1,
+     86.3
+    ],
+    "torso": 8.5,
+    "hand": [
+     72,
+     95.5
+    ],
+    "ankle": [
+     7.6,
+     93.0
+    ],
+    "hand2": [
+     106.7,
+     95.5
+    ],
+    "eb": 1,
+    "kb": 1,
+    "eb2": 1,
+    "footT": 235
+   }
+  ],
+  "ph": [
+   "BAJA AL LADO",
+   "EMPUJA"
+  ],
+  "g": [
+   {
+    "t": "line",
+    "j": [
+     "ankle",
+     "shoulder"
+    ]
+   },
+   {
+    "t": "ang",
+    "j": [
+     "shoulder",
+     "elbow",
+     "hand"
+    ],
+    "on": "end"
+   }
+  ],
+  "st": [
+   "Un brazo dobla y carga el peso; el otro se estira recto al costado",
+   "El brazo recto solo apoya el talón de la mano: no empujes con él"
+  ]
+ },
+ "oapu": {
+  "m": "rep",
+  "s": 3.4,
+  "p": [
+   {
+    "t": "floor",
+    "y": 98
+   }
+  ],
+  "f": [
+   {
+    "hip": [
+     50.5,
+     74.2
+    ],
+    "torso": 24.6,
+    "hand": [
+     74.0,
+     95.5
+    ],
+    "ankle": [
+     9.6,
+     93.0
+    ],
+    "hand2": [
+     56.5,
+     68.2
+    ],
+    "eb": 1,
+    "kb": 1,
+    "eb2": 1,
+    "footT": 235
+   },
+   {
+    "hip": [
+     54.1,
+     86.3
+    ],
+    "torso": 8.5,
+    "hand": [
+     74,
+     95.5
+    ],
+    "ankle": [
+     9.6,
+     93.0
+    ],
+    "hand2": [
+     60.1,
+     80.3
+    ],
+    "eb": 1,
+    "kb": 1,
+    "eb2": 1,
+    "footT": 235
+   }
+  ],
+  "ph": [
+   "BAJA",
+   "EMPUJA"
+  ],
+  "g": [
+   {
+    "t": "line",
+    "j": [
+     "ankle",
+     "shoulder"
+    ]
+   },
+   {
+    "t": "ang",
+    "j": [
+     "shoulder",
+     "elbow",
+     "hand"
+    ],
+    "on": "end"
+   }
+  ],
+  "st": [
+   "Piernas abiertas, escápula abajo y activa",
+   "Codo pegado apuntando atrás; algo de giro del tronco es normal"
+  ]
+ },
+ "pike-push": {
+  "m": "rep",
+  "s": 2.8,
+  "p": [
+   {
+    "t": "floor",
+    "y": 98
+   }
+  ],
+  "f": [
+   {
+    "hip": [
+     41.7,
+     52.2
+    ],
+    "torso": 311.5,
+    "hand": [
+     80,
+     95.5
+    ],
+    "ankle": [
+     24,
+     93.0
+    ],
+    "eb": 1,
+    "kb": -1,
+    "footT": 235
+   },
+   {
+    "hip": [
+     43.7,
+     57.2
+    ],
+    "torso": -33.4,
+    "hand": [
+     80,
+     95.5
+    ],
+    "ankle": [
+     24,
+     93.0
+    ],
+    "eb": 1,
+    "kb": 1,
+    "footT": 235
+   }
+  ],
+  "ph": [
+   "CABEZA ADELANTE",
+   "EMPUJA"
+  ],
+  "g": [
+   {
+    "t": "ang",
+    "j": [
+     "shoulder",
+     "elbow",
+     "hand"
+    ],
+    "on": "end"
+   },
+   {
+    "t": "arr",
+    "j": "neck",
+    "a": -60,
+    "on": "a"
+   }
+  ],
+  "st": [
+   "Cadera alta en V; baja la cabeza por delante de las manos (triángulo)",
+   "Codos a 45°; empuja hasta alinear brazos y espalda"
+  ]
+ },
+ "hang": {
+  "m": "hold",
+  "s": 3.6,
+  "p": [
+   {
+    "t": "bar",
+    "y": 12,
+    "x1": 34,
+    "x2": 90
+   }
+  ],
+  "f": [
+   {
+    "hip": [
+     59.5,
+     72.2
+    ],
+    "torso": 96,
+    "hand": [
+     62.0,
+     12.0
+    ],
+    "ankle": [
+     64.2,
+     116.9
+    ],
+    "eb": 1,
+    "kb": 1,
+    "footT": -70,
+    "sh": 3
+   },
+   {
+    "hip": [
+     59.5,
+     72.5
+    ],
+    "torso": 96,
+    "hand": [
+     62.0,
+     12.0
+    ],
+    "ankle": [
+     64.2,
+     117.2
+    ],
+    "eb": 1,
+    "kb": 1,
+    "footT": -70,
+    "sh": 3.3
+   }
+  ],
+  "g": [
+   {
+    "t": "arr",
+    "j": "shoulder",
+    "a": 90,
+    "l": "HOMBROS A LAS OREJAS"
+   }
+  ],
+  "st": [
+   "Brazos totalmente rectos; en pasivo los hombros suben a las orejas",
+   "Respira lento, sin columpiarte; pulgar alrededor de la barra"
+  ]
+ },
+ "scap-pull": {
+  "m": "rep",
+  "s": 2.6,
+  "d": 0.15,
+  "p": [
+   {
+    "t": "bar",
+    "y": 12,
+    "x1": 34,
+    "x2": 90
+   }
+  ],
+  "f": [
+   {
+    "hip": [
+     59.5,
+     72.2
+    ],
+    "torso": 96,
+    "hand": [
+     62.0,
+     12.0
+    ],
+    "ankle": [
+     64.2,
+     116.9
+    ],
+    "eb": 1,
+    "kb": 1,
+    "footT": -70,
+    "sh": 3
+   },
+   {
+    "hip": [
+     58.8,
+     66.2
+    ],
+    "torso": 96,
+    "hand": [
+     62.0,
+     12.0
+    ],
+    "ankle": [
+     63.5,
+     110.9
+    ],
+    "eb": 1,
+    "kb": 1,
+    "footT": -70,
+    "sh": -3
+   }
+  ],
+  "ph": [
+   "HOMBROS ABAJO",
+   "SUELTA"
+  ],
+  "g": [
+   {
+    "t": "ang",
+    "j": [
+     "shoulder",
+     "elbow",
+     "hand"
+    ]
+   },
+   {
+    "t": "arr",
+    "j": "shoulder",
+    "a": -90,
+    "on": "a"
+   }
+  ],
+  "st": [
+   "Sin doblar los codos: hunde los hombros y el cuerpo sube unos cm",
+   "Regresa lento a colgado pasivo"
+  ],
+  "bad": {
+   "n": "Doblar los codos (se vuelve una mini dominada)",
+   "fix": "Codos bloqueados: solo se mueven los omóplatos",
+   "f": [
+    {
+     "hip": [
+      59.5,
+      72.2
+     ],
+     "torso": 96,
+     "hand": [
+      62.0,
+      12.0
+     ],
+     "ankle": [
+      64.2,
+      116.9
+     ],
+     "eb": 1,
+     "kb": 1,
+     "footT": -70,
+     "sh": 3
+    },
+    {
+     "hip": [
+      60.1,
+      62.8
+     ],
+     "torso": 96.8,
+     "hand": [
+      62,
+      12
+     ],
+     "ankle": [
+      66.4,
+      107.3
+     ],
+     "eb": 1,
+     "kb": 1,
+     "footT": -70
+    }
+   ]
+  }
+ },
+ "pullup": {
+  "m": "rep",
+  "s": 2.8,
+  "p": [
+   {
+    "t": "bar",
+    "y": 12,
+    "x1": 34,
+    "x2": 90
+   }
+  ],
+  "f": [
+   {
+    "hip": [
+     58.3,
+     69.7
+    ],
+    "torso": 94,
+    "hand": [
+     62,
+     12
+    ],
+    "ankle": [
+     63.0,
+     114.5
+    ],
+    "eb": 1,
+    "kb": 1,
+    "footT": -70
+   },
+   {
+    "hip": [
+     63.4,
+     49.7
+    ],
+    "torso": 102,
+    "hand": [
+     62,
+     12
+    ],
+    "ankle": [
+     72.7,
+     93.8
+    ],
+    "eb": 1,
+    "kb": 1,
+    "footT": -70
+   }
+  ],
+  "ph": [
+   "JALA",
+   "BAJA LENTO"
+  ],
+  "g": [
+   {
+    "t": "ang",
+    "j": [
+     "shoulder",
+     "elbow",
+     "hand"
+    ],
+    "on": "start"
+   },
+   {
+    "t": "hbar",
+    "y": 12,
+    "on": "end",
+    "l": "BARBILLA ARRIBA"
+   },
+   {
+    "t": "arr",
+    "j": "hip",
+    "a": 90,
+    "on": "a"
+   }
+  ],
+  "st": [
+   "Desde brazos RECTOS: hombros abajo y lleva los codos hacia las costillas",
+   "Barbilla sobre la barra; baja controlado hasta extender por completo"
+  ],
+  "bad": {
+   "n": "Medio rango: nunca extiende los brazos",
+   "fix": "Cada rep empieza y termina colgado con brazos rectos",
+   "f": [
+    {
+     "hip": [
+      60.6,
+      60.8
+     ],
+     "torso": 97.6,
+     "hand": [
+      62,
+      12
+     ],
+     "ankle": [
+      67.4,
+      105.3
+     ],
+     "eb": 1,
+     "kb": 1,
+     "footT": -70
+    },
+    {
+     "hip": [
+      63.4,
+      49.7
+     ],
+     "torso": 102,
+     "hand": [
+      62,
+      12
+     ],
+     "ankle": [
+      72.7,
+      93.8
+     ],
+     "eb": 1,
+     "kb": 1,
+     "footT": -70
+    }
+   ]
+  }
+ },
+ "neg-pull": {
+  "m": "rep",
+  "s": 5,
+  "d": 0.12,
+  "p": [
+   {
+    "t": "bar",
+    "y": 12,
+    "x1": 34,
+    "x2": 90
+   }
+  ],
+  "f": [
+   {
+    "hip": [
+     63.4,
+     49.7
+    ],
+    "torso": 102,
+    "hand": [
+     62,
+     12
+    ],
+    "ankle": [
+     72.7,
+     93.8
+    ],
+    "eb": 1,
+    "kb": 1,
+    "footT": -70
+   },
+   {
+    "hip": [
+     58.3,
+     69.7
+    ],
+    "torso": 94,
+    "hand": [
+     62,
+     12
+    ],
+    "ankle": [
+     63.0,
+     114.5
+    ],
+    "eb": 1,
+    "kb": 1,
+    "footT": -70
+   }
+  ],
+  "ph": [
+   "BAJA 3-5 s",
+   "SUBE (salto)"
+  ],
+  "g": [
+   {
+    "t": "arr",
+    "j": "hip",
+    "a": -90,
+    "on": "a"
+   },
+   {
+    "t": "hbar",
+    "y": 12,
+    "on": "start"
+   }
+  ],
+  "st": [
+   "Empieza arriba (salta o usa un banco) y baja lo más LENTO posible",
+   "Resiste hasta brazos rectos; vuelve a subir con ayuda"
+  ]
+ },
+ "muscle-up": {
+  "m": "rep",
+  "s": 3.8,
+  "d": 0.05,
+  "p": [
+   {
+    "t": "bar",
+    "y": 12,
+    "x1": 34,
+    "x2": 90
+   }
+  ],
+  "f": [
+   {
+    "hip": [
+     58.3,
+     69.7
+    ],
+    "torso": 94,
+    "hand": [
+     62,
+     12
+    ],
+    "ankle": [
+     63.0,
+     114.5
+    ],
+    "eb": 1,
+    "kb": 1,
+    "footT": -70
+   },
+   {
+    "hip": [
+     66.4,
+     49.7
+    ],
+    "torso": 102,
+    "hand": [
+     62,
+     12
+    ],
+    "ankle": [
+     72.7,
+     93.8
+    ],
+    "eb": 1,
+    "kb": 1,
+    "footT": -70
+   },
+   {
+    "hip": [
+     57.2,
+     32.2
+    ],
+    "torso": 70,
+    "hand": [
+     62,
+     12
+    ],
+    "ankle": [
+     70.7,
+     75.1
+    ],
+    "eb": -1,
+    "kb": 1,
+    "footT": -60
+   },
+   {
+    "hip": [
+     59.8,
+     5.7
+    ],
+    "torso": 85,
+    "hand": [
+     62.0,
+     12.0
+    ],
+    "ankle": [
+     66.0,
+     50.3
+    ],
+    "eb": 1,
+    "kb": 1,
+    "footT": -60
+   }
+  ],
+  "ph": [
+   "JALA ALTO Y PASA",
+   "BAJA"
+  ],
+  "g": [
+   {
+    "t": "hbar",
+    "y": 12
+   }
+  ],
+  "st": [
+   "Jalón explosivo a la cadera (no a la barbilla) y echa el pecho sobre la barra",
+   "Pasa los codos rápido y empuja hasta brazos rectos arriba"
+  ]
+ },
+ "knee-raise": {
+  "m": "rep",
+  "s": 3,
+  "p": [
+   {
+    "t": "bar",
+    "y": 12,
+    "x1": 34,
+    "x2": 90
+   }
+  ],
+  "f": [
+   {
+    "hip": [
+     61.6,
+     69.7
+    ],
+    "torso": 94,
+    "hand": [
+     62.0,
+     12.0
+    ],
+    "ankle": [
+     66.3,
+     114.4
+    ],
+    "eb": 1,
+    "kb": -1,
+    "footT": -70
+   },
+   {
+    "hip": [
+     63.1,
+     69.2
+    ],
+    "torso": 100,
+    "hand": [
+     62.0,
+     12.0
+    ],
+    "ankle": [
+     89.5,
+     86.1
+    ],
+    "eb": 1,
+    "kb": -1,
+    "footT": -60
+   }
+  ],
+  "ph": [
+   "RODILLAS AL PECHO",
+   "BAJA LENTO"
+  ],
+  "g": [
+   {
+    "t": "arr",
+    "j": "knee",
+    "a": 70,
+    "on": "a"
+   }
+  ],
+  "st": [
+   "Enrolla la pelvis y sube las rodillas por encima de la cadera",
+   "Baja en 2-3 s sin columpiarte"
+  ],
+  "bad": {
+   "n": "Columpiarse con impulso",
+   "fix": "Pausa abajo, abdomen firme antes de subir",
+   "f": [
+    {
+     "hip": [
+      60.3,
+      69.3
+     ],
+     "torso": 80,
+     "hand": [
+      62.0,
+      12.0
+     ],
+     "ankle": [
+      52.5,
+      113.6
+     ],
+     "eb": 1,
+     "kb": -1,
+     "footT": -70
+    },
+    {
+     "hip": [
+      65.3,
+      67.8
+     ],
+     "torso": 110,
+     "hand": [
+      62.0,
+      12.0
+     ],
+     "ankle": [
+      86.7,
+      104.2
+     ],
+     "eb": 1,
+     "kb": -1,
+     "footT": -60
+    }
+   ]
+  }
+ },
+ "dips": {
+  "m": "rep",
+  "s": 3,
+  "p": [
+   {
+    "t": "parallettes",
+    "y": 58,
+    "x1": 44,
+    "x2": 66
+   }
+  ],
+  "f": [
+   {
+    "hip": [
+     52.2,
+     51.7
+    ],
+    "torso": 86,
+    "hand": [
+     54.0,
+     58.0
+    ],
+    "ankle": [
+     28.3,
+     83.7
+    ],
+    "eb": 1,
+    "kb": -1,
+    "footT": 235
+   },
+   {
+    "hip": [
+     56.9,
+     65.8
+    ],
+    "torso": 62,
+    "hand": [
+     54,
+     58
+    ],
+    "ankle": [
+     21.9,
+     81.6
+    ],
+    "eb": 1,
+    "kb": -1,
+    "footT": 235
+   }
+  ],
+  "ph": [
+   "BAJA",
+   "EMPUJA"
+  ],
+  "g": [
+   {
+    "t": "ang",
+    "j": [
+     "shoulder",
+     "elbow",
+     "hand"
+    ],
+    "on": "end"
+   },
+   {
+    "t": "arr",
+    "j": "shoulder",
+    "a": -90,
+    "on": "a"
+   }
+  ],
+  "st": [
+   "Inclina el torso adelante y baja hasta codo a 90°, codos hacia ATRÁS",
+   "Empuja hasta bloquear; hombros lejos de las orejas"
+  ],
+  "bad": {
+   "n": "Bajar de más: hombro por debajo del codo",
+   "fix": "Para en 90° (hombro a la altura del codo)",
+   "f": [
+    {
+     "hip": [
+      52.2,
+      51.7
+     ],
+     "torso": 86,
+     "hand": [
+      54.0,
+      58.0
+     ],
+     "ankle": [
+      28.3,
+      83.7
+     ],
+     "eb": 1,
+     "kb": -1,
+     "footT": 235
+    },
+    {
+     "hip": [
+      51.2,
+      81.1
+     ],
+     "torso": 55,
+     "hand": [
+      54,
+      58
+     ],
+     "ankle": [
+      12.2,
+      81.6
+     ],
+     "eb": 1,
+     "kb": -1,
+     "footT": 235
+    }
+   ]
+  }
+ },
+ "australian": {
+  "m": "rep",
+  "s": 2.8,
+  "p": [
+   {
+    "t": "parallettes",
+    "y": 56,
+    "x1": 70,
+    "x2": 98
+   }
+  ],
+  "f": [
+   {
+    "hip": [
+     57.3,
+     89.4
+    ],
+    "torso": 3.9,
+    "hand": [
+     84,
+     56
+    ],
+    "ankle": [
+     12.4,
+     92.5
+    ],
+    "eb": 1,
+    "kb": 1,
+    "footT": 80
+   },
+   {
+    "hip": [
+     54.0,
+     75.3
+    ],
+    "torso": 22.4,
+    "hand": [
+     84,
+     56
+    ],
+    "ankle": [
+     12.4,
+     92.5
+    ],
+    "eb": 1,
+    "kb": 1,
+    "footT": 80
+   }
+  ],
+  "ph": [
+   "PECHO A LA BARRA",
+   "BAJA"
+  ],
+  "g": [
+   {
+    "t": "line",
+    "j": [
+     "ankle",
+     "shoulder"
+    ],
+    "l": "CUERPO RECTO"
+   },
+   {
+    "t": "arr",
+    "j": "shoulder",
+    "a": 75,
+    "on": "a"
+   }
+  ],
+  "st": [
+   "Cuerpo recto como plancha; jala el PECHO (no la barbilla) a la barra",
+   "Aprieta omóplatos 1 s arriba y baja hasta brazos rectos"
+  ],
+  "bad": {
+   "n": "Cadera caída",
+   "fix": "Glúteos apretados: talón-cadera-hombro en línea",
+   "f": [
+    {
+     "hip": [
+      58.2,
+      94.8
+     ],
+     "torso": 15.9,
+     "hand": [
+      84,
+      56
+     ],
+     "ankle": [
+      13.6,
+      88.4
+     ],
+     "eb": 1,
+     "kb": 1,
+     "footT": 80
+    },
+    {
+     "hip": [
+      56.5,
+      80.1
+     ],
+     "torso": 34.4,
+     "hand": [
+      84,
+      56
+     ],
+     "ankle": [
+      12.3,
+      88.2
+     ],
+     "eb": 1,
+     "kb": 1,
+     "footT": 80
+    }
+   ]
+  }
+ },
+ "deep-squat": {
+  "m": "rep",
+  "s": 3.4,
+  "p": [
+   {
+    "t": "floor",
+    "y": 98
+   }
+  ],
+  "f": [
+   {
+    "hip": [
+     50.0,
+     50.5
+    ],
+    "torso": 90,
+    "hand": [
+     50.0,
+     56.7
+    ],
+    "ankle": [
+     50.0,
+     95.5
+    ],
+    "eb": 1,
+    "kb": -1,
+    "footT": 0
+   },
+   {
+    "hip": [
+     36.3,
+     59.4
+    ],
+    "torso": 73.0,
+    "hand": [
+     66.9,
+     57.0
+    ],
+    "ankle": [
+     50.0,
+     95.5
+    ],
+    "eb": 1,
+    "kb": -1,
+    "footT": 0
+   },
+   {
+    "hip": [
+     35.7,
+     79.9
+    ],
+    "torso": 56,
+    "hand": [
+     82.2,
+     57.4
+    ],
+    "ankle": [
+     50.0,
+     95.5
+    ],
+    "eb": 1,
+    "kb": -1,
+    "footT": 0
+   }
+  ],
+  "ph": [
+   "SIÉNTATE",
+   "SUBE"
+  ],
+  "g": [
+   {
+    "t": "plumb",
+    "j": "knee",
+    "on": "end",
+    "l": "RODILLA SOBRE PIE"
+   },
+   {
+    "t": "ang",
+    "j": [
+     "hip",
+     "knee",
+     "ankle"
+    ],
+    "on": "end"
+   },
+   {
+    "t": "arr",
+    "j": "hip",
+    "a": -115,
+    "on": "a"
+   }
+  ],
+  "st": [
+   "Cadera atrás y abajo, pecho arriba, talones pegados al suelo",
+   "Baja hasta cadera bajo la rodilla y sube empujando el suelo"
+  ],
+  "bad": {
+   "n": "Talones levantados y torso colapsado",
+   "fix": "Peso en todo el pie; si no llegas, abre un poco la postura",
+   "f": [
+    {
+     "hip": [
+      50.0,
+      50.5
+     ],
+     "torso": 90,
+     "hand": [
+      50.0,
+      56.7
+     ],
+     "ankle": [
+      50.0,
+      95.5
+     ],
+     "eb": 1,
+     "kb": -1,
+     "footT": 0
+    },
+    {
+     "hip": [
+      36.3,
+      55.4
+     ],
+     "torso": 73.0,
+     "hand": [
+      66.9,
+      53.0
+     ],
+     "ankle": [
+      50.0,
+      91.5
+     ],
+     "eb": 1,
+     "kb": -1,
+     "footT": -30
+    },
+    {
+     "hip": [
+      41.5,
+      78.6
+     ],
+     "torso": 30,
+     "hand": [
+      79.8,
+      93.5
+     ],
+     "ankle": [
+      50.0,
+      91.5
+     ],
+     "eb": 1,
+     "kb": -1,
+     "footT": -30
+    }
+   ]
+  }
+ },
+ "pistol": {
+  "m": "rep",
+  "s": 3.8,
+  "p": [
+   {
+    "t": "floor",
+    "y": 98
+   }
+  ],
+  "f": [
+   {
+    "hip": [
+     46.0,
+     50.5
+    ],
+    "torso": 88,
+    "hand": [
+     78.8,
+     27.5
+    ],
+    "ankle": [
+     46.0,
+     95.5
+    ],
+    "ankle2": [
+     61.7,
+     87.2
+    ],
+    "eb": 1,
+    "kb": -1,
+    "kb2": -1,
+    "footT": 0
+   },
+   {
+    "hip": [
+     32.6,
+     59.9
+    ],
+    "torso": 69.0,
+    "hand": [
+     73.9,
+     37.2
+    ],
+    "ankle": [
+     46.0,
+     95.5
+    ],
+    "ankle2": [
+     69.9,
+     82.7
+    ],
+    "eb": 1,
+    "kb": -1,
+    "kb2": -1,
+    "footT": 0
+   },
+   {
+    "hip": [
+     33.0,
+     81.1
+    ],
+    "torso": 50,
+    "hand": [
+     81.6,
+     61.4
+    ],
+    "ankle": [
+     46.0,
+     95.5
+    ],
+    "ankle2": [
+     77.9,
+     78.0
+    ],
+    "eb": 1,
+    "kb": -1,
+    "kb2": -1,
+    "footT": 0
+   }
+  ],
+  "ph": [
+   "BAJA LENTO",
+   "SUBE"
+  ],
+  "g": [
+   {
+    "t": "plumb",
+    "j": "knee",
+    "on": "end"
+   },
+   {
+    "t": "arr",
+    "j": "hip",
+    "a": -110,
+    "on": "a"
+   }
+  ],
+  "st": [
+   "Una pierna al frente recta; brazos adelante como contrapeso",
+   "Baja controlado, talón pegado, rodilla sigue la punta del pie"
+  ]
+ },
+ "lunge": {
+  "m": "rep",
+  "s": 3.2,
+  "p": [
+   {
+    "t": "floor",
+    "y": 98
+   }
+  ],
+  "f": [
+   {
+    "hip": [
+     42.0,
+     57.7
+    ],
+    "torso": 86,
+    "hand": [
+     49.3,
+     63.4
+    ],
+    "ankle": [
+     66.0,
+     95.5
+    ],
+    "ankle2": [
+     20.3,
+     93.4
+    ],
+    "eb": 1,
+    "kb": -1,
+    "kb2": -1,
+    "footT": 0
+   },
+   {
+    "hip": [
+     43.0,
+     72.7
+    ],
+    "torso": 86,
+    "hand": [
+     53.0,
+     77.8
+    ],
+    "ankle": [
+     66.0,
+     95.5
+    ],
+    "ankle2": [
+     20.3,
+     93.4
+    ],
+    "eb": 1,
+    "kb": -1,
+    "kb2": -1,
+    "footT": 0
+   }
+  ],
+  "ph": [
+   "BAJA",
+   "SUBE"
+  ],
+  "g": [
+   {
+    "t": "plumb",
+    "j": "knee",
+    "on": "end",
+    "l": "RODILLA SOBRE TOBILLO"
+   },
+   {
+    "t": "ang",
+    "j": [
+     "hip",
+     "knee",
+     "ankle"
+    ],
+    "on": "end"
+   },
+   {
+    "t": "arr",
+    "j": "hip",
+    "a": -90,
+    "on": "a"
+   }
+  ],
+  "st": [
+   "Paso largo; baja vertical hasta que la rodilla de atrás casi toque",
+   "Rodilla delantera sobre el tobillo; sube empujando con el talón de adelante"
+  ],
+  "bad": {
+   "n": "Rodilla delantera muy adelante (paso corto)",
+   "fix": "Da un paso más largo: espinilla vertical",
+   "f": [
+    {
+     "hip": [
+      55.5,
+      56.5
+     ],
+     "torso": 86,
+     "hand": [
+      62.7,
+      62.2
+     ],
+     "ankle": [
+      56.0,
+      95.5
+     ],
+     "ankle2": [
+      43.8,
+      95.5
+     ],
+     "eb": 1,
+     "kb": -1,
+     "kb2": -1,
+     "footT": 0
+    },
+    {
+     "hip": [
+      44.0,
+      70.5
+     ],
+     "torso": 80,
+     "hand": [
+      56.7,
+      75.9
+     ],
+     "ankle": [
+      56.0,
+      95.5
+     ],
+     "ankle2": [
+      18.1,
+      91.2
+     ],
+     "eb": 1,
+     "kb": -1,
+     "kb2": -1,
+     "footT": 0
+    }
+   ]
+  }
+ },
+ "bulgarian": {
+  "m": "rep",
+  "s": 3.4,
+  "p": [
+   {
+    "t": "box",
+    "y": 91.1,
+    "x1": 7.0,
+    "x2": 27.0
+   }
+  ],
+  "f": [
+   {
+    "hip": [
+     39.8,
+     57.5
+    ],
+    "torso": 84,
+    "hand": [
+     47.9,
+     63.3
+    ],
+    "ankle": [
+     64.0,
+     95.5
+    ],
+    "ankle2": [
+     19.0,
+     88.1
+    ],
+    "eb": 1,
+    "kb": -1,
+    "kb2": -1,
+    "footT": 0
+   },
+   {
+    "hip": [
+     41.8,
+     73.5
+    ],
+    "torso": 80,
+    "hand": [
+     54.4,
+     78.9
+    ],
+    "ankle": [
+     64.0,
+     95.5
+    ],
+    "ankle2": [
+     19.0,
+     88.1
+    ],
+    "eb": 1,
+    "kb": -1,
+    "kb2": -1,
+    "footT": 0
+   }
+  ],
+  "ph": [
+   "BAJA",
+   "SUBE"
+  ],
+  "g": [
+   {
+    "t": "plumb",
+    "j": "knee",
+    "on": "end"
+   },
+   {
+    "t": "arr",
+    "j": "hip",
+    "a": -95,
+    "on": "a"
+   }
+  ],
+  "st": [
+   "Pie trasero sobre el banco; 80% del peso en la pierna de adelante",
+   "Baja vertical hasta casi tocar con la rodilla; sube con el talón delantero"
+  ]
+ },
+ "step-up": {
+  "m": "rep",
+  "s": 3.2,
+  "p": [
+   {
+    "t": "box",
+    "y": 76,
+    "x1": 52,
+    "x2": 86
+   }
+  ],
+  "f": [
+   {
+    "hip": [
+     41.6,
+     50.5
+    ],
+    "torso": 86,
+    "hand": [
+     44.6,
+     56.5
+    ],
+    "ankle": [
+     66,
+     73.5
+    ],
+    "ankle2": [
+     40.0,
+     95.5
+    ],
+    "eb": 1,
+    "kb": -1,
+    "kb2": -1,
+    "footT": 0
+   },
+   {
+    "hip": [
+     66.0,
+     28.5
+    ],
+    "torso": 90,
+    "hand": [
+     65.9,
+     34.6
+    ],
+    "ankle": [
+     66.0,
+     73.5
+    ],
+    "ankle2": [
+     39.1,
+     61.1
+    ],
+    "eb": 1,
+    "kb": -1,
+    "kb2": -1,
+    "footT": 0
+   }
+  ],
+  "ph": [
+   "SUBE",
+   "BAJA LENTO"
+  ],
+  "g": [
+   {
+    "t": "arr",
+    "j": "hip",
+    "a": 60,
+    "on": "a"
+   }
+  ],
+  "st": [
+   "Todo el pie sobre el cajón; empuja con la pierna de ARRIBA",
+   "Extiende la cadera arriba y baja lento sin rebotar"
+  ]
+ },
+ "jump": {
+  "m": "rep",
+  "s": 1.9,
+  "p": [
+   {
+    "t": "floor",
+    "y": 98
+   }
+  ],
+  "f": [
+   {
+    "hip": [
+     37.6,
+     79.3
+    ],
+    "torso": 48,
+    "hand": [
+     37.7,
+     87.1
+    ],
+    "ankle": [
+     50.0,
+     95.5
+    ],
+    "eb": 1,
+    "kb": -1,
+    "footT": 0
+   },
+   {
+    "hip": [
+     51.0,
+     40.5
+    ],
+    "torso": 88,
+    "hand": [
+     49.1,
+     -17.1
+    ],
+    "ankle": [
+     51.0,
+     85.5
+    ],
+    "eb": 1,
+    "kb": -1,
+    "footT": -70
+   }
+  ],
+  "ph": [
+   "CARGA",
+   "EXPLOTA"
+  ],
+  "g": [
+   {
+    "t": "arr",
+    "j": "hip",
+    "a": 90,
+    "on": "b"
+   }
+  ],
+  "st": [
+   "Carga: cadera atrás y brazos atrás",
+   "Explota con brazos arriba y aterriza suave con rodillas afuera"
+  ]
+ },
+ "rope": {
+  "m": "rep",
+  "s": 0.55,
+  "d": 0,
+  "p": [
+   {
+    "t": "floor",
+    "y": 98
+   }
+  ],
+  "f": [
+   {
+    "hip": [
+     48.0,
+     50.5
+    ],
+    "torso": 90,
+    "hand": [
+     58.6,
+     48.7
+    ],
+    "ankle": [
+     48.0,
+     95.5
+    ],
+    "eb": 1,
+    "kb": 1,
+    "footT": 0
+   },
+   {
+    "hip": [
+     48.0,
+     45.5
+    ],
+    "torso": 90,
+    "hand": [
+     58.6,
+     43.7
+    ],
+    "ankle": [
+     48.0,
+     90.5
+    ],
+    "eb": 1,
+    "kb": 1,
+    "footT": -60
+   }
+  ],
+  "st": [
+   "Saltos cortos en la punta del pie, rodillas suaves",
+   "Codos pegados al cuerpo; gira la cuerda con las muñecas"
+  ]
+ },
+ "burpee": {
+  "m": "rep",
+  "s": 3.8,
+  "d": 0.04,
+  "p": [
+   {
+    "t": "floor",
+    "y": 98
+   }
+  ],
+  "f": [
+   {
+    "hip": [
+     50.0,
+     43.5
+    ],
+    "torso": 90,
+    "hand": [
+     49.4,
+     -14.3
+    ],
+    "ankle": [
+     50.0,
+     88.5
+    ],
+    "eb": 1,
+    "kb": -1,
+    "footT": -70
+   },
+   {
+    "hip": [
+     40.3,
+     83.0
+    ],
+    "torso": 40,
+    "hand": [
+     66.2,
+     95.5
+    ],
+    "ankle": [
+     50.0,
+     95.5
+    ],
+    "eb": 1,
+    "kb": -1,
+    "footT": 0
+   },
+   {
+    "hip": [
+     42.7,
+     74.2
+    ],
+    "torso": 24.6,
+    "hand": [
+     66.2,
+     95.5
+    ],
+    "ankle": [
+     1.8,
+     93.0
+    ],
+    "eb": 1,
+    "kb": -1,
+    "footT": 235
+   }
+  ],
+  "ph": [
+   "ABAJO",
+   "SALTA"
+  ],
+  "g": [
+   {
+    "t": "line",
+    "j": [
+     "ankle",
+     "shoulder"
+    ],
+    "on": "end"
+   }
+  ],
+  "st": [
+   "Manos al suelo y pies atrás a una plancha sólida",
+   "Pies adentro, salta con brazos arriba y aterriza suave"
+  ]
+ },
+ "mountain-climber": {
+  "m": "rep",
+  "s": 1.3,
+  "p": [
+   {
+    "t": "floor",
+    "y": 98
+   }
+  ],
+  "f": [
+   {
+    "hip": [
+     52.5,
+     74.2
+    ],
+    "torso": 24.6,
+    "hand": [
+     76.0,
+     95.5
+    ],
+    "ankle": [
+     45.8,
+     95.5
+    ],
+    "ankle2": [
+     11.6,
+     93.0
+    ],
+    "eb": 1,
+    "kb": -1,
+    "kb2": -1,
+    "footT": 235
+   },
+   {
+    "hip": [
+     52.5,
+     74.2
+    ],
+    "torso": 24.6,
+    "hand": [
+     76.0,
+     95.5
+    ],
+    "ankle": [
+     11.6,
+     93.0
+    ],
+    "ankle2": [
+     45.8,
+     95.5
+    ],
+    "eb": 1,
+    "kb": -1,
+    "kb2": -1,
+    "footT": 235
+   }
+  ],
+  "ph": [
+   "RODILLA",
+   "CAMBIA"
+  ],
+  "g": [
+   {
+    "t": "plumb",
+    "j": "shoulder",
+    "l": "HOMBRO SOBRE MANO"
+   }
+  ],
+  "st": [
+   "Plancha alta: hombros sobre las manos, cadera baja y quieta",
+   "Lleva la rodilla al pecho y cambia rápido sin rebotar la cadera"
+  ]
+ },
+ "bridge": {
+  "m": "rep",
+  "s": 3.2,
+  "d": 0.15,
+  "p": [
+   {
+    "t": "floor",
+    "y": 98
+   }
+  ],
+  "f": [
+   {
+    "hip": [
+     55.8,
+     92.5
+    ],
+    "torso": 180,
+    "hand": [
+     60,
+     94.5
+    ],
+    "ankle": [
+     78,
+     95.5
+    ],
+    "eb": 1,
+    "kb": -1,
+    "footT": 0
+   },
+   {
+    "hip": [
+     53.3,
+     82.5
+    ],
+    "torso": -156.9,
+    "hand": [
+     60,
+     94.5
+    ],
+    "ankle": [
+     78,
+     95.5
+    ],
+    "eb": 1,
+    "kb": -1,
+    "headT": -20,
+    "footT": 0
+   }
+  ],
+  "ph": [
+   "SUBE CADERA",
+   "BAJA"
+  ],
+  "g": [
+   {
+    "t": "line",
+    "j": [
+     "shoulder",
+     "knee"
+    ],
+    "on": "end",
+    "l": "RODILLA-HOMBRO"
+   },
+   {
+    "t": "arr",
+    "j": "hip",
+    "a": 90,
+    "on": "a"
+   }
+  ],
+  "st": [
+   "Talones cerca de la cadera; empuja con los talones",
+   "Aprieta glúteos 2 s arriba: rodilla, cadera y hombro en línea"
+  ]
+ },
+ "fold": {
+  "m": "rep",
+  "s": 4.4,
+  "d": 0.22,
+  "p": [
+   {
+    "t": "floor",
+    "y": 98
+   }
+  ],
+  "f": [
+   {
+    "hip": [
+     50.0,
+     50.5
+    ],
+    "torso": 90,
+    "hand": [
+     49.4,
+     56.7
+    ],
+    "ankle": [
+     50.0,
+     95.5
+    ],
+    "eb": 1,
+    "kb": -1,
+    "footT": 0
+   },
+   {
+    "hip": [
+     47.9,
+     50.9
+    ],
+    "torso": -68,
+    "hand": [
+     58.1,
+     95.5
+    ],
+    "ankle": [
+     50.0,
+     95.5
+    ],
+    "eb": 1,
+    "kb": -1,
+    "headT": 12,
+    "footT": 0
+   }
+  ],
+  "ph": [
+   "BISAGRA",
+   "SUBE"
+  ],
+  "g": [
+   {
+    "t": "arr",
+    "j": "hip",
+    "a": 180,
+    "on": "a",
+    "l": "CADERA ATRÁS"
+   }
+  ],
+  "st": [
+   "Dobla desde la CADERA (la cadera va atrás), no solo la espalda",
+   "Rodillas suaves, exhala al bajar y relaja el cuello"
+  ]
+ },
+ "arm-circle": {
+  "m": "rep",
+  "s": 3.6,
+  "d": 0.05,
+  "p": [
+   {
+    "t": "floor",
+    "y": 98
+   },
+   {
+    "t": "stick"
+   }
+  ],
+  "f": [
+   {
+    "hip": [
+     48.0,
+     50.5
+    ],
+    "torso": 90,
+    "hand": [
+     56.3,
+     55.6
+    ],
+    "ankle": [
+     48.0,
+     95.5
+    ],
+    "eb": 1,
+    "kb": 1,
+    "footT": 0
+   },
+   {
+    "hip": [
+     48.0,
+     50.5
+    ],
+    "torso": 90,
+    "hand": [
+     75.7,
+     40.7
+    ],
+    "ankle": [
+     48.0,
+     95.5
+    ],
+    "eb": 1,
+    "kb": 1,
+    "footT": 0
+   },
+   {
+    "hip": [
+     48.0,
+     50.5
+    ],
+    "torso": 90,
+    "hand": [
+     78.1,
+     13.8
+    ],
+    "ankle": [
+     48.0,
+     95.5
+    ],
+    "eb": 1,
+    "kb": 1,
+    "footT": 0
+   },
+   {
+    "hip": [
+     48.0,
+     50.5
+    ],
+    "torso": 90,
+    "hand": [
+     58.9,
+     -5.4
+    ],
+    "ankle": [
+     48.0,
+     95.5
+    ],
+    "eb": 1,
+    "kb": 1,
+    "footT": 0
+   },
+   {
+    "hip": [
+     48.0,
+     50.5
+    ],
+    "torso": 90,
+    "hand": [
+     32.0,
+     -3.0
+    ],
+    "ankle": [
+     48.0,
+     95.5
+    ],
+    "eb": 1,
+    "kb": 1,
+    "footT": 0
+   },
+   {
+    "hip": [
+     48.0,
+     50.5
+    ],
+    "torso": 90,
+    "hand": [
+     16.5,
+     19.1
+    ],
+    "ankle": [
+     48.0,
+     95.5
+    ],
+    "eb": 1,
+    "kb": 1,
+    "footT": 0
+   },
+   {
+    "hip": [
+     48.0,
+     50.5
+    ],
+    "torso": 90,
+    "hand": [
+     25.4,
+     47.3
+    ],
+    "ankle": [
+     48.0,
+     95.5
+    ],
+    "eb": 1,
+    "kb": 1,
+    "footT": 0
+   }
+  ],
+  "ph": [
+   "ARRIBA",
+   "REGRESA"
+  ],
+  "g": [
+   {
+    "t": "ang",
+    "j": [
+     "shoulder",
+     "elbow",
+     "hand"
+    ]
+   }
+  ],
+  "st": [
+   "Brazos rectos todo el tiempo, agarre ancho con palo o banda",
+   "Pasa por arriba y hacia atrás lento; costillas abajo"
+  ]
+ },
+ "hip-mob": {
+  "m": "rep",
+  "s": 2.4,
+  "p": [
+   {
+    "t": "floor",
+    "y": 98
+   }
+  ],
+  "f": [
+   {
+    "hip": [
+     48.0,
+     50.5
+    ],
+    "torso": 88,
+    "hand": [
+     71.7,
+     33.7
+    ],
+    "ankle": [
+     48.0,
+     95.5
+    ],
+    "ankle2": [
+     78.4,
+     83.6
+    ],
+    "eb": 1,
+    "kb": 1,
+    "kb2": 1,
+    "footT": 0
+   },
+   {
+    "hip": [
+     48.0,
+     50.5
+    ],
+    "torso": 88,
+    "hand": [
+     71.7,
+     33.7
+    ],
+    "ankle": [
+     48.0,
+     95.5
+    ],
+    "ankle2": [
+     19.1,
+     85.0
+    ],
+    "eb": 1,
+    "kb": 1,
+    "kb2": 1,
+    "footT": 0
+   }
+  ],
+  "ph": [
+   "ADELANTE",
+   "ATRÁS"
+  ],
+  "g": [
+   {
+    "t": "arr",
+    "j": "hip",
+    "a": 0,
+    "on": "a"
+   }
+  ],
+  "st": [
+   "Tronco alto y quieto; la pierna se balancea desde la cadera",
+   "Rango cómodo que crece cada serie; 10 por lado"
+  ]
+ },
+ "running-form": {
+  "m": "rep",
+  "s": 1.1,
+  "d": 0.02,
+  "p": [
+   {
+    "t": "floor",
+    "y": 98
+   }
+  ],
+  "f": [
+   {
+    "hip": [
+     50.6,
+     50.8
+    ],
+    "torso": 84,
+    "hand": [
+     55.7,
+     48.7
+    ],
+    "ankle": [
+     46.0,
+     95.5
+    ],
+    "hand2": [
+     76.2,
+     31.0
+    ],
+    "ankle2": [
+     61.2,
+     82.3
+    ],
+    "eb": 1,
+    "kb": -1,
+    "eb2": 1,
+    "kb2": -1,
+    "footT": -15
+   },
+   {
+    "hip": [
+     52.6,
+     50.8
+    ],
+    "torso": 84,
+    "hand": [
+     78.2,
+     31.0
+    ],
+    "ankle": [
+     63.2,
+     82.3
+    ],
+    "hand2": [
+     57.7,
+     48.7
+    ],
+    "ankle2": [
+     48.0,
+     95.5
+    ],
+    "eb": 1,
+    "kb": -1,
+    "eb2": 1,
+    "kb2": -1,
+    "footT": -40
+   }
+  ],
+  "g": [
+   {
+    "t": "plumb",
+    "j": "hip",
+    "l": "PISA BAJO LA CADERA"
+   }
+  ],
+  "st": [
+   "Pisa debajo de la cadera, no delante; cadencia corta",
+   "Torso alto con leve inclinación; brazos a 90° hacia atrás"
+  ]
+ },
+ "handstand": {
+  "m": "hold",
+  "s": 3.4,
+  "fc": -1,
+  "p": [
+   {
+    "t": "floor",
+    "y": 98
+   }
+  ],
+  "f": [
+   {
+    "hip": [
+     55.0,
+     37.7
+    ],
+    "torso": -90.0,
+    "hand": [
+     55.0,
+     95.5
+    ],
+    "ankle": [
+     55.0,
+     -7.3
+    ],
+    "eb": 1,
+    "kb": 1
+   },
+   {
+    "hip": [
+     54.7,
+     37.7
+    ],
+    "torso": -89.4,
+    "hand": [
+     55.0,
+     95.5
+    ],
+    "ankle": [
+     54.7,
+     -7.3
+    ],
+    "eb": 1,
+    "kb": 1
+   }
+  ],
+  "g": [
+   {
+    "t": "plumb",
+    "j": "hand",
+    "up": true,
+    "l": "APILADO"
+   }
+  ],
+  "st": [
+   "Empuja el suelo: hombros hacia las orejas, brazos bloqueados",
+   "Glúteos y abdomen firmes: muñeca, hombro, cadera y tobillo en una línea"
+  ],
+  "bad": {
+   "n": "Banana: espalda arqueada",
+   "fix": "Mete costillas y pelvis; aprieta glúteos",
+   "f": [
+    {
+     "hip": [
+      49.6,
+      38.3
+     ],
+     "torso": -78,
+     "hand": [
+      55.0,
+      95.5
+     ],
+     "ankle": [
+      38.0,
+      -5.1
+     ],
+     "eb": 1,
+     "kb": 1
+    },
+    {
+     "hip": [
+      49.6,
+      38.3
+     ],
+     "torso": -78,
+     "hand": [
+      55.0,
+      95.5
+     ],
+     "ankle": [
+      38.0,
+      -5.1
+     ],
+     "eb": 1,
+     "kb": 1
+    }
+   ]
+  }
+ },
+ "hspu": {
+  "m": "rep",
+  "s": 3.4,
+  "fc": -1,
+  "p": [
+   {
+    "t": "floor",
+    "y": 98
+   }
+  ],
+  "f": [
+   {
+    "hip": [
+     55.0,
+     37.7
+    ],
+    "torso": -90.0,
+    "hand": [
+     55.0,
+     95.5
+    ],
+    "ankle": [
+     55.0,
+     -7.3
+    ],
+    "eb": 1,
+    "kb": 1
+   },
+   {
+    "hip": [
+     58.8,
+     58.3
+    ],
+    "torso": -85,
+    "hand": [
+     55,
+     95.5
+    ],
+    "ankle": [
+     60.3,
+     13.3
+    ],
+    "eb": 1,
+    "kb": 1
+   }
+  ],
+  "ph": [
+   "BAJA",
+   "EMPUJA"
+  ],
+  "g": [
+   {
+    "t": "ang",
+    "j": [
+     "shoulder",
+     "elbow",
+     "hand"
+    ],
+    "on": "end"
+   },
+   {
+    "t": "arr",
+    "j": "hip",
+    "a": -90,
+    "on": "a"
+   }
+  ],
+  "st": [
+   "Baja la cabeza por delante de las manos (triángulo), codos a 45°",
+   "Empuja hasta bloquear; abdomen firme, sin arco"
+  ]
+ },
+ "planche": {
+  "m": "hold",
+  "s": 3.2,
+  "p": [
+   {
+    "t": "floor",
+    "y": 98
+   }
+  ],
+  "f": [
+   {
+    "hip": [
+     26.2,
+     65.8
+    ],
+    "torso": 0,
+    "hand": [
+     40.0,
+     95.5
+    ],
+    "ankle": [
+     -18.8,
+     65.8
+    ],
+    "eb": 1,
+    "kb": 1,
+    "headT": -8,
+    "footT": 180
+   },
+   {
+    "hip": [
+     26.2,
+     65.8
+    ],
+    "torso": 0.8,
+    "hand": [
+     40.0,
+     95.5
+    ],
+    "ankle": [
+     -18.8,
+     65.8
+    ],
+    "eb": 1,
+    "kb": 1,
+    "headT": -8,
+    "footT": 180
+   }
+  ],
+  "g": [
+   {
+    "t": "line",
+    "j": [
+     "ankle",
+     "shoulder"
+    ],
+    "l": "HORIZONTAL"
+   },
+   {
+    "t": "plumb",
+    "j": "hand",
+    "up": true,
+    "l": "HOMBROS DELANTE"
+   }
+  ],
+  "st": [
+   "Brazos BLOQUEADOS; los hombros van por delante de las manos",
+   "Omóplatos separados (protracción), cuerpo horizontal y glúteos firmes"
+  ]
+ },
+ "tuck-planche": {
+  "m": "hold",
+  "s": 3.2,
+  "p": [
+   {
+    "t": "floor",
+    "y": 98
+   }
+  ],
+  "f": [
+   {
+    "hip": [
+     26.3,
+     68.5
+    ],
+    "torso": 6,
+    "hand": [
+     40.0,
+     95.5
+    ],
+    "ankle": [
+     23.4,
+     84.8
+    ],
+    "eb": 1,
+    "kb": -1,
+    "headT": -10,
+    "footT": 180
+   },
+   {
+    "hip": [
+     26.3,
+     68.5
+    ],
+    "torso": 7,
+    "hand": [
+     40.0,
+     95.5
+    ],
+    "ankle": [
+     23.4,
+     84.8
+    ],
+    "eb": 1,
+    "kb": -1,
+    "headT": -10,
+    "footT": 180
+   }
+  ],
+  "g": [
+   {
+    "t": "plumb",
+    "j": "hand",
+    "up": true,
+    "l": "HOMBROS DELANTE"
+   }
+  ],
+  "st": [
+   "Brazos rectos, hombros por delante de las manos",
+   "Espalda redonda y rodillas pegadas al pecho; cadera a la altura de los hombros"
+  ]
+ },
+ "planche-lean": {
+  "m": "rep",
+  "s": 3.6,
+  "d": 0.22,
+  "p": [
+   {
+    "t": "floor",
+    "y": 98
+   }
+  ],
+  "f": [
+   {
+    "hip": [
+     42.5,
+     74.3
+    ],
+    "torso": 24.6,
+    "hand": [
+     66.0,
+     95.5
+    ],
+    "ankle": [
+     1.6,
+     93.0
+    ],
+    "eb": 1,
+    "kb": 1,
+    "footT": 235
+   },
+   {
+    "hip": [
+     54.2,
+     75.7
+    ],
+    "torso": 22.6,
+    "hand": [
+     66.0,
+     95.5
+    ],
+    "ankle": [
+     12.6,
+     93.0
+    ],
+    "eb": 1,
+    "kb": 1,
+    "footT": 235
+   }
+  ],
+  "ph": [
+   "INCLINA",
+   "REGRESA"
+  ],
+  "g": [
+   {
+    "t": "plumb",
+    "j": "hand",
+    "up": true,
+    "on": "end",
+    "l": "HOMBROS DELANTE"
+   },
+   {
+    "t": "line",
+    "j": [
+     "ankle",
+     "shoulder"
+    ]
+   }
+  ],
+  "st": [
+   "Desde plancha alta, lleva los hombros por delante de las manos",
+   "Brazos rectos, omóplatos separados, cuerpo recto sobre las puntas"
+  ]
+ },
+ "front-lever": {
+  "m": "hold",
+  "s": 3.2,
+  "fc": -1,
+  "p": [
+   {
+    "t": "bar",
+    "y": 14,
+    "x1": 60,
+    "x2": 104
+   }
+  ],
+  "f": [
+   {
+    "hip": [
+     62.7,
+     45.7
+    ],
+    "torso": 0,
+    "hand": [
+     84.0,
+     14.0
+    ],
+    "ankle": [
+     17.7,
+     45.7
+    ],
+    "eb": 1,
+    "kb": 1,
+    "headT": 10,
+    "footT": 180
+   },
+   {
+    "hip": [
+     62.7,
+     45.7
+    ],
+    "torso": -0.8,
+    "hand": [
+     84.0,
+     14.0
+    ],
+    "ankle": [
+     17.7,
+     45.7
+    ],
+    "eb": 1,
+    "kb": 1,
+    "headT": 10,
+    "footT": 180
+   }
+  ],
+  "g": [
+   {
+    "t": "line",
+    "j": [
+     "ankle",
+     "shoulder"
+    ],
+    "l": "HORIZONTAL"
+   },
+   {
+    "t": "ang",
+    "j": [
+     "shoulder",
+     "elbow",
+     "hand"
+    ]
+   }
+  ],
+  "st": [
+   "Brazos rectos: empuja la barra hacia tu cadera",
+   "Cuerpo horizontal, cadera arriba, piernas juntas y estiradas"
+  ]
+ },
+ "tuck-fl": {
+  "m": "hold",
+  "s": 3.2,
+  "fc": -1,
+  "p": [
+   {
+    "t": "bar",
+    "y": 14,
+    "x1": 60,
+    "x2": 104
+   }
+  ],
+  "f": [
+   {
+    "hip": [
+     62.7,
+     46.6
+    ],
+    "torso": 2,
+    "hand": [
+     84.0,
+     14.0
+    ],
+    "ankle": [
+     59.3,
+     37.0
+    ],
+    "eb": 1,
+    "kb": 1,
+    "headT": 10,
+    "footT": 180
+   },
+   {
+    "hip": [
+     62.7,
+     46.6
+    ],
+    "torso": 1,
+    "hand": [
+     84.0,
+     14.0
+    ],
+    "ankle": [
+     59.3,
+     37.0
+    ],
+    "eb": 1,
+    "kb": 1,
+    "headT": 10,
+    "footT": 180
+   }
+  ],
+  "g": [
+   {
+    "t": "line",
+    "j": [
+     "hip",
+     "shoulder"
+    ],
+    "l": "ESPALDA HORIZONTAL"
+   }
+  ],
+  "st": [
+   "Brazos rectos, espalda horizontal",
+   "Rodillas pegadas al pecho; no dejes caer la cadera"
+  ]
+ },
+ "back-lever": {
+  "m": "hold",
+  "s": 3.2,
+  "p": [
+   {
+    "t": "bar",
+    "y": 14,
+    "x1": 60,
+    "x2": 104
+   }
+  ],
+  "f": [
+   {
+    "hip": [
+     74.2,
+     41.7
+    ],
+    "torso": 0,
+    "hand": [
+     84.0,
+     14.0
+    ],
+    "ankle": [
+     29.2,
+     41.7
+    ],
+    "eb": 1,
+    "kb": 1,
+    "headT": -8,
+    "footT": 180
+   },
+   {
+    "hip": [
+     74.2,
+     41.7
+    ],
+    "torso": 0.8,
+    "hand": [
+     84.0,
+     14.0
+    ],
+    "ankle": [
+     29.2,
+     41.7
+    ],
+    "eb": 1,
+    "kb": 1,
+    "headT": -8,
+    "footT": 180
+   }
+  ],
+  "g": [
+   {
+    "t": "line",
+    "j": [
+     "ankle",
+     "shoulder"
+    ],
+    "l": "HORIZONTAL"
+   }
+  ],
+  "st": [
+   "Manos detrás de ti, brazos rectos, boca abajo",
+   "Cuerpo horizontal y glúteos apretados; entra desde tuck"
+  ]
+ },
+ "lsit": {
+  "m": "hold",
+  "s": 3,
+  "p": [
+   {
+    "t": "parallettes",
+    "y": 80,
+    "x1": 44,
+    "x2": 60
+   }
+  ],
+  "f": [
+   {
+    "hip": [
+     52.0,
+     73.8
+    ],
+    "torso": 90,
+    "hand": [
+     52.0,
+     80.0
+    ],
+    "ankle": [
+     97.0,
+     73.8
+    ],
+    "eb": 1,
+    "kb": 1,
+    "footT": 10
+   },
+   {
+    "hip": [
+     52.0,
+     73.8
+    ],
+    "torso": 90,
+    "hand": [
+     52.0,
+     80.0
+    ],
+    "ankle": [
+     97.0,
+     73.2
+    ],
+    "eb": 1,
+    "kb": 1,
+    "footT": 10
+   }
+  ],
+  "g": [
+   {
+    "t": "line",
+    "j": [
+     "hip",
+     "ankle"
+    ],
+    "l": "PIERNAS RECTAS"
+   },
+   {
+    "t": "plumb",
+    "j": "shoulder"
+   }
+  ],
+  "st": [
+   "Empuja hacia abajo: hombros lejos de las orejas, brazos bloqueados",
+   "Piernas rectas y juntas a la altura de la cadera, puntas estiradas"
+  ],
+  "bad": {
+   "n": "Rodillas dobladas y hombros encogidos",
+   "fix": "Si no sale recta, haz tuck hold y progresa",
+   "f": [
+    {
+     "hip": [
+      52.0,
+      73.8
+     ],
+     "torso": 90,
+     "hand": [
+      52.0,
+      80.0
+     ],
+     "ankle": [
+      90.3,
+      92.6
+     ],
+     "eb": 1,
+     "kb": -1,
+     "footT": 10
+    },
+    {
+     "hip": [
+      52.0,
+      73.8
+     ],
+     "torso": 90,
+     "hand": [
+      52.0,
+      80.0
+     ],
+     "ankle": [
+      90.3,
+      92.6
+     ],
+     "eb": 1,
+     "kb": -1,
+     "footT": 10
+    }
+   ]
+  }
+ },
+ "hollow": {
+  "m": "hold",
+  "s": 3.4,
+  "p": [
+   {
+    "t": "floor",
+    "y": 98
+   }
+  ],
+  "f": [
+   {
+    "hip": [
+     54,
+     92
+    ],
+    "torso": 158,
+    "hand": [
+     -1.0,
+     74.6
+    ],
+    "ankle": [
+     97.7,
+     81.1
+    ],
+    "eb": 1,
+    "kb": 1,
+    "footT": 10
+   },
+   {
+    "hip": [
+     54,
+     92
+    ],
+    "torso": 156.8,
+    "hand": [
+     -0.6,
+     73.4
+    ],
+    "ankle": [
+     97.4,
+     80.2
+    ],
+    "eb": 1,
+    "kb": 1,
+    "footT": 10
+   }
+  ],
+  "g": [
+   {
+    "t": "arr",
+    "j": "hip",
+    "a": -90,
+    "l": "LUMBAR PEGADA"
+   }
+  ],
+  "st": [
+   "Espalda baja PEGADA al suelo todo el tiempo",
+   "Hombros y piernas despegados; brazos junto a las orejas"
+  ]
+ },
+ "pigeon": {
+  "m": "rep",
+  "s": 6,
+  "d": 0.28,
+  "p": [
+   {
+    "t": "floor",
+    "y": 98
+   }
+  ],
+  "f": [
+   {
+    "hip": [
+     50,
+     81.5
+    ],
+    "torso": 86,
+    "hand": [
+     62,
+     82
+    ],
+    "ankle": [
+     48.5,
+     94.5
+    ],
+    "ankle2": [
+     6.7,
+     93.9
+    ],
+    "eb": 1,
+    "kb": -1,
+    "kb2": 1
+   },
+   {
+    "hip": [
+     50,
+     81.5
+    ],
+    "torso": 22,
+    "hand": [
+     86,
+     94.5
+    ],
+    "ankle": [
+     48.5,
+     94.5
+    ],
+    "ankle2": [
+     6.7,
+     93.9
+    ],
+    "eb": -1,
+    "kb": -1,
+    "kb2": 1,
+    "headT": -8
+   }
+  ],
+  "ph": [
+   "INHALA ALTO",
+   "EXHALA Y BAJA"
+  ],
+  "g": [
+   {
+    "t": "arr",
+    "j": "neck",
+    "a": -30,
+    "on": "a"
+   }
+  ],
+  "st": [
+   "Rodilla delantera al frente, pierna de atrás recta; cadera cuadrada al suelo",
+   "Baja el pecho sobre la pierna y respira 30 s por lado"
+  ]
+ },
+ "foam-roll": {
+  "m": "rep",
+  "s": 4.2,
+  "d": 0.12,
+  "p": [
+   {
+    "t": "floor",
+    "y": 98
+   },
+   {
+    "t": "roller",
+    "x": 70,
+    "y": 90.2,
+    "r": 5.5
+   }
+  ],
+  "f": [
+   {
+    "hip": [
+     34,
+     81
+    ],
+    "torso": 128,
+    "hand": [
+     9.8,
+     91.6
+    ],
+    "ankle": [
+     78.9,
+     84.1
+    ],
+    "eb": 1,
+    "kb": 1,
+    "footT": 90
+   },
+   {
+    "hip": [
+     50,
+     81
+    ],
+    "torso": 128,
+    "hand": [
+     25.8,
+     91.6
+    ],
+    "ankle": [
+     94.9,
+     84.1
+    ],
+    "eb": 1,
+    "kb": 1,
+    "footT": 90
+   }
+  ],
+  "ph": [
+   "RUEDA HACIA LA RODILLA",
+   "REGRESA"
+  ],
+  "g": [
+   {
+    "t": "arr",
+    "j": "hip",
+    "a": 0,
+    "on": "a"
+   },
+   {
+    "t": "arr",
+    "j": "hip",
+    "a": 180,
+    "on": "b"
+   }
+  ],
+  "st": [
+   "Rodillo bajo la pierna, manos atrás y cadera despegada",
+   "Rueda lento (2-3 cm/s); pausa 20 s donde esté tenso, sin dolor agudo"
+  ]
+ }
 };
 
 //  ANIMACION DE CADA ITEM DEL ENTRENO 
@@ -3994,7 +6810,7 @@ const ANIM = {
 // se reconocen por palabras clave. El ORDEN importa: lo especifico va antes
 // ("negative pull-ups" antes que "pull-ups", "tuck front lever" antes que
 // "front lever", "archer pull-ups" antes que "archer").
-const ANIM_MATCH = [[/wrist|muñeca|bici|bike|foam roll/, null], [/muscle.?up/, "muscle-up"], [/negativ\w* pull|eccentric pull|bajadas? de (dominada|pull)/, "neg-pull"], [/scapular? (pull|circles en barra)|scap pull/, "scap-pull"], [/knee raise|leg raise|toes.?to.?bar|elevaci[oó]n de (piernas|rodillas)/, "knee-raise"], [/dead hang|passive hang|active hang|colgad|\bhang\b/, "hang"], [/tuck front lever/, "tuck-fl"], [/front lever|ice cream/, "front-lever"], [/back lever/, "back-lever"], [/tuck planche/, "tuck-planche"], [/planche lean|pseudo planche/, "planche-lean"], [/planche/, "planche"], [/hspu|handstand push/, "hspu"], [/pike/, "pike-push"], [/l-?sit|tuck hold/, "lsit"], [/hollow/, "hollow"], [/wall hs|handstand|\bhs\b|kick.?ups?|press a handstand|parada de manos|scorpion/, "handstand"], [/australian|ring rows?|\brows?\b|\bremo\b/, "australian"], [/one.?arm pull|dominada a una mano|pull.?up|chin.?up|chest.?to.?bar|dominada/, "pullup"], [/one.?arm push|oapu|flexi[oó]n a una mano/, "oapu"], [/archer/, "archer"], [/\bdips?\b|fondos/, "dips"], [/burpee/, "burpee"], [/mountain climber/, "mountain-climber"], [/box jump|saltos? a caj|jump squat|broad jump/, "jump"], [/jump rope|jumping jack|\bjacks\b|\bcuerda\b/, "rope"], [/step.?ups?/, "step-up"], [/bulgarian/, "bulgarian"], [/lunge|zancada|split squat|hip flexor/, "lunge"], [/pistol/, "pistol"], [/squat|sentadilla/, "deep-squat"], [/glute bridge|hip thrust|puente de gl[uú]teo/, "bridge"], [/toe touch|sit & reach|hamstring|pancake|jefferson/, "fold"], [/dislocat|arm circles?|shoulder circles?/, "arm-circle"], [/hip circles?|leg swings?|hip mob/, "hip-mob"], [/plank|scapula push|plancha/, "plank"], [/push.?ups?|flexiones?/, "push-up"], [/high knees|talking pace|\bpace\b|\bkm\b|\d+ ?m\b|\bstrides?\b|long run|\brun\b|running|trote|carrera|sprint|fartlek|intervalos|\btrail\b/, "running-form"]];
+const ANIM_MATCH = [[/wrist|muñeca|bici|bike/, null], [/foam roll|rodillo/, "foam-roll"], [/pigeon|paloma/, "pigeon"], [/muscle.?up/, "muscle-up"], [/negativ\w* pull|eccentric pull|bajadas? de (dominada|pull)/, "neg-pull"], [/scapular? (pull|circles en barra)|scap pull/, "scap-pull"], [/knee raise|leg raise|toes.?to.?bar|elevaci[oó]n de (piernas|rodillas)/, "knee-raise"], [/dead hang|passive hang|active hang|colgad|\bhang\b/, "hang"], [/tuck front lever/, "tuck-fl"], [/front lever|ice cream/, "front-lever"], [/back lever/, "back-lever"], [/tuck planche/, "tuck-planche"], [/planche lean|pseudo planche/, "planche-lean"], [/planche/, "planche"], [/hspu|handstand push/, "hspu"], [/pike/, "pike-push"], [/l-?sit|tuck hold/, "lsit"], [/hollow/, "hollow"], [/wall hs|handstand|\bhs\b|kick.?ups?|press a handstand|parada de manos|scorpion/, "handstand"], [/australian|ring rows?|\brows?\b|\bremo\b/, "australian"], [/one.?arm pull|dominada a una mano|pull.?up|chin.?up|chest.?to.?bar|dominada/, "pullup"], [/one.?arm push|oapu|flexi[oó]n a una mano/, "oapu"], [/archer/, "archer"], [/\bdips?\b|fondos/, "dips"], [/burpee/, "burpee"], [/mountain climber/, "mountain-climber"], [/box jump|saltos? a caj|jump squat|broad jump/, "jump"], [/jump rope|jumping jack|\bjacks\b|\bcuerda\b/, "rope"], [/step.?ups?/, "step-up"], [/bulgarian/, "bulgarian"], [/lunge|zancada|split squat|hip flexor/, "lunge"], [/pistol/, "pistol"], [/squat|sentadilla/, "deep-squat"], [/glute bridge|hip thrust|puente de gl[uú]teo/, "bridge"], [/toe touch|sit & reach|hamstring|pancake|jefferson/, "fold"], [/dislocat|arm circles?|shoulder circles?/, "arm-circle"], [/hip circles?|leg swings?|hip mob/, "hip-mob"], [/plank|scapula push|plancha/, "plank"], [/push.?ups?|flexiones?/, "push-up"], [/high knees|talking pace|\bpace\b|\bkm\b|\d+ ?m\b|\bstrides?\b|long run|\brun\b|running|trote|carrera|sprint|fartlek|intervalos|\btrail\b/, "running-form"]];
 const _animCache = {};
 const animFor = text => {
   const t = presPart(text).toLowerCase();
@@ -4027,24 +6843,68 @@ const animBox = id => {
     y0 = Math.min(y0, p[1] - r);
     y1 = Math.max(y1, p[1] + r);
   };
-  for (let i = 0; i <= 48; i++) {
-    const f = buildFig(poseAt(spec, i / 48));
-    ["hip", "neck", "shoulder", "elbow", "hand", "knee", "ankle", "toe", "elbow2", "hand2", "knee2", "ankle2"].forEach(k => add(f[k], 3));
-    add(f.head, 7.5);
-  }
+  // Tambien se recorre la version con el error: el encuadre no debe saltar
+  // al prender "error comun".
+  const specs = spec.bad ? [spec, {
+    ...spec,
+    f: spec.bad.f
+  }] : [spec];
+  specs.forEach(sp => {
+    for (let i = 0; i <= 48; i++) {
+      const f = buildFig(poseAt(sp, i / 48));
+      ["hip", "neck", "shoulder", "elbow", "hand", "knee", "ankle", "toe", "elbow2", "hand2", "knee2", "ankle2"].forEach(k => add(f[k], 3.5));
+      add(f.head, 7.5);
+    }
+  });
   spec.p.forEach(pr => {
     if (pr.t === "floor") {
       y1 = Math.max(y1, pr.y + 3);
       return;
     }
+    if (pr.t === "roller") {
+      add([pr.x, pr.y], pr.r + 1);
+      return;
+    }
+    if (pr.x1 === undefined) return;
     add([pr.x1, pr.y], 2);
     add([pr.x2, pr.y], 2);
     if (pr.t !== "bar") y1 = Math.max(y1, 101);
   });
-  const pad = 5;
+  const pad = 6;
   return _boxCache[id] = `${(x0 - pad).toFixed(1)} ${(y0 - pad).toFixed(1)} ${(x1 - x0 + 2 * pad).toFixed(1)} ${(y1 - y0 + 2 * pad).toFixed(1)}`;
 };
 const ANIM_SPEEDS = [0.5, 1, 1.5];
+// Fase dentro del ciclo, con la misma pausa en los extremos que poseAt:
+// 0 = pose inicial, 1 = pose final. Las guias se prenden segun esto.
+const _phase = (spec, t) => {
+  const c = (t % 1 + 1) % 1;
+  if (spec.m === "hold") return {
+    c,
+    pp: 0.5,
+    half: 0
+  };
+  const tri = c < 0.5 ? c * 2 : (1 - c) * 2,
+    dw = spec.d === undefined ? 0.08 : spec.d;
+  return {
+    c,
+    pp: Math.max(0, Math.min(1, (tri - dw) / (1 - 2 * dw))),
+    half: c < 0.5 ? 0 : 1
+  };
+};
+const _guideOn = (on, ph, hold) => {
+  if (!on || on === "*" || hold) return true;
+  if (on === "a") return ph.half === 0;
+  if (on === "b") return ph.half === 1;
+  if (on === "end") return ph.pp > 0.72;
+  if (on === "start") return ph.pp < 0.28;
+  return true;
+};
+const _jointAngle = (a, b, c) => {
+  const v1 = [a[0] - b[0], a[1] - b[1]],
+    v2 = [c[0] - b[0], c[1] - b[1]];
+  const d = Math.acos(Math.max(-1, Math.min(1, (v1[0] * v2[0] + v1[1] * v2[1]) / ((Math.hypot(...v1) || 1) * (Math.hypot(...v2) || 1)))));
+  return Math.round(d * 180 / Math.PI);
+};
 function ExAnim({
   id,
   height = 168,
@@ -4057,7 +6917,11 @@ function ExAnim({
   const [t, setT] = useState(at);
   const [paused, setPaused] = useState(false);
   const [spd, setSpd] = useState(1);
-  const clock = useRef({ t: at, last: null });
+  const [showBad, setShowBad] = useState(false);
+  const clock = useRef({
+    t: at,
+    last: null
+  });
   const still = !spec || !animate || _reduceMotion();
   useEffect(() => {
     if (still || paused) return;
@@ -4077,31 +6941,68 @@ function ExAnim({
   }, [spec, still, paused, spd]);
   if (!spec) return null;
   const col = color || C.yellow;
-  const s = buildFig(poseAt(spec, t));
-  // Fantasma: el otro extremo del rango, para ver hasta donde llega la rep
-  const ghost = spec.m === "rep" && height >= 90 ? buildFig(spec.f[spec.f.length - 1]) : null;
+  const bad = showBad && spec.bad ? spec.bad : null;
+  const detail = height >= 90;
+  const s = buildFig(poseAt(bad ? {
+    ...spec,
+    f: spec.bad.f
+  } : spec, t));
+  const figCol = bad ? C.red : col;
+  const fc = spec.fc || 1;
+  const ph = _phase(spec, t);
+  // Fantasma: con el error prendido, la forma CORRECTA en el mismo instante
+  // (para comparar); si no, el otro extremo del rango de la repeticion.
+  const ghost = !detail ? null : bad ? buildFig(poseAt(spec, t)) : spec.m === "rep" ? buildFig(spec.f[spec.f.length - 1]) : null;
   const floorY = (spec.p.find(pr => pr.t === "floor") || {}).y;
+  const groundY = floorY !== undefined ? floorY : spec.p.some(pr => pr.t === "box" || pr.t === "parallettes") ? 98 : undefined;
   const P = a => `${a[0].toFixed(1)},${a[1].toFixed(1)}`;
-  const limb = (pts, far, k, g) => /*#__PURE__*/React.createElement("polyline", {
+  const seg = (pts, w, op, k, c, dash) => /*#__PURE__*/React.createElement("polyline", {
     key: k,
     points: pts.map(P).join(" "),
     fill: "none",
-    stroke: col,
-    strokeOpacity: g ? 0.13 : far ? 0.33 : 1,
-    strokeWidth: g ? 3 : far ? 3.6 : 5,
+    stroke: c,
+    strokeOpacity: op,
+    strokeWidth: w,
     strokeLinecap: "round",
     strokeLinejoin: "round",
-    strokeDasharray: g ? "2 3" : undefined
+    strokeDasharray: dash
   });
-  const joint = (p, k) => /*#__PURE__*/React.createElement("circle", {
-    key: k,
-    cx: p[0],
-    cy: p[1],
-    r: "1.6",
-    fill: C.bg,
-    fillOpacity: "0.9"
-  });
-  const figure = (f, g, pre) => [f.hand2 && limb([f.shoulder, f.elbow2, f.hand2], true, pre + "a2", g), f.ankle2 && limb([f.hip, f.knee2, f.ankle2], true, pre + "l2", g), limb([f.hip, f.knee, f.ankle], false, pre + "l1", g), limb([f.hip, f.neck], false, pre + "tr", g), limb([f.shoulder, f.elbow, f.hand], false, pre + "a1", g)];
+  // Cuerpo con volumen: torso grueso, muslos mas gruesos que espinillas, y
+  // un ojo que marca hacia donde mira la cara.
+  const figure = (f, mode, pre) => {
+    const g = mode === "ghost";
+    const c = g ? col : mode === "bad" ? C.red : col;
+    const op = g ? 0.16 : 1,
+      far = g ? 0.1 : 0.32,
+      dash = g ? "2 2.5" : undefined,
+      k = g ? 0.55 : 1;
+    const front = (f.torsoA + (f.headT || 0) - 90 * fc) * Math.PI / 180;
+    const up = (f.torsoA + (f.headT || 0)) * Math.PI / 180;
+    const eye = [f.head[0] + Math.cos(front) * 3 + Math.cos(up) * 1.4, f.head[1] - Math.sin(front) * 3 - Math.sin(up) * 1.4];
+    return [f.hand2 && seg([f.shoulder, f.elbow2, f.hand2], 4 * k, far, pre + "a2", c, dash), f.ankle2 && seg([f.hip, f.knee2], 5.5 * k, far, pre + "t2", c, dash), f.ankle2 && seg([f.knee2, f.ankle2], 4.5 * k, far, pre + "s2", c, dash), seg([f.hip, f.knee], 6 * k, op, pre + "th", c, dash), seg([f.knee, f.ankle], 4.8 * k, op, pre + "sh", c, dash), seg([f.ankle, f.toe], 3.6 * k, op, pre + "ft", c, dash), seg([f.hip, f.shoulder], 8 * k, op, pre + "tr", c, dash), seg([f.shoulder, f.neck], 4 * k, op, pre + "nk", c, dash), seg([f.shoulder, f.elbow], 4.8 * k, op, pre + "ua", c, dash), seg([f.elbow, f.hand], 4 * k, op, pre + "fa", c, dash), /*#__PURE__*/React.createElement("circle", {
+      key: pre + "hd",
+      cx: f.head[0],
+      cy: f.head[1],
+      r: 6.3,
+      fill: g ? "none" : c,
+      stroke: c,
+      strokeOpacity: op,
+      strokeWidth: g ? 1.3 : 0,
+      strokeDasharray: dash
+    }), !g && /*#__PURE__*/React.createElement("circle", {
+      key: pre + "ey",
+      cx: eye[0],
+      cy: eye[1],
+      r: 1.25,
+      fill: C.bg
+    }), !g && /*#__PURE__*/React.createElement("circle", {
+      key: pre + "hn",
+      cx: f.hand[0],
+      cy: f.hand[1],
+      r: 2.6,
+      fill: c
+    })];
+  };
   const prop = (pr, i) => {
     if (pr.t === "floor") return /*#__PURE__*/React.createElement("line", {
       key: i,
@@ -4125,9 +7026,9 @@ function ExAnim({
     if (pr.t === "box") return /*#__PURE__*/React.createElement("g", {
       key: i
     }, /*#__PURE__*/React.createElement("line", {
-      x1: "-30",
+      x1: "-200",
       y1: "98",
-      x2: "150",
+      x2: "300",
       y2: "98",
       stroke: C.dim,
       strokeWidth: "1.5"
@@ -4141,12 +7042,47 @@ function ExAnim({
       stroke: C.dim,
       strokeWidth: "1.5"
     }));
+    if (pr.t === "roller") {
+      const r = s.hip[0] * 0.35;
+      return /*#__PURE__*/React.createElement("g", {
+        key: i
+      }, /*#__PURE__*/React.createElement("circle", {
+        cx: pr.x,
+        cy: pr.y,
+        r: pr.r,
+        fill: C.card2,
+        stroke: C.muted,
+        strokeWidth: "1.5"
+      }), /*#__PURE__*/React.createElement("line", {
+        x1: pr.x,
+        y1: pr.y,
+        x2: pr.x + Math.cos(r) * pr.r * 0.8,
+        y2: pr.y + Math.sin(r) * pr.r * 0.8,
+        stroke: C.muted,
+        strokeWidth: "1.2"
+      }));
+    }
+    if (pr.t === "rope") {
+      // La cuerda da la vuelta: por debajo de los pies y por encima de la cabeza
+      const a = ph.c * Math.PI * 2,
+        top = s.head[1] - 12,
+        bot = s.ankle[1] + 4;
+      const y = (top + bot) / 2 + Math.cos(a) * (bot - top) / 2;
+      return /*#__PURE__*/React.createElement("path", {
+        key: i,
+        d: `M ${P(s.hand)} Q ${(s.hand[0] + 10).toFixed(1)},${(2 * y - s.hand[1]).toFixed(1)} ${(s.hand[0] - 2).toFixed(1)},${s.hand[1].toFixed(1)}`,
+        fill: "none",
+        stroke: C.muted,
+        strokeWidth: "1.2"
+      });
+    }
+    if (pr.t !== "parallettes") return null;
     return /*#__PURE__*/React.createElement("g", {
       key: i
     }, /*#__PURE__*/React.createElement("line", {
-      x1: "-30",
+      x1: "-200",
       y1: "98",
-      x2: "150",
+      x2: "300",
       y2: "98",
       stroke: C.dim,
       strokeWidth: "1.5"
@@ -4174,6 +7110,141 @@ function ExAnim({
       strokeWidth: "2"
     }));
   };
+
+  //  Guias de tecnica (en color teal, encima de la figura)
+  const GC = C.teal;
+  const VB = animBox(id).split(" ").map(Number);
+  // Texto y trazos de las guias en proporcion al encuadre: en un encuadre
+  // chico (tuck front lever) la letra ya no sale gigante.
+  const K = Math.max(VB[2], VB[3]) / 112;
+  // Las etiquetas se acomodan dentro del cuadro (antes se cortaban en la orilla)
+  const txt = (x, y, str, k, anchor = "middle") => {
+    const w = String(str).length * 2.75 * K,
+      lo = VB[0] + 1.5,
+      hi = VB[0] + VB[2] - 1.5;
+    let x0 = anchor === "middle" ? x - w / 2 : anchor === "end" ? x - w : x;
+    x0 = Math.max(lo, Math.min(hi - w, x0));
+    return txtEl(x0, Math.max(VB[1] + 5 * K, Math.min(VB[1] + VB[3] - 1.5, y)), str, k);
+  };
+  const txtEl = (x, y, str, k) => /*#__PURE__*/React.createElement("text", {
+    key: k,
+    x: x,
+    y: y,
+    fill: GC,
+    fontSize: (4.3 * K).toFixed(2),
+    fontWeight: "bold",
+    fontFamily: "monospace",
+    textAnchor: "start",
+    stroke: C.bg,
+    strokeWidth: (1.6 * K).toFixed(2),
+    paintOrder: "stroke",
+    letterSpacing: "0.2"
+  }, str);
+  const guide = (g, i) => {
+    if (!_guideOn(g.on, ph, spec.m === "hold")) return null;
+    const J = n => s[n];
+    if (g.t === "line") {
+      const a = J(g.j[0]),
+        b = J(g.j[1]);
+      const d = [b[0] - a[0], b[1] - a[1]],
+        L = Math.hypot(...d) || 1,
+        u = [d[0] / L, d[1] / L];
+      const a2 = [a[0] - u[0] * 5, a[1] - u[1] * 5],
+        b2 = [b[0] + u[0] * 5, b[1] + u[1] * 5];
+      const n = [u[1], -u[0]];
+      const sgn = n[1] > 0 ? -1 : 1;
+      return /*#__PURE__*/React.createElement("g", {
+        key: i
+      }, /*#__PURE__*/React.createElement("line", {
+        x1: a2[0],
+        y1: a2[1],
+        x2: b2[0],
+        y2: b2[1],
+        stroke: GC,
+        strokeWidth: "1.2",
+        strokeDasharray: "3 2"
+      }), g.l && txt((a[0] + b[0]) / 2 + n[0] * 7 * sgn, (a[1] + b[1]) / 2 + n[1] * 7 * sgn + 1.5, g.l, "t"));
+    }
+    if (g.t === "plumb") {
+      const a = J(g.j);
+      const y2 = g.up ? a[1] - 70 : groundY !== undefined ? groundY : a[1] + 60;
+      return /*#__PURE__*/React.createElement("g", {
+        key: i
+      }, /*#__PURE__*/React.createElement("line", {
+        x1: a[0],
+        y1: a[1],
+        x2: a[0],
+        y2: y2,
+        stroke: GC,
+        strokeWidth: "1",
+        strokeDasharray: "1.5 2"
+      }), g.l && txt(a[0] + 2, g.up ? a[1] - 50 : Math.min(y2, a[1] + 60) - 3, g.l, "t", "start"));
+    }
+    if (g.t === "hbar") {
+      return /*#__PURE__*/React.createElement("g", {
+        key: i
+      }, /*#__PURE__*/React.createElement("line", {
+        x1: "-200",
+        y1: g.y - 3,
+        x2: "300",
+        y2: g.y - 3,
+        stroke: GC,
+        strokeWidth: "0.9",
+        strokeDasharray: "1.5 2"
+      }), g.l && txt(s.head[0] + 9, g.y - 5, g.l, "t", "start"));
+    }
+    if (g.t === "ang") {
+      const a = J(g.j[0]),
+        b = J(g.j[1]),
+        c = J(g.j[2]);
+      const deg = _jointAngle(a, b, c);
+      const a1 = Math.atan2(a[1] - b[1], a[0] - b[0]),
+        a2 = Math.atan2(c[1] - b[1], c[0] - b[0]);
+      let da = a2 - a1;
+      while (da > Math.PI) da -= 2 * Math.PI;
+      while (da < -Math.PI) da += 2 * Math.PI;
+      const R = 6.5;
+      const p1 = [b[0] + Math.cos(a1) * R, b[1] + Math.sin(a1) * R],
+        p2 = [b[0] + Math.cos(a1 + da) * R, b[1] + Math.sin(a1 + da) * R];
+      const mid = a1 + da / 2;
+      // Etiqueta del lado de afuera del angulo, para que no la tape el cuerpo
+      const lx = b[0] - Math.cos(mid) * 10,
+        ly = b[1] - Math.sin(mid) * 10 + 1.5;
+      return /*#__PURE__*/React.createElement("g", {
+        key: i
+      }, /*#__PURE__*/React.createElement("path", {
+        d: `M ${P(p1)} A ${R} ${R} 0 0 ${da > 0 ? 1 : 0} ${P(p2)}`,
+        fill: "none",
+        stroke: GC,
+        strokeWidth: "1.3"
+      }), txt(lx, ly, `${deg}°`, "t"));
+    }
+    if (g.t === "arr") {
+      const a = J(g.j),
+        r = g.a * Math.PI / 180,
+        u = [Math.cos(r), -Math.sin(r)];
+      const st = [a[0] + u[0] * 5, a[1] + u[1] * 5],
+        en = [a[0] + u[0] * 16, a[1] + u[1] * 16];
+      const n = [-u[1], u[0]];
+      const h1 = [en[0] - u[0] * 3.5 + n[0] * 2.4, en[1] - u[1] * 3.5 + n[1] * 2.4],
+        h2 = [en[0] - u[0] * 3.5 - n[0] * 2.4, en[1] - u[1] * 3.5 - n[1] * 2.4];
+      return /*#__PURE__*/React.createElement("g", {
+        key: i
+      }, /*#__PURE__*/React.createElement("line", {
+        x1: st[0],
+        y1: st[1],
+        x2: en[0],
+        y2: en[1],
+        stroke: GC,
+        strokeWidth: "1.5",
+        strokeLinecap: "round"
+      }), /*#__PURE__*/React.createElement("polygon", {
+        points: [en, h1, h2].map(P).join(" "),
+        fill: GC
+      }), g.l && txt(en[0] + u[0] * 4, en[1] + u[1] * 4 + 1.5, g.l, "t"));
+    }
+    return null;
+  };
   const svg = /*#__PURE__*/React.createElement("svg", {
     viewBox: animBox(id),
     width: "100%",
@@ -4185,58 +7256,25 @@ function ExAnim({
     },
     onClick: controls ? () => setPaused(v => !v) : undefined,
     "aria-hidden": "true"
-  }, floorY !== undefined && height >= 60 && /*#__PURE__*/React.createElement("ellipse", {
+  }, floorY !== undefined && detail && /*#__PURE__*/React.createElement("ellipse", {
     cx: (s.hip[0] + s.ankle[0] + s.hand[0]) / 3,
     cy: floorY + 1,
     rx: "20",
     ry: "2.2",
-    fill: col,
+    fill: figCol,
     fillOpacity: "0.07"
-  }), spec.p.map(prop), ghost && figure(ghost, true, "g"), ghost && /*#__PURE__*/React.createElement("circle", {
-    cx: ghost.head[0],
-    cy: ghost.head[1],
-    r: "7",
-    fill: "none",
-    stroke: col,
-    strokeOpacity: "0.13",
-    strokeWidth: "1.5",
-    strokeDasharray: "2 3"
-  }), figure(s, false, "f"), height >= 60 && [joint(s.elbow, "je"), joint(s.knee, "jk"), joint(s.hip, "jh")], /*#__PURE__*/React.createElement("line", {
-    x1: s.ankle[0],
-    y1: s.ankle[1],
-    x2: s.toe[0],
-    y2: s.toe[1],
-    stroke: col,
-    strokeWidth: "4",
-    strokeLinecap: "round"
-  }), s.hand2 && /*#__PURE__*/React.createElement("circle", {
-    cx: s.hand2[0],
-    cy: s.hand2[1],
-    r: "3",
-    fill: col,
-    fillOpacity: "0.33"
-  }), /*#__PURE__*/React.createElement("circle", {
-    cx: s.hand[0],
-    cy: s.hand[1],
-    r: "3",
-    fill: col
-  }), /*#__PURE__*/React.createElement("circle", {
-    cx: s.head[0],
-    cy: s.head[1],
-    r: "7",
-    fill: col
-  }));
+  }), spec.p.map(prop), ghost && figure(ghost, "ghost", "g"), figure(s, bad ? "bad" : "main", "f"), detail && controls && spec.g && spec.g.map(guide));
   if (!controls) return svg;
 
-  //  Barra de control: fase de la rep, contador, pausa y velocidad
-  const cyc = ((t % 1) + 1) % 1;
-  const phase = spec.m === "hold" ? "MANTÉN · RESPIRA" : spec.ph ? spec.ph[cyc < 0.5 ? 0 : 1] : cyc < 0.5 ? "IDA" : "REGRESO";
+  //  Barra de control: fase, contador, pausa, velocidad y "error comun"
+  const phase = spec.m === "hold" ? "MANTÉN · RESPIRA" : spec.ph ? spec.ph[ph.half] : ph.half ? "REGRESO" : "IDA";
   const count = spec.m === "hold" ? `${Math.floor(Math.max(0, t - at) * spec.s)}s` : `REP ${Math.floor(Math.max(0, t - Math.floor(at))) + 1}`;
-  const btn = on => ({
-    background: on ? col + "22" : "transparent",
-    border: `1px solid ${on ? col + "60" : C.border}`,
+  const stepIdx = spec.st ? spec.m === "hold" ? Math.floor(Math.max(0, t)) % spec.st.length : Math.min(ph.half, spec.st.length - 1) : 0;
+  const btn = (on, c = col) => ({
+    background: on ? c + "22" : "transparent",
+    border: `1px solid ${on ? c + "60" : C.border}`,
     borderRadius: 6,
-    color: on ? col : C.muted,
+    color: on ? c : C.muted,
     fontFamily: "inherit",
     fontSize: 9,
     fontWeight: "bold",
@@ -4254,15 +7292,16 @@ function ExAnim({
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       height: "100%",
-      width: `${(spec.m === "hold" ? cyc : cyc < 0.5 ? cyc * 2 : (1 - cyc) * 2) * 100}%`,
-      background: col
+      width: `${(spec.m === "hold" ? ph.c : ph.c < 0.5 ? ph.c * 2 : (1 - ph.c) * 2) * 100}%`,
+      background: bad ? C.red : col
     }
   })), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       alignItems: "center",
       gap: 5,
-      padding: "6px 4px 2px"
+      padding: "6px 4px 2px",
+      flexWrap: "wrap"
     }
   }, /*#__PURE__*/React.createElement("button", {
     onClick: () => setPaused(v => !v),
@@ -4272,23 +7311,85 @@ function ExAnim({
     key: v,
     onClick: () => setSpd(v),
     style: btn(spd === v)
-  }, v, "x")), /*#__PURE__*/React.createElement("div", {
+  }, v, "x")), spec.bad && /*#__PURE__*/React.createElement("button", {
+    onClick: () => setShowBad(v => !v),
+    style: btn(showBad, C.red)
+  }, showBad ? "✓ VER BIEN" : "✗ ERROR COMÚN"), /*#__PURE__*/React.createElement("div", {
     style: {
       flex: 1,
       textAlign: "right",
       fontSize: 10,
       fontWeight: "bold",
       letterSpacing: 1,
-      color: col
+      color: bad ? C.red : col,
+      whiteSpace: "nowrap"
     }
   }, still ? "" : phase), /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 9,
       color: C.muted,
-      minWidth: 40,
+      minWidth: 36,
       textAlign: "right"
     }
-  }, still ? "" : count)));
+  }, still ? "" : count)), bad ? /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "6px 6px 2px",
+      fontSize: 11,
+      lineHeight: 1.5
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: C.red,
+      fontWeight: "bold"
+    }
+  }, "✗ ", bad.n), /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: C.teal
+    }
+  }, "✓ ", bad.fix, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.dim
+    }
+  }, " (la silueta punteada es la forma correcta)"))) : spec.st && /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "6px 6px 2px",
+      display: "flex",
+      gap: 7,
+      alignItems: "flex-start"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      flexShrink: 0,
+      width: 16,
+      height: 16,
+      borderRadius: 8,
+      background: col,
+      color: C.bg,
+      fontSize: 9,
+      fontWeight: "bold",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      marginTop: 1
+    }
+  }, stepIdx + 1), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 11.5,
+      color: "#D8D8D8",
+      lineHeight: 1.5
+    }
+  }, spec.st[stepIdx])), spec.g && spec.g.length > 0 && !bad && /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "3px 6px 0",
+      fontSize: 8.5,
+      color: C.dim,
+      letterSpacing: 0.5
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.teal
+    }
+  }, "┄"), " gu\xEDas de t\xE9cnica"));
 }
 
 //  ANIMACION DENTRO DEL ENTRENO 
@@ -4344,7 +7445,7 @@ function ItemAnim({
     id,
     animate: true,
     controls: true,
-    height: 150,
+    height: 185,
     color
   }), ex && /*#__PURE__*/React.createElement("div", {
     style: {
@@ -4359,20 +7460,7 @@ function ItemAnim({
       letterSpacing: 2,
       marginBottom: 4
     }
-  }, ex.name.toUpperCase()), ex.cues.slice(0, 3).map((c, i) => /*#__PURE__*/React.createElement("div", {
-    key: i,
-    style: {
-      fontSize: 11,
-      color: "#C8C8C8",
-      lineHeight: 1.5,
-      display: "flex",
-      gap: 6
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      color
-    }
-  }, "›"), c)), /*#__PURE__*/React.createElement("div", {
+  }, ex.name.toUpperCase()), /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 10,
       color: C.orange,
