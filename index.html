@@ -665,7 +665,7 @@ const bestOf = (hist, lower) => {
 };
 
 //  BACKUP / RESTORE 
-const DVF_KEYS = ["dvfit_checks", "dvfit_prs", "dvfit_streak", "dvfit_path", "dvfit_week", "dvfit_start", "dvfit_log", "dvfit_subpath", "dvfit_sets", "dvfit_notes", "dvfit_split", "dvfit_gear"];
+const DVF_KEYS = ["dvfit_checks", "dvfit_prs", "dvfit_streak", "dvfit_path", "dvfit_week", "dvfit_start", "dvfit_log", "dvfit_subpath", "dvfit_sets", "dvfit_notes", "dvfit_split", "dvfit_gear", "dvfit_coach_chat"];
 const BACKUP_VERSION = 1;
 const buildBackup = () => {
   const data = {};
@@ -869,6 +869,177 @@ const EXERCISES = [{
   cues: ["3 veces/semana mínimo", "Gains tardan 4+ semanas", "Si pierdes un día: continúa", "Hip circles, pigeon, crossbody leg swings"],
   mistakes: ["Solo 1 semana y parar", "Forzar con dolor", "Ignorar la cadera"],
   tip: "La cadera es el centro de TODO: running, pistol, front lever, handstand."
+}, {
+  id: "dips",
+  name: "Dips (Fondos)",
+  cat: "push",
+  src: "🔍 Research",
+  muscles: ["Tríceps", "Pecho inferior", "Deltoides anterior"],
+  cues: ["Hombros LEJOS de las orejas arriba", "Baja hasta hombro a la altura del codo", "Codos apuntan ATRÁS, no abiertos", "Torso un poco inclinado adelante"],
+  mistakes: ["Bajar sin control y rebotar", "Hombros encogidos", "Rango a medias"],
+  tip: "Si duele el frente del hombro, reduce el rango y fortalece con support hold."
+}, {
+  id: "australian",
+  name: "Australian Pull-Up / Ring Row",
+  cat: "pull",
+  src: "🔍 Research",
+  muscles: ["Dorsales", "Romboides", "Bíceps"],
+  cues: ["Cuerpo recto como plancha", "Pecho a la barra, no la barbilla", "Aprieta omóplatos arriba 1 seg", "Más horizontal = más difícil"],
+  mistakes: ["Cadera caída", "Jalar con el cuello", "Soltar de golpe"],
+  tip: "Es el puente directo hacia la pull-up. Tempo 3-1-1 lo vuelve brutal."
+}, {
+  id: "hang",
+  name: "Passive / Dead Hang",
+  cat: "pull",
+  src: "🔍 Research",
+  muscles: ["Agarre", "Dorsales", "Hombros"],
+  cues: ["Brazos completamente rectos", "Relaja hombros (pasivo) o jálalos abajo (activo)", "Respira lento", "Pulgar alrededor de la barra"],
+  mistakes: ["Doblar los codos", "Columpiarse", "Aguantar la respiración"],
+  tip: "Descomprime la columna y blinda el agarre para todo lo de barra."
+}, {
+  id: "scap-pull",
+  name: "Scapula Pull-Up",
+  cat: "pull",
+  src: "📘 Playbook",
+  muscles: ["Trapecio inferior", "Dorsales", "Serratos"],
+  cues: ["Codos SIEMPRE rectos", "Hunde los hombros hacia abajo", "Pecho sube un poco", "Pausa arriba 1 seg"],
+  mistakes: ["Doblar los brazos", "Movimiento con impulso", "Rango mínimo"],
+  tip: "Es el primer centímetro de toda pull-up. Domínalo y todo lo demás sube."
+}, {
+  id: "knee-raise",
+  name: "Hanging Knee Raise",
+  cat: "core",
+  src: "🔍 Research",
+  muscles: ["Abdomen", "Flexores de cadera", "Agarre"],
+  cues: ["Enrolla la pelvis al subir", "Rodillas al pecho", "Baja en 2-3 seg", "Sin columpiarte"],
+  mistakes: ["Usar el impulso", "Solo subir las piernas sin enrollar", "Soltar abajo"],
+  tip: "Cuando salgan 15 limpias, pasa a piernas rectas / toes-to-bar."
+}, {
+  id: "lunge",
+  name: "Lunge / Zancada",
+  cat: "legs",
+  src: "🔍 Research",
+  muscles: ["Cuádriceps", "Glúteos", "Aductores"],
+  cues: ["Rodilla trasera casi toca el suelo", "Rodilla delantera sigue la punta del pie", "Torso alto", "Empuja con el talón delantero"],
+  mistakes: ["Paso muy corto", "Rodilla hacia adentro", "Inclinarse de más"],
+  tip: "Con mochila o chaleco es de los mejores constructores de piernas sin gym."
+}, {
+  id: "bulgarian",
+  name: "Bulgarian Split Squat",
+  cat: "legs",
+  src: "📘 Playbook",
+  muscles: ["Cuádriceps", "Glúteos", "Estabilidad"],
+  cues: ["Pie trasero sobre banco o silla", "Baja vertical, no hacia adelante", "Rodilla trasera casi al suelo", "80% del peso en la pierna delantera"],
+  mistakes: ["Pie delantero muy cerca", "Perder el equilibrio por prisa", "Rango parcial"],
+  tip: "Es el puente entre la sentadilla profunda y el pistol."
+}, {
+  id: "step-up",
+  name: "Step-Up",
+  cat: "legs",
+  src: "🔍 Research",
+  muscles: ["Cuádriceps", "Glúteos"],
+  cues: ["Todo el pie sobre el cajón", "Empuja con la pierna de ARRIBA", "Sube hasta extender cadera", "Baja lento"],
+  mistakes: ["Impulsarse con la pierna de abajo", "Rodilla hacia adentro", "Cajón demasiado alto"],
+  tip: "Con mochila es fuerza de trail running pura."
+}, {
+  id: "mountain-climber",
+  name: "Mountain Climbers",
+  cat: "core",
+  src: "🔍 Research",
+  muscles: ["Core", "Flexores de cadera", "Cardio"],
+  cues: ["Hombros sobre las manos", "Cadera baja y estable", "Rodilla al pecho rápido", "Respira al ritmo"],
+  mistakes: ["Cadera muy alta", "Rebotar la cadera", "Manos adelantadas"],
+  tip: "Calidad primero; la velocidad llega sola."
+}, {
+  id: "burpee",
+  name: "Burpee",
+  cat: "legs",
+  src: "🔍 Research",
+  muscles: ["Todo el cuerpo", "Cardio"],
+  cues: ["Manos al suelo, pies atrás", "Plancha sólida (opcional pecho al suelo)", "Pies adentro, explota arriba", "Aterriza suave"],
+  mistakes: ["Espalda caída en la plancha", "Aterrizar con piernas rígidas", "Perder el ritmo"],
+  tip: "En calentamiento: ritmo cómodo. No es una competencia."
+}, {
+  id: "jump",
+  name: "Box Jump / Salto",
+  cat: "legs",
+  src: "🔍 Research",
+  muscles: ["Cuádriceps", "Glúteos", "Pantorrillas"],
+  cues: ["Carga con brazos atrás", "Explota: brazos arriba", "Aterriza suave, rodillas afuera", "Baja del cajón caminando"],
+  mistakes: ["Aterrizar ruidoso", "Rodillas hacia adentro", "Cajón demasiado alto"],
+  tip: "Potencia = calidad. Pocas reps, cada una explosiva."
+}, {
+  id: "rope",
+  name: "Jump Rope / Jacks",
+  cat: "running",
+  src: "🔍 Research",
+  muscles: ["Pantorrillas", "Cardio", "Tobillos"],
+  cues: ["Saltos cortos, en la punta del pie", "Codos pegados, gira con muñecas", "Rodillas suaves", "Respira constante"],
+  mistakes: ["Saltar muy alto", "Aterrizar en talones", "Brazos muy abiertos"],
+  tip: "El mejor calentamiento de tobillos para correr."
+}, {
+  id: "bridge",
+  name: "Glute Bridge",
+  cat: "legs",
+  src: "🔍 Research",
+  muscles: ["Glúteos", "Isquios", "Core"],
+  cues: ["Talones cerca de la cadera", "Empuja con los talones", "Aprieta glúteos arriba 2 seg", "Costillas abajo"],
+  mistakes: ["Arquear la espalda baja", "Empujar con la punta del pie", "Subir sin pausa"],
+  tip: "Activa glúteos antes de correr: previene rodilla de corredor."
+}, {
+  id: "fold",
+  name: "Toe Touch / Hamstrings",
+  cat: "mobility",
+  src: "📘 David",
+  muscles: ["Isquiotibiales", "Espalda baja"],
+  cues: ["Bisagra desde la cadera", "Rodillas suaves al principio", "Exhala al bajar", "Relaja el cuello"],
+  mistakes: ["Rebotar", "Redondear solo la espalda", "Forzar con dolor"],
+  tip: "Flat back primero, toe touch después: la cadera es la que se dobla."
+}, {
+  id: "tuck-planche",
+  name: "Tuck Planche",
+  cat: "skills",
+  src: "📘 Playbook",
+  muscles: ["Deltoides anterior", "Serratos", "Core"],
+  cues: ["Brazos BLOQUEADOS", "Espalda redonda (protracción)", "Rodillas al pecho", "Hombros frente a las manos"],
+  mistakes: ["Doblar los codos", "Espalda plana", "Cadera baja"],
+  tip: "Primero 10s de planche lean; luego levanta los pies."
+}, {
+  id: "tuck-fl",
+  name: "Tuck Front Lever",
+  cat: "skills",
+  src: "📘 Playbook",
+  muscles: ["Dorsales", "Core", "Hombros"],
+  cues: ["Brazos rectos", "Espalda horizontal", "Rodillas al pecho", "Empuja la barra hacia la cadera"],
+  mistakes: ["Doblar codos", "Cadera caída", "Hombros encogidos"],
+  tip: "Horizontal manda: mejor tuck perfecto que straddle chueco."
+}, {
+  id: "hspu",
+  name: "Handstand Push-Up",
+  cat: "skills",
+  src: "🔍 Research",
+  muscles: ["Deltoides", "Tríceps", "Trapecios"],
+  cues: ["Cabeza forma triángulo con las manos", "Codos a ~45°, no abiertos", "Core apretado, sin arco", "Empuja el suelo lejos"],
+  mistakes: ["Codos abiertos", "Arco lumbar", "Caer de cabeza sin control"],
+  tip: "Wall HSPU con déficit antes de pensar en freestanding."
+}, {
+  id: "arm-circle",
+  name: "Shoulder Dislocations",
+  cat: "mobility",
+  src: "📘 David",
+  muscles: ["Hombros", "Pecho", "Espalda alta"],
+  cues: ["Brazos rectos todo el tiempo", "Agarre ancho con palo o banda", "Lento, sin forzar", "Costillas abajo"],
+  mistakes: ["Doblar los codos", "Agarre muy cerrado", "Arquear la espalda"],
+  tip: "Cada semana cierra un poco el agarre."
+}, {
+  id: "planche-lean",
+  name: "Planche Lean",
+  cat: "skills",
+  src: "📘 Playbook",
+  muscles: ["Deltoides anterior", "Muñecas", "Core"],
+  cues: ["Hombros BIEN adelante de las manos", "Protrae los omóplatos", "Cuerpo de plancha", "Dedos hacia afuera"],
+  mistakes: ["Doblar los codos", "Perder la protracción", "Cadera arriba"],
+  tip: "Más inclinación = más difícil. Avanza de a 2-3 cm."
 }];
 const RUNNING_MILESTONES = [{
   dist: "5 km",
@@ -2649,6 +2820,9 @@ const TABS = [{
   id: "semana",
   label: "📅 SEMANA"
 }, {
+  id: "coach",
+  label: "🤖 COACH"
+}, {
   id: "prs",
   label: "📊 PRs"
 }, {
@@ -3090,12 +3264,16 @@ const mixPose = (a, b, t) => {
 };
 
 // "hold" = isometrico, oscila poquito. "rep" = va y viene entre keyframes.
+// "d" = fraccion del ciclo que la figura se queda quieta en cada extremo: sin
+// esa pausa el movimiento parecia un pendulo y no una repeticion con control.
 const poseAt = (spec, t) => {
   const f = spec.f;
   if (f.length === 1) return f[0];
   if (spec.m === "hold") return mixPose(f[0], f[1] || f[0], (Math.sin(t * Math.PI * 2) + 1) / 2 * 0.35);
-  const c = t % 1,
-    pp = c < 0.5 ? c * 2 : (1 - c) * 2,
+  const c = (t % 1 + 1) % 1,
+    tri = c < 0.5 ? c * 2 : (1 - c) * 2,
+    dw = spec.d === undefined ? 0.08 : spec.d,
+    pp = Math.max(0, Math.min(1, (tri - dw) / (1 - 2 * dw))),
     seg = pp * (f.length - 1);
   const i = Math.min(f.length - 2, Math.floor(seg));
   return mixPose(f[i], f[i + 1], seg - i);
@@ -3630,7 +3808,199 @@ const ANIM = {
       kb2: 1,
       footT: 0
     }]
+  },
+  // ---- Set ampliado: los movimientos que mas aparecen en el plan ----
+  dips: {
+    v: "0 6 100 96",
+    m: "rep",
+    s: 2.8,
+    ph: ["BAJA", "EMPUJA"],
+    p: [{ t: "parallettes", y: 56, x1: 44, x2: 66 }],
+    f: [{ hip: [51, 44], torso: 94, hand: [54, 56], ankle: [36, 78], eb: 1, kb: -1, footT: 235 },
+        { hip: [55, 62], torso: 78, hand: [54, 56], ankle: [40, 94], eb: 1, kb: -1, footT: 235 }]
+  },
+  australian: {
+    v: "0 30 104 74",
+    m: "rep",
+    s: 2.6,
+    ph: ["JALA", "BAJA"],
+    p: [{ t: "parallettes", y: 52, x1: 70, x2: 98 }],
+    f: [{ hip: [59.3, 90.3], torso: 7, hand: [83, 52], ankle: [13, 96], eb: 1, kb: 1, footT: 84 },
+        { hip: [54, 74], torso: 29, hand: [83, 52], ankle: [13, 96], eb: 1, kb: 1, footT: 84 }]
+  },
+  hang: {
+    v: "0 0 100 118",
+    m: "hold",
+    s: 3.6,
+    p: [{ t: "bar", y: 12, x1: 28, x2: 92 }],
+    f: [{ hip: [62, 75.5], torso: 94, hand: [60, 12], ankle: [58, 114], eb: 1, kb: -1, footT: -80 },
+        { hip: [62.4, 75.5], torso: 95, hand: [60, 12], ankle: [57, 114], eb: 1, kb: -1, footT: -80 }]
+  },
+  "scap-pull": {
+    v: "0 0 100 118",
+    m: "rep",
+    s: 2.4,
+    ph: ["HOMBROS ABAJO", "SUELTA"],
+    p: [{ t: "bar", y: 12, x1: 28, x2: 92 }],
+    f: [{ hip: [62, 75.5], torso: 94, hand: [60, 12], ankle: [58, 114], eb: 1, kb: -1, headT: 0, footT: -80 },
+        { hip: [63, 70.5], torso: 100, hand: [60, 12], ankle: [58, 109], eb: 1, kb: -1, headT: -8, footT: -80 }]
+  },
+  "knee-raise": {
+    v: "0 0 100 118",
+    m: "rep",
+    s: 2.8,
+    ph: ["SUBE RODILLAS", "BAJA LENTO"],
+    p: [{ t: "bar", y: 12, x1: 28, x2: 92 }],
+    f: [{ hip: [62, 75.5], torso: 94, hand: [60, 12], ankle: [58, 114], eb: 1, kb: -1, footT: -80 },
+        { hip: [64, 74], torso: 102, hand: [60, 12], ankle: [70, 94], eb: 1, kb: -1, footT: -60 }]
+  },
+  lunge: {
+    v: "0 16 100 90",
+    m: "rep",
+    s: 3,
+    ph: ["BAJA", "SUBE"],
+    p: [{ t: "floor", y: 98 }],
+    f: [{ hip: [46, 56], torso: 88, hand: [52, 62], ankle: [64, 97], ankle2: [26, 97], eb: 1, kb: -1, kb2: -1, footT: 0 },
+        { hip: [44, 72], torso: 86, hand: [50, 78], ankle: [66, 97], ankle2: [24, 97], eb: 1, kb: -1, kb2: -1, footT: 0 }]
+  },
+  bulgarian: {
+    v: "0 16 100 90",
+    m: "rep",
+    s: 3.2,
+    ph: ["BAJA", "SUBE"],
+    p: [{ t: "box", y: 80, x1: 6, x2: 28 }],
+    f: [{ hip: [46, 55], torso: 86, hand: [52, 61], ankle: [64, 97], ankle2: [22, 80], eb: 1, kb: -1, kb2: -1, footT: 0 },
+        { hip: [44, 71], torso: 80, hand: [52, 76], ankle: [66, 97], ankle2: [22, 80], eb: 1, kb: -1, kb2: -1, footT: 0 }]
+  },
+  "step-up": {
+    v: "0 -2 110 104",
+    m: "rep",
+    s: 3,
+    ph: ["SUBE", "BAJA"],
+    p: [{ t: "box", y: 78, x1: 52, x2: 86 }],
+    f: [{ hip: [42, 56], torso: 84, hand: [48, 64], ankle: [64, 77], ankle2: [40, 97], eb: 1, kb: -1, kb2: -1, footT: 0 },
+        { hip: [64, 35], torso: 90, hand: [68, 42], ankle: [64, 77], ankle2: [58, 70], eb: 1, kb: -1, kb2: 1, footT: 0 }]
+  },
+  "mountain-climber": {
+    v: "-4 30 104 76",
+    m: "rep",
+    s: 1.2,
+    ph: ["RODILLA", "CAMBIA"],
+    p: [{ t: "floor", y: 98 }],
+    f: [{ hip: [51, 73], torso: 30, hand: [76, 98], ankle: [10, 96], ankle2: [48, 92], eb: -1, kb: -1, kb2: -1, footT: 212 },
+        { hip: [51, 73], torso: 30, hand: [76, 98], ankle: [48, 92], ankle2: [10, 96], eb: -1, kb: -1, kb2: -1, footT: 212 }]
+  },
+  burpee: {
+    v: "-6 -12 112 114",
+    m: "rep",
+    s: 3.6,
+    d: 0.04,
+    ph: ["ABAJO", "SALTA"],
+    p: [{ t: "floor", y: 98 }],
+    f: [{ hip: [50, 46], torso: 90, hand: [52, -17], ankle: [50, 88], eb: 1, kb: -1, footT: -70 },
+        { hip: [44, 80], torso: 42, hand: [68, 97], ankle: [48, 97], eb: 1, kb: -1, footT: 0 },
+        { hip: [42, 74.6], torso: 32, hand: [67, 98], ankle: [2, 97], eb: -1, kb: 1, footT: 212 }]
+  },
+  jump: {
+    v: "0 -12 100 112",
+    m: "rep",
+    s: 1.8,
+    ph: ["CARGA", "EXPLOTA"],
+    p: [{ t: "floor", y: 98 }],
+    f: [{ hip: [44, 76], torso: 56, hand: [30, 84], ankle: [48, 97], eb: 1, kb: -1, footT: 0 },
+        { hip: [50, 44], torso: 88, hand: [56, -19], ankle: [50, 88], eb: 1, kb: -1, footT: -70 }]
+  },
+  rope: {
+    v: "0 10 100 96",
+    m: "rep",
+    s: 0.55,
+    d: 0,
+    p: [{ t: "floor", y: 98 }],
+    f: [{ hip: [48, 55], torso: 90, hand: [62, 66], ankle: [48, 97], eb: 1, kb: -1, footT: 0 },
+        { hip: [48, 50], torso: 90, hand: [62, 61], ankle: [48, 92], eb: 1, kb: -1, footT: -60 }]
+  },
+  bridge: {
+    v: "0 40 100 64",
+    m: "rep",
+    s: 3,
+    ph: ["SUBE CADERA", "BAJA"],
+    p: [{ t: "floor", y: 98 }],
+    f: [{ hip: [54, 93], torso: 180, hand: [68, 96], ankle: [76, 97], eb: 1, kb: -1, headT: 0, footT: 0 },
+        { hip: [54, 76], torso: 212, hand: [68, 96], ankle: [76, 97], eb: 1, kb: -1, headT: -26, footT: 0 }]
+  },
+  fold: {
+    v: "0 16 100 90",
+    m: "rep",
+    s: 4,
+    d: 0.2,
+    ph: ["BISAGRA", "SUBE"],
+    p: [{ t: "floor", y: 98 }],
+    f: [{ hip: [48, 54], torso: 90, hand: [52, 90], ankle: [48, 97], eb: 1, kb: -1, footT: 0 },
+        { hip: [40, 55], torso: -72, hand: [56, 95], ankle: [48, 97], eb: 1, kb: -1, headT: 10, footT: 0 }]
+  },
+  "tuck-planche": {
+    v: "0 30 110 80",
+    m: "hold",
+    s: 3,
+    p: [{ t: "floor", y: 98 }],
+    f: [{ hip: [60, 62], torso: 176, hand: [42, 98], ankle: [66, 84], eb: 1, kb: 1, headT: 12, footT: 10 },
+        { hip: [60, 61], torso: 175, hand: [42, 98], ankle: [66, 83], eb: 1, kb: 1, headT: 10, footT: 10 }]
+  },
+  "tuck-fl": {
+    v: "0 4 110 84",
+    m: "hold",
+    s: 3.2,
+    p: [{ t: "bar", y: 18, x1: 56, x2: 104 }],
+    f: [{ hip: [58.3, 57.7], torso: 4, hand: [84, 18], ankle: [54.3, 50.8], eb: 1, kb: 1, headT: 22, footT: 170 },
+        { hip: [58.3, 57.2], torso: 3, hand: [84, 18], ankle: [54.3, 50.3], eb: 1, kb: 1, headT: 20, footT: 170 }]
+  },
+  hspu: {
+    v: "22 -16 56 118",
+    m: "rep",
+    s: 3.2,
+    ph: ["BAJA", "EMPUJA"],
+    p: [{ t: "floor", y: 98 }],
+    f: [{ hip: [47.6, 34.1], torso: -93, hand: [55, 97], ankle: [45, -12], eb: 1, kb: -1, headT: 0, footT: 90 },
+        { hip: [44, 52], torso: -98, hand: [55, 97], ankle: [41, 6], eb: 1, kb: -1, headT: 0, footT: 90 }]
+  },
+  "arm-circle": {
+    v: "0 -14 100 116",
+    m: "rep",
+    s: 3.4,
+    d: 0.05,
+    ph: ["ARRIBA", "ATRÁS"],
+    p: [{ t: "floor", y: 98 }],
+    f: [{ hip: [48, 54], torso: 90, hand: [61, 63.7], ankle: [48, 97], eb: 1, kb: -1, footT: 0 },
+        { hip: [48, 54], torso: 90, hand: [85.4, 34.6], ankle: [48, 97], eb: 1, kb: -1, footT: 0 },
+        { hip: [48, 54], torso: 90, hand: [72.4, -1.1], ankle: [48, 97], eb: 1, kb: -1, footT: 0 },
+        { hip: [48, 54], torso: 90, hand: [41.4, -9.4], ankle: [48, 97], eb: 1, kb: -1, footT: 0 },
+        { hip: [48, 54], torso: 90, hand: [14.6, 9.8], ankle: [48, 97], eb: 1, kb: -1, footT: 0 },
+        { hip: [48, 54], torso: 90, hand: [16.4, 50.8], ankle: [48, 97], eb: 1, kb: -1, footT: 0 }]
+  },
+  "planche-lean": {
+    v: "0 30 110 80",
+    m: "rep",
+    s: 3.4,
+    d: 0.2,
+    ph: ["INCLINA", "REGRESA"],
+    p: [{ t: "floor", y: 98 }],
+    f: [{ hip: [50.9, 74.6], torso: 32, hand: [72, 98], ankle: [11, 97], eb: -1, kb: 1, footT: 212 },
+        { hip: [62, 77], torso: 26, hand: [72, 98], ankle: [20, 97], eb: -1, kb: 1, footT: 200 }]
   }
+};
+
+//  ANIMACION DE CADA ITEM DEL ENTRENO 
+// Los items son texto libre ("Ring rows 3x10 -- pecho a la anilla"), asi que
+// se reconocen por palabras clave. El ORDEN importa: lo especifico va antes
+// ("negative pull-ups" antes que "pull-ups", "tuck front lever" antes que
+// "front lever", "archer pull-ups" antes que "archer").
+const ANIM_MATCH = [[/wrist|muñeca|bici|bike|foam roll/, null], [/muscle.?up/, "muscle-up"], [/negativ\w* pull|eccentric pull|bajadas? de (dominada|pull)/, "neg-pull"], [/scapular? (pull|circles en barra)|scap pull/, "scap-pull"], [/knee raise|leg raise|toes.?to.?bar|elevaci[oó]n de (piernas|rodillas)/, "knee-raise"], [/dead hang|passive hang|active hang|colgad|\bhang\b/, "hang"], [/tuck front lever/, "tuck-fl"], [/front lever|ice cream/, "front-lever"], [/back lever/, "back-lever"], [/tuck planche/, "tuck-planche"], [/planche lean|pseudo planche/, "planche-lean"], [/planche/, "planche"], [/hspu|handstand push/, "hspu"], [/pike/, "pike-push"], [/l-?sit|tuck hold/, "lsit"], [/hollow/, "hollow"], [/wall hs|handstand|\bhs\b|kick.?ups?|press a handstand|parada de manos|scorpion/, "handstand"], [/australian|ring rows?|\brows?\b|\bremo\b/, "australian"], [/one.?arm pull|dominada a una mano|pull.?up|chin.?up|chest.?to.?bar|dominada/, "pullup"], [/one.?arm push|oapu|flexi[oó]n a una mano/, "oapu"], [/archer/, "archer"], [/\bdips?\b|fondos/, "dips"], [/burpee/, "burpee"], [/mountain climber/, "mountain-climber"], [/box jump|saltos? a caj|jump squat|broad jump/, "jump"], [/jump rope|jumping jack|\bjacks\b|\bcuerda\b/, "rope"], [/step.?ups?/, "step-up"], [/bulgarian/, "bulgarian"], [/lunge|zancada|split squat|hip flexor/, "lunge"], [/pistol/, "pistol"], [/squat|sentadilla/, "deep-squat"], [/glute bridge|hip thrust|puente de gl[uú]teo/, "bridge"], [/toe touch|sit & reach|hamstring|pancake|jefferson/, "fold"], [/dislocat|arm circles?|shoulder circles?/, "arm-circle"], [/hip circles?|leg swings?|hip mob/, "hip-mob"], [/plank|scapula push|plancha/, "plank"], [/push.?ups?|flexiones?/, "push-up"], [/high knees|talking pace|\bpace\b|\bkm\b|\d+ ?m\b|\bstrides?\b|long run|\brun\b|running|trote|carrera|sprint|fartlek|intervalos|\btrail\b/, "running-form"]];
+const _animCache = {};
+const animFor = text => {
+  const t = presPart(text).toLowerCase();
+  if (t in _animCache) return _animCache[t];
+  const hit = ANIM_MATCH.find(([re]) => re.test(t));
+  return _animCache[t] = hit && hit[1] && ANIM[hit[1]] ? hit[1] : null;
 };
 const _reduceMotion = () => {
   try {
@@ -3639,55 +4009,105 @@ const _reduceMotion = () => {
     return false;
   }
 };
+// Encuadre calculado: se recorre el ciclo completo y se toma la caja que
+// contiene cabeza, manos, pies y aparatos. Con el viewBox escrito a mano la
+// cabeza se cortaba en varias poses (sentadilla, pistol, dips).
+const _boxCache = {};
+const animBox = id => {
+  if (_boxCache[id]) return _boxCache[id];
+  const spec = ANIM[id];
+  let x0 = Infinity,
+    y0 = Infinity,
+    x1 = -Infinity,
+    y1 = -Infinity;
+  const add = (p, r = 0) => {
+    if (!p) return;
+    x0 = Math.min(x0, p[0] - r);
+    x1 = Math.max(x1, p[0] + r);
+    y0 = Math.min(y0, p[1] - r);
+    y1 = Math.max(y1, p[1] + r);
+  };
+  for (let i = 0; i <= 48; i++) {
+    const f = buildFig(poseAt(spec, i / 48));
+    ["hip", "neck", "shoulder", "elbow", "hand", "knee", "ankle", "toe", "elbow2", "hand2", "knee2", "ankle2"].forEach(k => add(f[k], 3));
+    add(f.head, 7.5);
+  }
+  spec.p.forEach(pr => {
+    if (pr.t === "floor") {
+      y1 = Math.max(y1, pr.y + 3);
+      return;
+    }
+    add([pr.x1, pr.y], 2);
+    add([pr.x2, pr.y], 2);
+    if (pr.t !== "bar") y1 = Math.max(y1, 101);
+  });
+  const pad = 5;
+  return _boxCache[id] = `${(x0 - pad).toFixed(1)} ${(y0 - pad).toFixed(1)} ${(x1 - x0 + 2 * pad).toFixed(1)} ${(y1 - y0 + 2 * pad).toFixed(1)}`;
+};
+const ANIM_SPEEDS = [0.5, 1, 1.5];
 function ExAnim({
   id,
   height = 168,
   animate = false,
-  color
+  color,
+  controls = false,
+  at = 0.3
 }) {
   const spec = ANIM[id];
-  const [t, setT] = useState(0.3);
+  const [t, setT] = useState(at);
+  const [paused, setPaused] = useState(false);
+  const [spd, setSpd] = useState(1);
+  const clock = useRef({ t: at, last: null });
+  const still = !spec || !animate || _reduceMotion();
   useEffect(() => {
-    if (!spec || !animate || _reduceMotion()) return;
-    let raf,
-      t0 = null;
+    if (still || paused) return;
+    let raf;
+    const c = clock.current;
+    c.last = null;
+    // Reloj acumulado (no "ahora - inicio"): asi pausar o cambiar la
+    // velocidad no hace saltar la figura a otra pose.
     const loop = ts => {
-      if (t0 === null) t0 = ts;
-      setT((ts - t0) / 1000 / spec.s % 1);
+      if (c.last !== null) c.t += (ts - c.last) / 1000 / spec.s * spd;
+      c.last = ts;
+      setT(c.t);
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [spec, animate]);
+  }, [spec, still, paused, spd]);
   if (!spec) return null;
   const col = color || C.yellow;
   const s = buildFig(poseAt(spec, t));
+  // Fantasma: el otro extremo del rango, para ver hasta donde llega la rep
+  const ghost = spec.m === "rep" && height >= 90 ? buildFig(spec.f[spec.f.length - 1]) : null;
+  const floorY = (spec.p.find(pr => pr.t === "floor") || {}).y;
   const P = a => `${a[0].toFixed(1)},${a[1].toFixed(1)}`;
-  const limb = (pts, far, k) => /*#__PURE__*/React.createElement("polyline", {
+  const limb = (pts, far, k, g) => /*#__PURE__*/React.createElement("polyline", {
     key: k,
     points: pts.map(P).join(" "),
     fill: "none",
     stroke: col,
-    strokeOpacity: far ? 0.33 : 1,
-    strokeWidth: far ? 3.6 : 5,
+    strokeOpacity: g ? 0.13 : far ? 0.33 : 1,
+    strokeWidth: g ? 3 : far ? 3.6 : 5,
     strokeLinecap: "round",
-    strokeLinejoin: "round"
+    strokeLinejoin: "round",
+    strokeDasharray: g ? "2 3" : undefined
   });
-  return /*#__PURE__*/React.createElement("svg", {
-    viewBox: spec.v,
-    width: "100%",
-    height: height,
-    preserveAspectRatio: "xMidYMid meet",
-    style: {
-      display: "block"
-    },
-    "aria-hidden": "true"
-  }, spec.p.map((pr, i) => {
+  const joint = (p, k) => /*#__PURE__*/React.createElement("circle", {
+    key: k,
+    cx: p[0],
+    cy: p[1],
+    r: "1.6",
+    fill: C.bg,
+    fillOpacity: "0.9"
+  });
+  const figure = (f, g, pre) => [f.hand2 && limb([f.shoulder, f.elbow2, f.hand2], true, pre + "a2", g), f.ankle2 && limb([f.hip, f.knee2, f.ankle2], true, pre + "l2", g), limb([f.hip, f.knee, f.ankle], false, pre + "l1", g), limb([f.hip, f.neck], false, pre + "tr", g), limb([f.shoulder, f.elbow, f.hand], false, pre + "a1", g)];
+  const prop = (pr, i) => {
     if (pr.t === "floor") return /*#__PURE__*/React.createElement("line", {
       key: i,
-      x1: "-30",
+      x1: "-200",
       y1: pr.y,
-      x2: "150",
+      x2: "300",
       y2: pr.y,
       stroke: C.dim,
       strokeWidth: "1.5"
@@ -3702,6 +4122,25 @@ function ExAnim({
       strokeWidth: "3",
       strokeLinecap: "round"
     });
+    if (pr.t === "box") return /*#__PURE__*/React.createElement("g", {
+      key: i
+    }, /*#__PURE__*/React.createElement("line", {
+      x1: "-30",
+      y1: "98",
+      x2: "150",
+      y2: "98",
+      stroke: C.dim,
+      strokeWidth: "1.5"
+    }), /*#__PURE__*/React.createElement("rect", {
+      x: pr.x1,
+      y: pr.y,
+      width: pr.x2 - pr.x1,
+      height: 98 - pr.y,
+      rx: "1.5",
+      fill: C.card2,
+      stroke: C.dim,
+      strokeWidth: "1.5"
+    }));
     return /*#__PURE__*/React.createElement("g", {
       key: i
     }, /*#__PURE__*/React.createElement("line", {
@@ -3734,7 +4173,35 @@ function ExAnim({
       stroke: C.dim,
       strokeWidth: "2"
     }));
-  }), s.hand2 && limb([s.shoulder, s.elbow2, s.hand2], true, "a2"), s.ankle2 && limb([s.hip, s.knee2, s.ankle2], true, "l2"), limb([s.hip, s.knee, s.ankle], false, "l1"), limb([s.hip, s.neck], false, "tr"), limb([s.shoulder, s.elbow, s.hand], false, "a1"), /*#__PURE__*/React.createElement("line", {
+  };
+  const svg = /*#__PURE__*/React.createElement("svg", {
+    viewBox: animBox(id),
+    width: "100%",
+    height: height,
+    preserveAspectRatio: "xMidYMid meet",
+    style: {
+      display: "block",
+      cursor: controls ? "pointer" : undefined
+    },
+    onClick: controls ? () => setPaused(v => !v) : undefined,
+    "aria-hidden": "true"
+  }, floorY !== undefined && height >= 60 && /*#__PURE__*/React.createElement("ellipse", {
+    cx: (s.hip[0] + s.ankle[0] + s.hand[0]) / 3,
+    cy: floorY + 1,
+    rx: "20",
+    ry: "2.2",
+    fill: col,
+    fillOpacity: "0.07"
+  }), spec.p.map(prop), ghost && figure(ghost, true, "g"), ghost && /*#__PURE__*/React.createElement("circle", {
+    cx: ghost.head[0],
+    cy: ghost.head[1],
+    r: "7",
+    fill: "none",
+    stroke: col,
+    strokeOpacity: "0.13",
+    strokeWidth: "1.5",
+    strokeDasharray: "2 3"
+  }), figure(s, false, "f"), height >= 60 && [joint(s.elbow, "je"), joint(s.knee, "jk"), joint(s.hip, "jh")], /*#__PURE__*/React.createElement("line", {
     x1: s.ankle[0],
     y1: s.ankle[1],
     x2: s.toe[0],
@@ -3759,6 +4226,174 @@ function ExAnim({
     r: "7",
     fill: col
   }));
+  if (!controls) return svg;
+
+  //  Barra de control: fase de la rep, contador, pausa y velocidad
+  const cyc = ((t % 1) + 1) % 1;
+  const phase = spec.m === "hold" ? "MANTÉN · RESPIRA" : spec.ph ? spec.ph[cyc < 0.5 ? 0 : 1] : cyc < 0.5 ? "IDA" : "REGRESO";
+  const count = spec.m === "hold" ? `${Math.floor(Math.max(0, t - at) * spec.s)}s` : `REP ${Math.floor(Math.max(0, t - Math.floor(at))) + 1}`;
+  const btn = on => ({
+    background: on ? col + "22" : "transparent",
+    border: `1px solid ${on ? col + "60" : C.border}`,
+    borderRadius: 6,
+    color: on ? col : C.muted,
+    fontFamily: "inherit",
+    fontSize: 9,
+    fontWeight: "bold",
+    padding: "3px 7px",
+    cursor: "pointer"
+  });
+  return /*#__PURE__*/React.createElement("div", null, svg, /*#__PURE__*/React.createElement("div", {
+    style: {
+      height: 3,
+      background: C.border,
+      borderRadius: 2,
+      margin: "4px 6px 0",
+      overflow: "hidden"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      height: "100%",
+      width: `${(spec.m === "hold" ? cyc : cyc < 0.5 ? cyc * 2 : (1 - cyc) * 2) * 100}%`,
+      background: col
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 5,
+      padding: "6px 4px 2px"
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setPaused(v => !v),
+    style: btn(paused),
+    "aria-label": paused ? "Reanudar" : "Pausar"
+  }, paused ? "▶" : "❚❚"), ANIM_SPEEDS.map(v => /*#__PURE__*/React.createElement("button", {
+    key: v,
+    onClick: () => setSpd(v),
+    style: btn(spd === v)
+  }, v, "x")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      textAlign: "right",
+      fontSize: 10,
+      fontWeight: "bold",
+      letterSpacing: 1,
+      color: col
+    }
+  }, still ? "" : phase), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 9,
+      color: C.muted,
+      minWidth: 40,
+      textAlign: "right"
+    }
+  }, still ? "" : count)));
+}
+
+//  ANIMACION DENTRO DEL ENTRENO 
+// Boton miniatura (la figura en su pose clave) y panel desplegable con la
+// animacion completa y los cues del ejercicio, sin salir del dia.
+function AnimThumb({
+  id,
+  color,
+  open,
+  onClick
+}) {
+  return /*#__PURE__*/React.createElement("button", {
+    onClick: e => {
+      e.stopPropagation();
+      onClick();
+    },
+    "aria-label": "Ver animación del ejercicio",
+    style: {
+      flexShrink: 0,
+      width: 34,
+      height: 24,
+      padding: 1,
+      background: open ? color + "20" : "transparent",
+      border: `1px solid ${open ? color + "60" : C.border}`,
+      borderRadius: 6,
+      cursor: "pointer"
+    }
+  }, /*#__PURE__*/React.createElement(ExAnim, {
+    id,
+    height: 20,
+    color: open ? color : C.muted,
+    at: 0.5
+  }));
+}
+function ItemAnim({
+  id,
+  color,
+  onGuide
+}) {
+  const ex = EXERCISES.find(e => e.id === id);
+  return /*#__PURE__*/React.createElement("div", {
+    onClick: e => e.stopPropagation(),
+    style: {
+      marginTop: 9,
+      marginLeft: 28,
+      background: C.card2,
+      borderRadius: 8,
+      padding: "8px 8px 6px",
+      border: `1px solid ${C.border}`,
+      cursor: "default"
+    }
+  }, /*#__PURE__*/React.createElement(ExAnim, {
+    id,
+    animate: true,
+    controls: true,
+    height: 150,
+    color
+  }), ex && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 8,
+      padding: "0 4px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 9,
+      color,
+      fontWeight: "bold",
+      letterSpacing: 2,
+      marginBottom: 4
+    }
+  }, ex.name.toUpperCase()), ex.cues.slice(0, 3).map((c, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    style: {
+      fontSize: 11,
+      color: "#C8C8C8",
+      lineHeight: 1.5,
+      display: "flex",
+      gap: 6
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color
+    }
+  }, "›"), c)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 10,
+      color: C.orange,
+      marginTop: 4,
+      lineHeight: 1.4
+    }
+  }, "⚠ ", ex.mistakes[0]), onGuide && /*#__PURE__*/React.createElement("button", {
+    onClick: () => onGuide(id),
+    style: {
+      marginTop: 7,
+      background: "transparent",
+      border: "none",
+      padding: 0,
+      color: C.muted,
+      fontFamily: "inherit",
+      fontSize: 9,
+      letterSpacing: 1,
+      cursor: "pointer",
+      textDecoration: "underline"
+    }
+  }, "VER FICHA COMPLETA EN T\u00C9CNICA")));
 }
 
 //  SPARKLINE CHART 
@@ -3836,6 +4471,857 @@ function Sparkline({
 }
 
 //  MAIN APP 
+//  COACH: CONSTANCIA SEMANAL
+// Un dia "cuenta" si marcaste algo o registraste series ese dia. Se compara
+// contra los dias que elegiste entrenar (split): si tu plan es de 4 dias y
+// hiciste 2, la semana quedo al 50% y el coach te lo va a recordar.
+const activeDaySet = (alog, sets) => {
+  const act = new Set();
+  Object.keys(alog || {}).forEach(k => {
+    if (alog[k] > 0) act.add(k);
+  });
+  Object.keys(sets || {}).forEach(k => {
+    const r = sets[k];
+    if (r && r.d && r.s && r.s.some(x => x.r !== null && x.r !== "")) act.add(r.d);
+  });
+  return act;
+};
+const weekAdherence = (alog, sets, split, startD, weeksBack = 8) => {
+  const act = activeDaySet(alog, sets);
+  const today = dateStr();
+  const startMon = startD ? dateStr(mondayOf(parseDay(startD))) : null;
+  const out = [];
+  for (let i = weeksBack - 1; i >= 0; i--) {
+    const mon = addDays(mondayOf(), -i * 7);
+    const key = dateStr(mon);
+    const days = Array.from({
+      length: 7
+    }, (_, d) => {
+      const k = dateStr(addDays(mon, d));
+      return {
+        d,
+        key: k,
+        planned: split.includes(d),
+        active: act.has(k),
+        past: k < today,
+        isToday: k === today,
+        future: k > today
+      };
+    });
+    const planned = split.length;
+    out.push({
+      key,
+      mon,
+      current: i === 0,
+      beforePlan: !!startMon && key < startMon,
+      days,
+      planned,
+      done: days.filter(x => x.active).length,
+      donePlanned: days.filter(x => x.active && x.planned).length,
+      missed: days.filter(x => x.planned && x.past && !x.active).map(x => x.d),
+      pending: days.filter(x => x.planned && !x.past && !x.active).map(x => x.d),
+      extra: days.filter(x => x.active && !x.planned).map(x => x.d)
+    });
+  }
+  return out;
+};
+const pct = (a, b) => b > 0 ? Math.round(a / b * 100) : 0;
+const listDays = arr => {
+  const n = arr.map(d => WDL[d].toLowerCase());
+  return n.length <= 1 ? n.join("") : n.slice(0, -1).join(", ") + " y " + n[n.length - 1];
+};
+
+// Veredicto SIN internet: reglas simples, pero con los numeros reales.
+// level: ok | warn | bad | none
+const coachVerdict = (weeks, vol) => {
+  const cur = weeks[weeks.length - 1];
+  const last = weeks[weeks.length - 2];
+  if (!last || last.beforePlan) return {
+    level: "none",
+    title: "Todavía no hay una semana completa que revisar",
+    lines: ["Cuando cierres tu primera semana, aquí vas a ver cómo te fue contra tu plan de " + cur.planned + " días. Y si faltas, te lo voy a decir."]
+  };
+  const done = Math.min(last.done, last.planned);
+  const ratio = last.planned ? done / last.planned : 1;
+  const lines = [];
+  let level, title;
+  if (ratio >= 1) {
+    level = "ok";
+    title = `Semana pasada: ${last.done}/${last.planned} días. Así se hace.`;
+    lines.push("Cumpliste todo lo que te comprometiste. Esa constancia es lo que de verdad mueve tus números.");
+  } else if (ratio >= 0.75) {
+    level = "warn";
+    title = `Semana pasada: ${last.done}/${last.planned} días. Casi, pero no.`;
+    lines.push(`Te faltó ${listDays(last.missed) || "un día"}. Un día suelto no rompe el plan, pero tampoco lo construye.`);
+  } else if (ratio >= 0.5) {
+    level = "bad";
+    title = `Semana pasada: ${last.done} de ${last.planned} días. Faltaste ${last.planned - done}.`;
+    lines.push(`Te saltaste ${listDays(last.missed) || "varios días"}. Con la mitad de las sesiones el cuerpo recibe la mitad del estímulo: no esperes progresar como si hubieras cumplido.`);
+  } else {
+    level = "bad";
+    title = `Semana pasada: ${last.done} de ${last.planned} días. Eso no es un plan, es turismo.`;
+    lines.push(`Faltaste ${listDays(last.missed) || "casi toda la semana"}. Si esta semana tus números no suben, ya sabes exactamente por qué.`);
+  }
+  // Volumen: une la falta con el progreso ("no es que te estanques, es que faltaste")
+  const vl = vol && vol[vol.length - 2],
+    vp = vol && vol[vol.length - 3];
+  if (vl && vp && vp.reps > 0 && ratio < 1) {
+    const dv = Math.round((vl.reps - vp.reps) / vp.reps * 100);
+    if (dv <= -10) lines.push(`Tu volumen bajó ${-dv}% contra la semana anterior (${vp.reps} → ${vl.reps} reps). No es que estés estancado: es que no fuiste.`);
+  }
+  // Semanas seguidas por debajo del plan
+  let run = 0;
+  for (let i = weeks.length - 2; i >= 0; i--) {
+    const w = weeks[i];
+    if (w.beforePlan || w.done >= w.planned) break;
+    run++;
+  }
+  if (run >= 2) lines.push(`Ya van ${run} semanas seguidas por debajo de tu plan. Esto ya es un patrón, no un accidente.`);
+  if (last.extra.length && ratio < 1) lines.push(`Ojo: sí entrenaste ${listDays(last.extra)}, fuera de tus días. Si esos días te acomodan mejor, cambia tu split en vez de pelearte con él.`);
+  // Esta semana
+  if (cur.pending.length || cur.missed.length) {
+    const todayI = todayIdx();
+    const hoyToca = cur.pending.includes(todayI);
+    lines.push(`Esta semana: ${cur.done}/${cur.planned}.` + (cur.missed.length ? ` Ya se te fue ${listDays(cur.missed)}.` : "") + (hoyToca ? " Hoy te toca: no lo dejes para mañana." : cur.pending.length ? ` Te quedan ${listDays(cur.pending)}.` : ""));
+  } else if (cur.done >= cur.planned) lines.push(`Esta semana ya vas ${cur.done}/${cur.planned}. Bien.`);
+  return {
+    level,
+    title,
+    lines,
+    last,
+    cur
+  };
+};
+
+//  COACH IA (Claude)
+// Llamada directa desde el navegador con la API key del usuario: la app es
+// un solo HTML sin servidor, asi que no hay backend donde esconder una key.
+// La key vive SOLO en este dispositivo (localStorage) y no va en el respaldo.
+const AI_KEY = "dvfit_ai_key";
+const AI_CHAT = "dvfit_coach_chat";
+const AI_MODEL = "claude-opus-5";
+const AI_SYSTEM = `Eres el coach personal de entrenamiento dentro de la app "Dan&Van Fit" (calistenia, running y movilidad). Hablas en español, tuteando, directo y con carácter: eres exigente pero justo, como un buen entrenador que se preocupa.
+
+Reglas de tu personalidad:
+- Usa SIEMPRE los datos reales del usuario que vienen abajo. Cita números concretos (días hechos vs planeados, qué días faltó, volumen, PRs).
+- Si el usuario faltó a días de su plan, regáñalo con claridad (sin groserías ni humillarlo) y conecta la falta con el resultado: si su progreso no fue el esperado, explica que se debe a los días que faltó, no a que el plan no sirva.
+- Si cumplió, reconócelo breve y súbele la exigencia.
+- Nunca inventes datos que no estén en el contexto. Si falta información, pregunta.
+- Da acciones concretas para la semana (qué días, qué priorizar si solo puede ir menos días, cómo recuperar sin sobrecargarse).
+- Seguridad primero: si menciona dolor agudo o una lesión, dile que pare ese ejercicio y consulte a un profesional.
+- Respuestas cortas y fáciles de leer en el celular: 3 a 8 líneas, listas cortas si ayudan. Sin tablas.`;
+const coachContext = ({
+  weeks,
+  vol,
+  prs,
+  notes,
+  split,
+  startD,
+  planWeek,
+  weekLabel,
+  streakNow,
+  bestStreak
+}) => {
+  const L = [];
+  L.push(`Hoy: ${dateStr()} (${WDL[todayIdx()]}).`);
+  L.push(startD ? `Plan anclado el ${startD}; va en la semana ${(planWeek || 0) + 1} del plan${weekLabel ? ` ("${weekLabel}")` : ""}.` : "El usuario todavía no ancla la fecha de inicio del plan.");
+  L.push(`Días de entrenamiento que eligió: ${split.map(d => WDL[d]).join(", ")} (${split.length} por semana).`);
+  L.push("");
+  L.push("CONSTANCIA POR SEMANA (lunes de la semana: días hechos/planeados):");
+  weeks.forEach(w => {
+    if (w.beforePlan) return;
+    const parts = [`- ${w.key}${w.current ? " (semana actual, en curso)" : ""}: ${w.done}/${w.planned}`];
+    if (w.missed.length) parts.push(`faltó ${w.missed.map(d => WD[d]).join(", ")}`);
+    if (w.extra.length) parts.push(`entrenó fuera de plan ${w.extra.map(d => WD[d]).join(", ")}`);
+    if (w.current && w.pending.length) parts.push(`pendientes ${w.pending.map(d => WD[d]).join(", ")}`);
+    L.push(parts.join("; "));
+  });
+  L.push(`Racha actual: ${streakNow} días. Mejor racha: ${bestStreak} días.`);
+  L.push("");
+  L.push("VOLUMEN SEMANAL REGISTRADO (reps / segundos bajo tensión / kg de tonelaje):");
+  const startMon = startD ? dateStr(mondayOf(parseDay(startD))) : "";
+  (vol || []).filter(v => v.key >= startMon).forEach(v => L.push(`- ${v.key}: ${v.reps} reps / ${v.secs} s / ${Math.round(v.kg)} kg`));
+  L.push("");
+  L.push("PRs (métrica: último valor y fecha; mejor marca; valores recientes):");
+  let anyPr = false;
+  PR_METRICS.forEach(m => {
+    const h = (prs || {})[m.id];
+    if (!h || !h.length) return;
+    anyPr = true;
+    const lastV = h[h.length - 1];
+    const recent = h.slice(-6).map(e => `${e.date}=${e.value}`).join(", ");
+    L.push(`- ${m.label} (${m.unit}${m.lower ? ", menos es mejor" : ""}): último ${lastV.value} el ${lastV.date}; mejor ${bestOf(h, m.lower)}; recientes: ${recent}`);
+  });
+  if (!anyPr) L.push("- Sin PRs registrados todavía.");
+  const nk = Object.keys(notes || {}).filter(k => notes[k] && notes[k].t).sort((a, b) => String(notes[b].d).localeCompare(String(notes[a].d))).slice(0, 6);
+  if (nk.length) {
+    L.push("");
+    L.push("NOTAS RECIENTES DEL USUARIO:");
+    nk.forEach(k => L.push(`- ${notes[k].d}: ${String(notes[k].t).slice(0, 280)}`));
+  }
+  return L.join("\n");
+};
+
+// Streaming SSE: el texto va apareciendo mientras llega.
+const askCoach = async ({
+  key,
+  context,
+  history,
+  onText,
+  signal
+}) => {
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    signal,
+    headers: {
+      "content-type": "application/json",
+      "x-api-key": key,
+      "anthropic-version": "2023-06-01",
+      "anthropic-beta": "server-side-fallback-2026-07-01",
+      "anthropic-dangerous-direct-browser-access": "true"
+    },
+    body: JSON.stringify({
+      model: AI_MODEL,
+      max_tokens: 16000,
+      stream: true,
+      thinking: {
+        type: "adaptive"
+      },
+      output_config: {
+        effort: "medium"
+      },
+      fallbacks: "default",
+      system: AI_SYSTEM + "\n\n=== DATOS ACTUALES DEL USUARIO ===\n" + context,
+      messages: history.map(m => ({
+        role: m.role,
+        content: m.text
+      }))
+    })
+  });
+  if (!res.ok) {
+    let msg = "";
+    try {
+      const j = await res.json();
+      msg = j && j.error && j.error.message || "";
+    } catch {}
+    const e = new Error(msg || `HTTP ${res.status}`);
+    e.status = res.status;
+    throw e;
+  }
+  const reader = res.body.getReader();
+  const dec = new TextDecoder();
+  let buf = "",
+    text = "",
+    stop = null;
+  for (;;) {
+    const {
+      done,
+      value
+    } = await reader.read();
+    if (done) break;
+    buf += dec.decode(value, {
+      stream: true
+    });
+    let i;
+    while ((i = buf.indexOf("\n\n")) >= 0) {
+      const chunk = buf.slice(0, i);
+      buf = buf.slice(i + 2);
+      const line = chunk.split("\n").find(l => l.startsWith("data:"));
+      if (!line) continue;
+      let ev;
+      try {
+        ev = JSON.parse(line.slice(5));
+      } catch {
+        continue;
+      }
+      if (ev.type === "content_block_delta" && ev.delta && ev.delta.type === "text_delta") {
+        text += ev.delta.text;
+        onText(text);
+      } else if (ev.type === "message_delta" && ev.delta && ev.delta.stop_reason) stop = ev.delta.stop_reason;else if (ev.type === "error") {
+        const e = new Error(ev.error && ev.error.message || "Error del servidor");
+        e.status = 0;
+        throw e;
+      }
+    }
+  }
+  return {
+    text,
+    stop
+  };
+};
+const aiErrorText = e => {
+  if (e && e.name === "AbortError") return null;
+  const st = e && e.status;
+  if (st === 401) return "La API key no es válida. Revísala en ⚙.";
+  if (st === 403) return "Tu API key no tiene permiso para este modelo.";
+  if (st === 429) return "Demasiadas peticiones o sin saldo en tu cuenta de Anthropic. Intenta en un rato.";
+  if (st === 529 || st >= 500) return "El servicio está saturado. Intenta de nuevo en un momento.";
+  if (st === 400) return "La petición fue rechazada: " + (e.message || "");
+  if (typeof navigator !== "undefined" && navigator.onLine === false) return "Sin conexión. El análisis de arriba sí funciona sin internet.";
+  return "No pude hablar con el coach: " + (e && e.message || "error desconocido");
+};
+const COACH_CHIPS = ["Analiza mi semana pasada y regáñame si hace falta", "¿Por qué no estoy progresando?", "Solo puedo ir 2 días esta semana, ¿qué priorizo?", "Arma mi plan de esta semana para no volver a fallar"];
+
+//  PESTAÑA COACH
+function CoachTab({
+  weeks,
+  verdict,
+  vol,
+  prs,
+  notes,
+  split,
+  startD,
+  planWeek,
+  weekLabel,
+  streakNow,
+  bestStreak,
+  onSplit
+}) {
+  const [key, setKey] = useState(() => {
+    try {
+      return localStorage.getItem(AI_KEY) || "";
+    } catch {
+      return "";
+    }
+  });
+  const [keyDraft, setKeyDraft] = useState("");
+  const [showKey, setShowKey] = useState(false);
+  const [chat, setChat] = useState(() => {
+    const v = load(AI_CHAT, []);
+    return Array.isArray(v) ? v : [];
+  });
+  const [draft, setDraft] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [live, setLive] = useState("");
+  const [err, setErr] = useState(null);
+  const abortRef = useRef(null);
+  const endRef = useRef(null);
+  useEffect(() => () => abortRef.current && abortRef.current.abort(), []);
+  useEffect(() => {
+    if (endRef.current && (busy || chat.length)) try {
+      endRef.current.scrollIntoView({
+        block: "nearest"
+      });
+    } catch {}
+  }, [chat.length, busy, live]);
+  const saveKey = v => {
+    const k = v.trim();
+    try {
+      if (k) localStorage.setItem(AI_KEY, k);else localStorage.removeItem(AI_KEY);
+    } catch {}
+    setKey(k);
+    setKeyDraft("");
+    setShowKey(false);
+  };
+  const saveChat = n => {
+    const trimmed = n.slice(-60);
+    setChat(trimmed);
+    save(AI_CHAT, trimmed);
+  };
+  const send = async text => {
+    const q = String(text || "").trim();
+    if (!q || busy || !key) return;
+    setErr(null);
+    setDraft("");
+    const next = [...chat, {
+      role: "user",
+      text: q,
+      d: dateStr()
+    }];
+    saveChat(next);
+    setBusy(true);
+    setLive("");
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
+    try {
+      // Solo las ultimas 20 vueltas: el contexto de datos se regenera en cada
+      // pregunta, asi que el historial viejo no hace falta.
+      let hist = next.slice(-20);
+      while (hist.length && hist[0].role !== "user") hist = hist.slice(1);
+      const context = coachContext({
+        weeks,
+        vol,
+        prs,
+        notes,
+        split,
+        startD,
+        planWeek,
+        weekLabel,
+        streakNow,
+        bestStreak
+      });
+      const r = await askCoach({
+        key,
+        context,
+        history: hist,
+        onText: setLive,
+        signal: ctrl.signal
+      });
+      const answer = r.stop === "refusal" ? "No puedo responder a eso. Pregúntame sobre tu entrenamiento, tu constancia o tu progreso." : r.text.trim() || "(sin respuesta)";
+      saveChat([...next, {
+        role: "assistant",
+        text: answer,
+        d: dateStr()
+      }]);
+    } catch (e) {
+      const m = aiErrorText(e);
+      if (m) setErr(m);
+      // La pregunta fallida se quita para que el historial siga alternando
+      saveChat(next.slice(0, -1));
+      if (m) setDraft(q);
+    } finally {
+      setBusy(false);
+      setLive("");
+      abortRef.current = null;
+    }
+  };
+  const lvCol = {
+    ok: C.teal,
+    warn: C.yellow,
+    bad: C.red,
+    none: C.muted
+  }[verdict.level];
+  const shown = weeks.filter(w => !w.beforePlan);
+  const card = {
+    background: C.card,
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 12,
+    border: `1px solid ${C.border}`
+  };
+  const label = {
+    fontSize: 9,
+    color: C.muted,
+    letterSpacing: 2,
+    fontWeight: "bold",
+    marginBottom: 10
+  };
+  const cur = weeks[weeks.length - 1];
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...card,
+      border: `1px solid ${lvCol}50`,
+      background: lvCol + "0A"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...label,
+      color: lvCol
+    }
+  }, verdict.level === "bad" ? "🗣️ EL COACH TE TIENE QUE DECIR ALGO" : verdict.level === "warn" ? "🗣️ RESUMEN DEL COACH" : "🗣️ COACH"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 14,
+      fontWeight: "bold",
+      lineHeight: 1.4,
+      marginBottom: 8
+    }
+  }, verdict.title), verdict.lines.map((l, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    style: {
+      fontSize: 12,
+      color: "#C8C8C8",
+      lineHeight: 1.55,
+      marginBottom: 5
+    }
+  }, l))), /*#__PURE__*/React.createElement("div", {
+    style: card
+  }, /*#__PURE__*/React.createElement("div", {
+    style: label
+  }, "ESTA SEMANA"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 4
+    }
+  }, cur.days.map(x => {
+    const st = x.active ? x.planned ? "done" : "extra" : x.planned ? x.past ? "miss" : "todo" : "rest";
+    const c = {
+      done: C.teal,
+      extra: C.purple,
+      miss: C.red,
+      todo: C.yellow,
+      rest: C.dim
+    }[st];
+    return /*#__PURE__*/React.createElement("div", {
+      key: x.d,
+      style: {
+        flex: 1,
+        textAlign: "center"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 8,
+        color: x.isToday ? C.text : C.muted,
+        fontWeight: x.isToday ? "bold" : "normal",
+        marginBottom: 4
+      }
+    }, WD[x.d]), /*#__PURE__*/React.createElement("div", {
+      style: {
+        height: 28,
+        borderRadius: 7,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: 12,
+        fontWeight: "bold",
+        background: st === "done" || st === "extra" ? c : st === "miss" ? c + "22" : "transparent",
+        border: `1px solid ${st === "rest" ? C.border : c + (st === "todo" ? "90" : "")}`,
+        color: st === "done" || st === "extra" ? C.bg : c
+      }
+    }, st === "done" || st === "extra" ? "✓" : st === "miss" ? "✕" : st === "todo" ? x.isToday ? "HOY" : "·" : ""));
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 10,
+      flexWrap: "wrap",
+      fontSize: 9,
+      color: C.muted,
+      marginTop: 9
+    }
+  }, /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.teal
+    }
+  }, "■"), " hecho"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.red
+    }
+  }, "✕"), " faltaste"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.yellow
+    }
+  }, "\xB7"), " pendiente"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.purple
+    }
+  }, "■"), " fuera de plan"))), /*#__PURE__*/React.createElement("div", {
+    style: card
+  }, /*#__PURE__*/React.createElement("div", {
+    style: label
+  }, "CONSTANCIA \xB7 D\xCDAS HECHOS VS PLANEADOS"), shown.length === 0 ? /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.dim
+    }
+  }, "A\xFAn no hay semanas desde que anclaste el plan.") : /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 6,
+      alignItems: "flex-end",
+      height: 110
+    }
+  }, shown.map(w => {
+    const p = Math.min(1, w.planned ? w.done / w.planned : 0);
+    const c = w.current ? C.blue : p >= 1 ? C.teal : p >= 0.75 ? C.yellow : p >= 0.5 ? C.orange : C.red;
+    return /*#__PURE__*/React.createElement("div", {
+      key: w.key,
+      style: {
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        height: "100%",
+        justifyContent: "flex-end"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 9,
+        fontWeight: "bold",
+        color: c,
+        marginBottom: 3
+      }
+    }, w.done, "/", w.planned), /*#__PURE__*/React.createElement("div", {
+      style: {
+        width: "100%",
+        maxWidth: 34,
+        height: 70,
+        background: C.card2,
+        borderRadius: 5,
+        display: "flex",
+        alignItems: "flex-end",
+        overflow: "hidden",
+        border: w.current ? `1px dashed ${C.blue}60` : "none"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        width: "100%",
+        height: `${Math.max(p * 100, 3)}%`,
+        background: c,
+        opacity: w.current ? 0.6 : 1
+      }
+    })), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 8,
+        color: w.current ? C.blue : C.dim,
+        marginTop: 4
+      }
+    }, w.current ? "HOY" : w.key.slice(5).replace("-", "/")));
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 9,
+      color: C.dim,
+      marginTop: 10,
+      lineHeight: 1.5
+    }
+  }, "Un d\xEDa cuenta cuando marcas algo o registras series. Tu plan: ", split.length, " d\xEDas (", split.map(d => WD[d]).join(" "), ").", onSplit && /*#__PURE__*/React.createElement("button", {
+    onClick: onSplit,
+    style: {
+      background: "none",
+      border: "none",
+      color: C.muted,
+      textDecoration: "underline",
+      fontFamily: "inherit",
+      fontSize: 9,
+      cursor: "pointer",
+      padding: "0 0 0 4px"
+    }
+  }, "Cambiar d\xEDas"))), /*#__PURE__*/React.createElement("div", {
+    style: card
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 10
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...label,
+      marginBottom: 0,
+      color: C.purple
+    }
+  }, "🤖 CHAT CON EL COACH IA"), key && /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 6
+    }
+  }, chat.length > 0 && /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      if (window.confirm("¿Borrar la conversación con el coach?")) saveChat([]);
+    },
+    style: {
+      background: "transparent",
+      border: `1px solid ${C.border}`,
+      borderRadius: 6,
+      color: C.muted,
+      fontFamily: "inherit",
+      fontSize: 9,
+      padding: "3px 8px",
+      cursor: "pointer"
+    }
+  }, "BORRAR"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setShowKey(v => !v),
+    "aria-label": "Configurar API key",
+    style: {
+      background: "transparent",
+      border: `1px solid ${C.border}`,
+      borderRadius: 6,
+      color: C.muted,
+      fontFamily: "inherit",
+      fontSize: 11,
+      padding: "2px 8px",
+      cursor: "pointer"
+    }
+  }, "⚙"))), (!key || showKey) && /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: C.card2,
+      borderRadius: 9,
+      padding: 12,
+      marginBottom: 10,
+      border: `1px solid ${C.border}`
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "#C8C8C8",
+      lineHeight: 1.55,
+      marginBottom: 9
+    }
+  }, "El coach IA usa Claude con ", /*#__PURE__*/React.createElement("b", null, "tu propia API key"), " de Anthropic (cons\xEDguela en console.anthropic.com). Se guarda solo en este dispositivo y no va en los respaldos. Cada pregunta env\xEDa a Anthropic un resumen de tu constancia, volumen, PRs y notas."), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 6
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "password",
+    autoComplete: "off",
+    value: keyDraft,
+    onChange: e => setKeyDraft(e.target.value),
+    placeholder: key ? "Nueva key (vacío = no cambiar)" : "sk-ant-...",
+    style: {
+      flex: 1,
+      minWidth: 0,
+      background: C.card,
+      border: `1px solid ${C.border}`,
+      borderRadius: 7,
+      padding: "9px 10px",
+      color: C.text,
+      fontFamily: "inherit",
+      fontSize: 12
+    }
+  }), /*#__PURE__*/React.createElement("button", {
+    onClick: () => keyDraft.trim() && saveKey(keyDraft),
+    style: {
+      background: C.purple,
+      border: "none",
+      borderRadius: 7,
+      padding: "0 14px",
+      color: C.bg,
+      fontFamily: "inherit",
+      fontSize: 11,
+      fontWeight: "bold",
+      cursor: "pointer"
+    }
+  }, "GUARDAR")), key && /*#__PURE__*/React.createElement("button", {
+    onClick: () => saveKey(""),
+    style: {
+      marginTop: 8,
+      background: "none",
+      border: "none",
+      padding: 0,
+      color: C.red,
+      fontFamily: "inherit",
+      fontSize: 10,
+      cursor: "pointer",
+      textDecoration: "underline"
+    }
+  }, "Quitar la key de este dispositivo")), key && /*#__PURE__*/React.createElement(React.Fragment, null, chat.length === 0 && !busy && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted,
+      lineHeight: 1.55,
+      marginBottom: 10
+    }
+  }, "Preg\xFAntale lo que quieras. Ya conoce tus d\xEDas de entrenamiento, qu\xE9 d\xEDas faltaste, tu volumen y tus PRs."), chat.map((m, i) => /*#__PURE__*/React.createElement(CoachBubble, {
+    key: i,
+    m: m
+  })), busy && /*#__PURE__*/React.createElement(CoachBubble, {
+    m: {
+      role: "assistant",
+      text: live || "Revisando tus números…"
+    },
+    pending: !live
+  }), err && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.orange,
+      background: C.orange + "15",
+      border: `1px solid ${C.orange}40`,
+      borderRadius: 8,
+      padding: "8px 10px",
+      marginBottom: 8,
+      lineHeight: 1.5
+    }
+  }, err), /*#__PURE__*/React.createElement("div", {
+    ref: endRef
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 5,
+      flexWrap: "wrap",
+      margin: "4px 0 8px"
+    }
+  }, COACH_CHIPS.map(c => /*#__PURE__*/React.createElement("button", {
+    key: c,
+    disabled: busy,
+    onClick: () => send(c),
+    style: {
+      background: C.card2,
+      border: `1px solid ${C.border}`,
+      borderRadius: 14,
+      padding: "5px 10px",
+      color: busy ? C.dim : C.muted,
+      fontFamily: "inherit",
+      fontSize: 10,
+      cursor: busy ? "default" : "pointer",
+      textAlign: "left"
+    }
+  }, c))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 6
+    }
+  }, /*#__PURE__*/React.createElement("textarea", {
+    value: draft,
+    rows: 2,
+    onChange: e => setDraft(e.target.value),
+    onKeyDown: e => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        send(draft);
+      }
+    },
+    placeholder: "Escribe al coach…",
+    style: {
+      flex: 1,
+      minWidth: 0,
+      resize: "none",
+      background: C.card2,
+      border: `1px solid ${C.border}`,
+      borderRadius: 8,
+      padding: "8px 10px",
+      color: C.text,
+      fontFamily: "inherit",
+      fontSize: 12,
+      lineHeight: 1.4
+    }
+  }), busy ? /*#__PURE__*/React.createElement("button", {
+    onClick: () => abortRef.current && abortRef.current.abort(),
+    style: {
+      background: "transparent",
+      border: `1px solid ${C.border}`,
+      borderRadius: 8,
+      padding: "0 12px",
+      color: C.muted,
+      fontFamily: "inherit",
+      fontSize: 11,
+      cursor: "pointer"
+    }
+  }, "■") : /*#__PURE__*/React.createElement("button", {
+    onClick: () => send(draft),
+    disabled: !draft.trim(),
+    style: {
+      background: draft.trim() ? C.purple : C.card2,
+      border: "none",
+      borderRadius: 8,
+      padding: "0 14px",
+      color: draft.trim() ? C.bg : C.dim,
+      fontFamily: "inherit",
+      fontSize: 13,
+      fontWeight: "bold",
+      cursor: draft.trim() ? "pointer" : "default"
+    }
+  }, "↑")))));
+}
+function CoachBubble({
+  m,
+  pending
+}) {
+  const me = m.role === "user";
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: me ? "flex-end" : "flex-start",
+      marginBottom: 8
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      maxWidth: "88%",
+      whiteSpace: "pre-wrap",
+      wordBreak: "break-word",
+      fontSize: 12,
+      lineHeight: 1.55,
+      padding: "8px 11px",
+      borderRadius: 11,
+      borderBottomRightRadius: me ? 3 : 11,
+      borderBottomLeftRadius: me ? 11 : 3,
+      background: me ? C.purple + "25" : C.card2,
+      border: `1px solid ${me ? C.purple + "50" : C.border}`,
+      color: pending ? C.muted : me ? C.text : "#D8D8D8",
+      fontStyle: pending ? "italic" : "normal"
+    }
+  }, String(m.text).replace(/\*\*(.+?)\*\*/g, "$1")));
+}
+
 function App() {
   //  Persistent state via localStorage 
   const [tab, setTab] = useState("semana");
@@ -3885,6 +5371,7 @@ function App() {
     });
   }, []);
   const [openSets, setOpenSets] = useState(null);
+  const [openAnim, setOpenAnim] = useState(null);
   const [volMeasure, setVolMeasure] = useState("reps");
   const [volSel, setVolSel] = useState(null);
   const [showNotes, setShowNotes] = useState(false);
@@ -4188,6 +5675,12 @@ function App() {
   const volMeta = VOL_MEASURES.find(m => m.id === volMeasure) || VOL_MEASURES[0];
   const volAny = volData.some(d => d.reps > 0 || d.kg > 0 || d.secs > 0);
 
+  //  Coach: constancia contra el plan 
+  const adh = useMemo(() => weekAdherence(alog, exSets, split, startD, 8), [alog, exSets, split, startD, clockTick]);
+  const verdict = useMemo(() => coachVerdict(adh, volData), [adh, volData]);
+  const [coachSeen, setCoachSeen] = useState(() => load("dvfit_coach_seen", null));
+  const showNag = (verdict.level === "bad" || verdict.level === "warn") && verdict.last && coachSeen !== verdict.last.key;
+
   //  Requisitos del arbol, derivados de tus PRs 
   const reqState = useMemo(() => BASE_REQS.map((r, i) => {
     const m = PR_METRICS.find(x => x.id === r.metric);
@@ -4284,6 +5777,20 @@ function App() {
     setTn(null);
     setPathDayArbol(null);
     setArbolEB(null);
+  };
+  // Desde un entreno: brinca a la ficha completa del ejercicio en TECNICA
+  const goGuide = id => {
+    changeTab("tecnica");
+    setExF("all");
+    setExO(id);
+    setTimeout(() => {
+      try {
+        const el = document.getElementById("ex-" + id);
+        if (el) el.scrollIntoView({
+          block: "start"
+        });else window.scrollTo(0, 0);
+      } catch {}
+    }, 60);
   };
   return /*#__PURE__*/React.createElement("div", {
     style: {
@@ -4401,7 +5908,65 @@ function App() {
       padding: "16px 14px 100px",
       paddingBottom: "max(100px, calc(80px + env(safe-area-inset-bottom)))"
     }
-  }, tab === "semana" && !dd && /*#__PURE__*/React.createElement(React.Fragment, null, (!startD || showAnchor) && /*#__PURE__*/React.createElement("div", {
+  }, tab === "semana" && !dd && /*#__PURE__*/React.createElement(React.Fragment, null, showNag && /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: (verdict.level === "bad" ? C.red : C.yellow) + "0D",
+      border: `1px solid ${(verdict.level === "bad" ? C.red : C.yellow) + "50"}`,
+      borderRadius: 12,
+      padding: "12px 14px",
+      marginBottom: 12
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      gap: 8
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      fontWeight: "bold",
+      lineHeight: 1.4,
+      color: verdict.level === "bad" ? C.red : C.yellow
+    }
+  }, "\uD83D\uDDE3\uFE0F ", verdict.title), /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      setCoachSeen(verdict.last.key);
+      save("dvfit_coach_seen", verdict.last.key);
+    },
+    "aria-label": "Ocultar hasta la próxima semana",
+    style: {
+      background: "none",
+      border: "none",
+      color: C.muted,
+      fontSize: 14,
+      cursor: "pointer",
+      padding: 0,
+      alignSelf: "flex-start"
+    }
+  }, "\u2715")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "#C0C0C0",
+      lineHeight: 1.55,
+      marginTop: 6
+    }
+  }, verdict.lines[0]), /*#__PURE__*/React.createElement("button", {
+    onClick: () => changeTab("coach"),
+    style: {
+      marginTop: 9,
+      background: "transparent",
+      border: `1px solid ${C.border}`,
+      borderRadius: 8,
+      padding: "6px 11px",
+      color: C.text,
+      fontFamily: "inherit",
+      fontSize: 10,
+      fontWeight: "bold",
+      letterSpacing: 1,
+      cursor: "pointer"
+    }
+  }, "HABLAR CON EL COACH \u2192")), (!startD || showAnchor) && /*#__PURE__*/React.createElement("div", {
     style: {
       background: C.card,
       borderRadius: 12,
@@ -5317,6 +6882,8 @@ function App() {
         const rows = rowsFor(k, item);
         const prev = isOpen ? lastTimeFor(k, item) : null;
         const unit = pr.secs ? "s" : "reps";
+        const aid = animFor(shown);
+        const isAnim = aid && openAnim === k;
         return /*#__PURE__*/React.createElement("div", {
           key: ii,
           style: {
@@ -5382,7 +6949,12 @@ function App() {
             color: C.orange,
             marginTop: 2
           }
-        }, "Necesita ", sb.need === "dip" ? "paralelas o anillas" : "barra o anillas", " \u2014 no cuenta para el d\xEDa")), /*#__PURE__*/React.createElement("button", {
+        }, "Necesita ", sb.need === "dip" ? "paralelas o anillas" : "barra o anillas", " \u2014 no cuenta para el d\xEDa")), aid && /*#__PURE__*/React.createElement(AnimThumb, {
+          id: aid,
+          color: col,
+          open: isAnim,
+          onClick: () => setOpenAnim(v => v === k ? null : k)
+        }), /*#__PURE__*/React.createElement("button", {
           onClick: () => setOpenSets(v => v === k ? null : k),
           style: {
             flexShrink: 0,
@@ -5397,7 +6969,11 @@ function App() {
             cursor: "pointer",
             letterSpacing: .5
           }
-        }, logged > 0 ? `${logged} ✎` : "✎")), isOpen && /*#__PURE__*/React.createElement("div", {
+        }, logged > 0 ? `${logged} ✎` : "✎")), isAnim && /*#__PURE__*/React.createElement(ItemAnim, {
+          id: aid,
+          color: col,
+          onGuide: goGuide
+        }), isOpen && /*#__PURE__*/React.createElement("div", {
           style: {
             marginTop: 9,
             marginLeft: 28,
@@ -6846,15 +8422,20 @@ function App() {
         }, block.i.map((item, ii) => {
           const k = pk(path.id, pw, pathDayArbol, bi, ii);
           const done = chk[k];
+          const aid = animFor(item);
+          const isAnim = aid && openAnim === k;
           return /*#__PURE__*/React.createElement("div", {
             key: ii,
+            style: {
+              padding: "8px 0",
+              borderBottom: ii < block.i.length - 1 ? `1px solid ${C.border}` : "none"
+            }
+          }, /*#__PURE__*/React.createElement("div", {
             onClick: () => tick(k),
             style: {
               display: "flex",
               gap: 9,
               alignItems: "flex-start",
-              padding: "8px 0",
-              borderBottom: ii < block.i.length - 1 ? `1px solid ${C.border}` : "none",
               cursor: "pointer"
             }
           }, /*#__PURE__*/React.createElement("div", {
@@ -6878,12 +8459,22 @@ function App() {
             }
           }, "\u2713")), /*#__PURE__*/React.createElement("span", {
             style: {
+              flex: 1,
               fontSize: 12,
               color: done ? col : "#D0D0D0",
               lineHeight: 1.5,
               textDecoration: done ? "line-through" : "none"
             }
-          }, item));
+          }, item), aid && /*#__PURE__*/React.createElement(AnimThumb, {
+            id: aid,
+            color: col,
+            open: isAnim,
+            onClick: () => setOpenAnim(v => v === k ? null : k)
+          })), isAnim && /*#__PURE__*/React.createElement(ItemAnim, {
+            id: aid,
+            color: col,
+            onGuide: goGuide
+          }));
         })));
       }), doneI === totalI && totalI > 0 ? /*#__PURE__*/React.createElement("div", {
         style: {
@@ -7324,7 +8915,9 @@ function App() {
     }[ex.src] || C.muted;
     return /*#__PURE__*/React.createElement("div", {
       key: ex.id,
+      id: "ex-" + ex.id,
       style: {
+        scrollMarginTop: 110,
         background: C.card,
         borderRadius: 10,
         overflow: "hidden",
@@ -7338,6 +8931,7 @@ function App() {
         padding: "12px 14px",
         background: isO ? "#E8FF3A08" : "transparent",
         border: "none",
+        color: C.text,
         cursor: "pointer",
         display: "flex",
         gap: 10,
@@ -7409,6 +9003,7 @@ function App() {
     }, /*#__PURE__*/React.createElement(ExAnim, {
       id: ex.id,
       animate: true,
+      controls: true,
       height: 168
     }), /*#__PURE__*/React.createElement("div", {
       style: {
@@ -7418,7 +9013,7 @@ function App() {
         letterSpacing: 1,
         padding: "2px 0 3px"
       }
-    }, "ESQUEMA DEL MOVIMIENTO")), /*#__PURE__*/React.createElement("div", {
+    }, "ESQUEMA DEL MOVIMIENTO \xB7 TOCA LA FIGURA PARA PAUSAR")), /*#__PURE__*/React.createElement("div", {
       style: {
         marginBottom: 9
       }
@@ -7506,7 +9101,23 @@ function App() {
         fontStyle: "italic"
       }
     }, ex.tip))));
-  })), tab === "equipo" && (() => {
+  })), tab === "coach" && /*#__PURE__*/React.createElement(CoachTab, {
+    weeks: adh,
+    verdict,
+    vol: volData,
+    prs,
+    notes,
+    split,
+    startD,
+    planWeek,
+    weekLabel: todayRes && todayRes.week ? todayRes.week.label : null,
+    streakNow,
+    bestStreak,
+    onSplit: () => {
+      changeTab("semana");
+      setShowAnchor(true);
+    }
+  }), tab === "equipo" && (() => {
     const allItems = EQUIPMENT.flatMap(ph => ph.items);
     const done = allItems.filter(it => chk[it.id]).length;
     const urgent = allItems.filter(it => it.urgent && !chk[it.id]).length;
