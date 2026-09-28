@@ -9503,6 +9503,182 @@ function ExAnim({
   }, "\uD83D\uDD12 ", LOCK_TXT[spec.lk]))));
 }
 
+//  FOTOS REALES Y VIDEO 
+// Fotos de free-exercise-db (github.com/yuhonas/free-exercise-db, dominio
+// publico): posicion inicial y final de una persona real. Se guardan en
+// img/ex/ junto al HTML; el service worker las deja en cache la primera vez
+// que se ven, asi luego funcionan sin senal.
+const PHOTOS = {"push-up": "Pushups", "pullup": "Pullups", "neg-pull": "Pullups", "dips": "Dips - Chest Version", "plank": "Plank", "lunge": "Bodyweight Walking Lunge", "australian": "Inverted Row", "mountain-climber": "Mountain Climbers", "jump": "Front Box Jump", "bridge": "Butt Lift (Bridge)", "cat-cow": "Cat Stretch", "foam-roll": "Hamstring-SMR", "face-pull": "Face Pull", "farmer": "Farmer's Walk", "step-up": "Step-up with Knee Raise", "hspu": "Handstand Push-Ups", "muscle-up": "Muscle Up", "pistol": "Kettlebell Pistol Squat", "tricep-ext": "Body Tricep Press", "fold": "Standing Toe Touches", "arm-circle": "Arm Circles", "hip-mob": "Standing Hip Circles", "rope": "Rope Jumping"};
+const photoSrc = (id, i) => `img/ex/${id}-${i}.jpg`;
+const videoUrl = name => `https://www.youtube.com/results?search_query=${encodeURIComponent(name + " tutorial técnica calistenia")}`;
+function ExPhoto({
+  id,
+  color
+}) {
+  const [fr, setFr] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    if (paused || failed || _reduceMotion()) return;
+    // 0.5x como las animaciones: cada foto se queda ~2 s
+    const t = setInterval(() => setFr(f => 1 - f), 2000);
+    return () => clearInterval(t);
+  }, [paused, failed]);
+  if (failed) return /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "28px 10px",
+      textAlign: "center",
+      fontSize: 11,
+      color: C.muted,
+      lineHeight: 1.5
+    }
+  }, "La foto no est\xE1 disponible sin conexi\xF3n. \xC1brela una vez con internet y quedar\xE1 guardada.");
+  const lbl = ["1 \xB7 INICIO", "2 \xB7 FINAL"];
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    onClick: () => setPaused(v => !v),
+    style: {
+      position: "relative",
+      width: "100%",
+      aspectRatio: "3 / 2",
+      background: "#000",
+      borderRadius: 7,
+      overflow: "hidden",
+      cursor: "pointer"
+    }
+  }, [0, 1].map(i => /*#__PURE__*/React.createElement("img", {
+    key: i,
+    src: photoSrc(id, i),
+    alt: `${PHOTOS[id]}: ${lbl[i]}`,
+    loading: "lazy",
+    onError: () => setFailed(true),
+    style: {
+      position: "absolute",
+      inset: 0,
+      width: "100%",
+      height: "100%",
+      objectFit: "contain",
+      opacity: fr === i ? 1 : 0,
+      transition: "opacity .45s ease"
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "absolute",
+      left: 8,
+      top: 8,
+      background: C.bg + "D0",
+      border: `1px solid ${color}80`,
+      color,
+      borderRadius: 6,
+      padding: "3px 8px",
+      fontSize: 10,
+      fontWeight: "bold",
+      letterSpacing: 1
+    }
+  }, lbl[fr]), paused && /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "absolute",
+      right: 8,
+      top: 8,
+      background: C.bg + "D0",
+      color: C.muted,
+      borderRadius: 6,
+      padding: "3px 8px",
+      fontSize: 10
+    }
+  }, "\u275A\u275A PAUSA")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 5,
+      alignItems: "center",
+      padding: "7px 2px 0"
+    }
+  }, [0, 1].map(i => /*#__PURE__*/React.createElement("button", {
+    key: i,
+    onClick: () => {
+      setFr(i);
+      setPaused(true);
+    },
+    style: {
+      background: fr === i ? color + "22" : "transparent",
+      border: `1px solid ${fr === i ? color + "60" : C.border}`,
+      borderRadius: 6,
+      color: fr === i ? color : C.muted,
+      fontFamily: "inherit",
+      fontSize: 9,
+      fontWeight: "bold",
+      padding: "3px 8px",
+      cursor: "pointer"
+    }
+  }, lbl[i])), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      textAlign: "right",
+      fontSize: 8,
+      color: C.dim
+    }
+  }, "Foto: free-exercise-db (dominio p\xFAblico)")));
+}
+// Pestanas: foto real (si hay) + animacion tecnica, y boton de video
+function ExMedia({
+  id,
+  color,
+  height = 185
+}) {
+  const col = color || C.yellow;
+  const has = !!PHOTOS[id];
+  const [tab, setTab] = useState(has ? "foto" : "tec");
+  const ex = EXERCISES.find(e => e.id === id);
+  const tb = on => ({
+    flex: 1,
+    padding: "7px 6px",
+    background: on ? col + "20" : "transparent",
+    border: `1px solid ${on ? col + "70" : C.border}`,
+    borderRadius: 7,
+    color: on ? col : C.muted,
+    fontFamily: "inherit",
+    fontSize: 10,
+    fontWeight: "bold",
+    letterSpacing: 1,
+    cursor: "pointer"
+  });
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 5,
+      marginBottom: 8
+    }
+  }, has && /*#__PURE__*/React.createElement("button", {
+    onClick: () => setTab("foto"),
+    style: tb(tab === "foto")
+  }, "\uD83D\uDCF7 FOTO REAL"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setTab("tec"),
+    style: tb(tab === "tec")
+  }, "\uD83D\uDCD0 T\xC9CNICA"), /*#__PURE__*/React.createElement("a", {
+    href: videoUrl(ex ? ex.name : id),
+    target: "_blank",
+    rel: "noopener noreferrer",
+    style: {
+      ...tb(false),
+      flex: "0 0 auto",
+      textDecoration: "none",
+      color: C.red,
+      borderColor: C.red + "60",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center"
+    }
+  }, "\u25B6 VIDEO")), tab === "foto" && has ? /*#__PURE__*/React.createElement(ExPhoto, {
+    id: id,
+    color: col
+  }) : /*#__PURE__*/React.createElement(ExAnim, {
+    id,
+    animate: true,
+    controls: true,
+    height,
+    color: col
+  }));
+}
+
 //  ANIMACION DENTRO DEL ENTRENO 
 // Boton miniatura (la figura en su pose clave) y panel desplegable con la
 // animacion completa y los cues del ejercicio, sin salir del dia.
@@ -9552,12 +9728,10 @@ function ItemAnim({
       border: `1px solid ${C.border}`,
       cursor: "default"
     }
-  }, /*#__PURE__*/React.createElement(ExAnim, {
+  }, /*#__PURE__*/React.createElement(ExMedia, {
     id,
-    animate: true,
-    controls: true,
-    height: 185,
-    color
+    color,
+    height: 185
   }), ex && /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: 8,
@@ -14199,10 +14373,8 @@ function App() {
         marginBottom: 10,
         padding: "8px 6px 4px"
       }
-    }, /*#__PURE__*/React.createElement(ExAnim, {
+    }, /*#__PURE__*/React.createElement(ExMedia, {
       id: ex.id,
-      animate: true,
-      controls: true,
       height: 168
     }), /*#__PURE__*/React.createElement("div", {
       style: {
@@ -14212,7 +14384,7 @@ function App() {
         letterSpacing: 1,
         padding: "2px 0 3px"
       }
-    }, "ESQUEMA DEL MOVIMIENTO \xB7 TOCA LA FIGURA PARA PAUSAR")), /*#__PURE__*/React.createElement("div", {
+    }, "TOCA LA FOTO O LA FIGURA PARA PAUSAR")), /*#__PURE__*/React.createElement("div", {
       style: {
         marginBottom: 9
       }
