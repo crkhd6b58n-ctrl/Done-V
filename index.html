@@ -9510,6 +9510,15 @@ function ExAnim({
 // que se ven, asi luego funcionan sin senal.
 const PHOTOS = {"push-up": "Pushups", "pullup": "Pullups", "neg-pull": "Pullups", "dips": "Dips - Chest Version", "plank": "Plank", "lunge": "Bodyweight Walking Lunge", "australian": "Inverted Row", "mountain-climber": "Mountain Climbers", "jump": "Front Box Jump", "bridge": "Butt Lift (Bridge)", "cat-cow": "Cat Stretch", "foam-roll": "Hamstring-SMR", "face-pull": "Face Pull", "farmer": "Farmer's Walk", "step-up": "Step-up with Knee Raise", "hspu": "Handstand Push-Ups", "muscle-up": "Muscle Up", "pistol": "Kettlebell Pistol Squat", "tricep-ext": "Body Tricep Press", "fold": "Standing Toe Touches", "arm-circle": "Arm Circles", "hip-mob": "Standing Hip Circles", "rope": "Rope Jumping"};
 const photoSrc = (id, i) => `img/ex/${id}-${i}.jpg`;
+// Skills de calistenia (no vienen en free-exercise-db): fotos de Wikimedia
+// Commons con licencia CC. La licencia exige el credito al autor y el enlace,
+// por eso cada foto lleva los suyos.
+const PHOTOS_WM = {"planche": [{"f": "img/ex/planche-w0.jpg", "l": "EN EL PISO", "c": "Jonathanfv · CC BY 3.0", "u": "https://commons.wikimedia.org/wiki/File:Planche.jpg"}, {"f": "img/ex/planche-w1.jpg", "l": "EN ANILLAS", "c": "Pierre-Yves Beaudouin · CC BY-SA 4.0", "u": "https://commons.wikimedia.org/wiki/File:2015_European_Artistic_Gymnastics_Championships_-_Rings_-_Denis_Ablyazin_10.jpg"}], "front-lever": [{"f": "img/ex/front-lever-w0.jpg", "l": "FRONT LEVER COMPLETO", "c": "Silentrunner at English Wikipedia · CC BY-SA 3.0", "u": "https://commons.wikimedia.org/wiki/File:John_Gill_-_Front_Lever_-_1962.JPG"}], "lsit": [{"f": "img/ex/lsit-w0.jpg", "l": "EN PARALETAS", "c": "Anthony Topper · CC BY 2.0", "u": "https://commons.wikimedia.org/wiki/File:Annie_Thorisdottir_does_an_l-sit.jpg"}], "back-lever": [{"f": "img/ex/back-lever-w0.jpg", "l": "EN ANILLAS", "c": "Ondra7575 · CC BY-SA 4.0", "u": "https://commons.wikimedia.org/wiki/File:Back_lever_on_gymnastics_rings.jpg"}]};
+const photoFrames = id => PHOTOS_WM[id] ? PHOTOS_WM[id] : PHOTOS[id] ? [0, 1].map(i => ({
+  f: photoSrc(id, i),
+  l: i ? "2 \xB7 FINAL" : "1 \xB7 INICIO",
+  c: "free-exercise-db (dominio p\xFAblico)"
+})) : null;
 const videoUrl = name => `https://www.youtube.com/results?search_query=${encodeURIComponent(name + " tutorial técnica calistenia")}`;
 function ExPhoto({
   id,
@@ -9518,12 +9527,14 @@ function ExPhoto({
   const [fr, setFr] = useState(0);
   const [paused, setPaused] = useState(false);
   const [failed, setFailed] = useState(false);
+  const frames = photoFrames(id) || [];
+  const n = frames.length;
   useEffect(() => {
-    if (paused || failed || _reduceMotion()) return;
-    // 0.5x como las animaciones: cada foto se queda ~2 s
-    const t = setInterval(() => setFr(f => 1 - f), 2000);
+    if (n < 2 || paused || failed || _reduceMotion()) return;
+    // inicio/final cada 2 s (0.5x); fotos de distinto aparato cada 3.5 s
+    const t = setInterval(() => setFr(f => (f + 1) % n), PHOTOS_WM[id] ? 3500 : 2000);
     return () => clearInterval(t);
-  }, [paused, failed]);
+  }, [paused, failed, n, id]);
   if (failed) return /*#__PURE__*/React.createElement("div", {
     style: {
       padding: "28px 10px",
@@ -9533,7 +9544,7 @@ function ExPhoto({
       lineHeight: 1.5
     }
   }, "La foto no est\xE1 disponible sin conexi\xF3n. \xC1brela una vez con internet y quedar\xE1 guardada.");
-  const lbl = ["1 \xB7 INICIO", "2 \xB7 FINAL"];
+  const cur = frames[fr] || frames[0];
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     onClick: () => setPaused(v => !v),
     style: {
@@ -9545,10 +9556,10 @@ function ExPhoto({
       overflow: "hidden",
       cursor: "pointer"
     }
-  }, [0, 1].map(i => /*#__PURE__*/React.createElement("img", {
+  }, frames.map((fm, i) => /*#__PURE__*/React.createElement("img", {
     key: i,
-    src: photoSrc(id, i),
-    alt: `${PHOTOS[id]}: ${lbl[i]}`,
+    src: fm.f,
+    alt: `${id}: ${fm.l}`,
     loading: "lazy",
     onError: () => setFailed(true),
     style: {
@@ -9574,7 +9585,7 @@ function ExPhoto({
       fontWeight: "bold",
       letterSpacing: 1
     }
-  }, lbl[fr]), paused && /*#__PURE__*/React.createElement("div", {
+  }, cur.l), paused && n > 1 && /*#__PURE__*/React.createElement("div", {
     style: {
       position: "absolute",
       right: 8,
@@ -9592,7 +9603,7 @@ function ExPhoto({
       alignItems: "center",
       padding: "7px 2px 0"
     }
-  }, [0, 1].map(i => /*#__PURE__*/React.createElement("button", {
+  }, n > 1 && frames.map((fm, i) => /*#__PURE__*/React.createElement("button", {
     key: i,
     onClick: () => {
       setFr(i);
@@ -9609,14 +9620,21 @@ function ExPhoto({
       padding: "3px 8px",
       cursor: "pointer"
     }
-  }, lbl[i])), /*#__PURE__*/React.createElement("div", {
+  }, fm.l)), /*#__PURE__*/React.createElement("div", {
     style: {
       flex: 1,
       textAlign: "right",
       fontSize: 8,
       color: C.dim
     }
-  }, "Foto: free-exercise-db (dominio p\xFAblico)")));
+  }, "Foto: ", cur.u ? /*#__PURE__*/React.createElement("a", {
+    href: cur.u,
+    target: "_blank",
+    rel: "noopener noreferrer",
+    style: {
+      color: C.muted
+    }
+  }, cur.c, " \xB7 Wikimedia Commons") : cur.c)));
 }
 // Pestanas: foto real (si hay) + animacion tecnica, y boton de video
 function ExMedia({
@@ -9625,7 +9643,7 @@ function ExMedia({
   height = 185
 }) {
   const col = color || C.yellow;
-  const has = !!PHOTOS[id];
+  const has = !!photoFrames(id);
   const [tab, setTab] = useState(has ? "foto" : "tec");
   const ex = EXERCISES.find(e => e.id === id);
   const tb = on => ({
