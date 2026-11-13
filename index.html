@@ -11415,6 +11415,122 @@ function App() {
     color: C.text
   };
   const shortType = t => t === "Long Run" ? "Long run" : t === "HS Practice" ? "Handstand" : t === "Recovery" ? "Recuperación" : t;
+  // ── Árbol: el camino se bifurca después de las 12 semanas base
+  const arH2 = {
+    fontFamily: FONT_D,
+    fontSize: 30,
+    fontWeight: 800,
+    lineHeight: 1,
+    letterSpacing: -0.3,
+    marginBottom: 6
+  };
+  const arIntro = {
+    fontSize: 15,
+    color: C.muted,
+    lineHeight: 1.5,
+    marginBottom: 14,
+    maxWidth: "62ch"
+  };
+  const arLink = {
+    background: "none",
+    border: "none",
+    color: C.muted,
+    fontFamily: "inherit",
+    fontSize: 15,
+    cursor: "pointer",
+    padding: "8px 0",
+    textDecoration: "underline",
+    textUnderlineOffset: 3
+  };
+  const arSolid = {
+    width: "100%",
+    background: C.yellow,
+    border: "none",
+    borderRadius: 6,
+    minHeight: 50,
+    padding: "12px",
+    color: C.bg,
+    fontFamily: FONT_D,
+    fontSize: 19,
+    fontWeight: 700,
+    cursor: "pointer"
+  };
+  // Rama: línea vertical a la izquierda con un tramo hacia cada parada
+  const branch = ({
+    key,
+    color,
+    active,
+    first,
+    last,
+    onClick,
+    label,
+    children
+  }) => ce("li", {
+    key,
+    style: {
+      position: "relative",
+      paddingLeft: 40
+    }
+  }, ce("span", {
+    "aria-hidden": true,
+    style: {
+      position: "absolute",
+      left: 9,
+      top: first ? 22 : 0,
+      bottom: last ? "calc(100% - 22px)" : 0,
+      width: 2,
+      background: C.border
+    }
+  }), ce("span", {
+    "aria-hidden": true,
+    style: {
+      position: "absolute",
+      left: 10,
+      top: 21,
+      width: 16,
+      height: 2,
+      background: active ? C.yellow : C.border
+    }
+  }), active ? ce("span", {
+    "aria-hidden": true,
+    style: {
+      position: "absolute",
+      left: 12,
+      top: 8
+    }
+  }, ce(Waymark, {
+    size: 26
+  })) : ce("span", {
+    "aria-hidden": true,
+    style: {
+      position: "absolute",
+      left: 22,
+      top: 15,
+      width: 14,
+      height: 14,
+      borderRadius: "50%",
+      border: `2.5px solid ${color}`,
+      background: C.bg
+    }
+  }), onClick ? ce("button", {
+    onClick,
+    "aria-label": label,
+    style: {
+      display: "block",
+      width: "100%",
+      background: "transparent",
+      border: "none",
+      padding: "10px 0 18px",
+      textAlign: "left",
+      color: C.text,
+      fontFamily: "inherit",
+      cursor: "pointer"
+    }
+  }, children) : ce("div", {
+    style: {
+      padding: "10px 0 18px"
+    }
+  }, children));
   return ce("div", {
     style: {
       fontFamily: FONT,
@@ -13404,242 +13520,208 @@ function App() {
         maxWidth: "62ch"
       }
     }, x.t)))))));
-  })(), tab === "arbol" && !tn && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  })(), tab === "arbol" && !tn && ce(React.Fragment, null, ce("div", {
     style: {
-      marginBottom: 22
+      marginBottom: 26
     }
-  }, /*#__PURE__*/React.createElement("div", {
+  }, ce("div", {
     style: {
       fontSize: 14,
-      color: C.muted,
-      marginBottom: 4
+      color: C.muted
     }
-  }, "Despu\xE9s de las 12 semanas base"), /*#__PURE__*/React.createElement("h2", {
+  }, "Despu\xE9s de las 12 semanas base"), ce("h2", {
     style: {
       fontFamily: FONT_D,
-      fontSize: 38,
+      fontSize: 40,
       fontWeight: 800,
       lineHeight: 1,
       letterSpacing: -0.5,
-      margin: "2px 0 6px"
+      margin: "2px 0 8px"
     }
-  }, "\xC1rbol de skills"), /*#__PURE__*/React.createElement("p", {
+  }, "\xC1rbol de skills"), ce("p", {
+    style: arIntro
+  }, "Aqu\xED el camino se divide. Eliges una especializaci\xF3n de 8 semanas (de la 13 a la 20) y despu\xE9s un sub-path que define tus ciclos.")), ce("section", {
+    "aria-labelledby": "ar-reqs",
     style: {
-      color: C.muted,
-      fontSize: 15,
-      margin: 0,
-      lineHeight: 1.6
+      marginBottom: 34
     }
-  }, "Elige tu especializaci\xF3n. Cada path son 8 semanas, de la 13 a la 20.")), /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: C.card,
-      borderRadius: 8,
-      padding: 13,
-      marginBottom: 14,
-      border: `1px solid ${C.border}`
-    }
-  }, /*#__PURE__*/React.createElement("div", {
+  }, ce("div", {
     style: {
       display: "flex",
       justifyContent: "space-between",
       alignItems: "baseline",
-      marginBottom: 8
+      gap: 10
     }
-  }, /*#__PURE__*/React.createElement("span", {
+  }, ce("h3", {
+    id: "ar-reqs",
     style: {
-      fontSize: 16,
-    fontFamily: FONT_D,
-      color: C.orange,
-      fontWeight: 700
+      ...arH2,
+      fontSize: 26
     }
-  }, "Requisitos base"), /*#__PURE__*/React.createElement("span", {
+  }, "Requisitos base"), ce("span", {
     style: {
-      fontSize: 15,
-      fontWeight: "bold",
-      color: reqsMet >= 4 ? C.teal : C.orange
+      fontFamily: FONT_D,
+      fontSize: 22,
+      fontWeight: 800,
+      color: reqsMet >= 4 ? C.teal : C.text
     }
-  }, reqsMet, "/6")), /*#__PURE__*/React.createElement("div", {
+  }, reqsMet, ce("span", {
     style: {
-      display: "grid",
-      gridTemplateColumns: "1fr 1fr",
-      gap: 5
+      fontFamily: FONT,
+      fontSize: 14,
+      fontWeight: 400,
+      color: C.muted
+    }
+  }, " de 6"))), ce("p", {
+    style: arIntro
+  }, "Con 4 de 6 y la semana 12 completa se abre el plan detallado de cada path. Se marcan solos con tus r\xE9cords de PRs; tambi\xE9n puedes marcarlos a mano."), ce("ul", {
+    style: {
+      listStyle: "none",
+      margin: 0,
+      padding: 0,
+      borderTop: `1px solid ${C.border}`
     }
   }, reqState.map((r, i) => {
-    const col = r.met ? C.yellow : C.dim;
     const pctR = r.best === null ? 0 : Math.max(0, Math.min(1, r.auto ? 1 : r.best / r.target));
-    return /*#__PURE__*/React.createElement("div", {
+    return ce("li", {
       key: i,
+      style: {
+        borderBottom: `1px solid ${C.border}`
+      }
+    }, ce("button", {
+      role: "checkbox",
+      "aria-checked": !!r.met,
       onClick: () => tick(`req-${i}`),
       style: {
-        cursor: "pointer",
-        padding: "6px 8px",
-        borderRadius: 6,
-        background: r.met ? C.yellow + "15" : C.card2,
-        border: `1px solid ${r.met ? C.yellow + "40" : C.border}`
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
+        width: "100%",
         display: "flex",
-        gap: 7,
-        alignItems: "center"
+        gap: 12,
+        alignItems: "flex-start",
+        padding: "12px 0",
+        background: "transparent",
+        border: "none",
+        textAlign: "left",
+        color: C.text,
+        fontFamily: "inherit",
+        cursor: "pointer"
       }
-    }, /*#__PURE__*/React.createElement("div", {
+    }, ce("span", {
+      "aria-hidden": true,
       style: {
-        width: 15,
-        height: 15,
-        borderRadius: 3,
-        border: `2px solid ${col}`,
+        width: 24,
+        height: 24,
+        marginTop: 1,
+        borderRadius: 5,
+        flexShrink: 0,
+        border: `2px solid ${r.met ? C.yellow : C.dim}`,
         background: r.met ? C.yellow : "transparent",
+        color: C.bg,
+        fontWeight: 700,
         display: "flex",
         alignItems: "center",
-        justifyContent: "center",
-        flexShrink: 0
+        justifyContent: "center"
       }
-    }, r.met && /*#__PURE__*/React.createElement("span", {
+    }, r.met ? "✓" : ""), ce("span", {
       style: {
-        color: C.bg,
-        fontSize: 13,
-        fontWeight: "bold"
+        flex: 1,
+        minWidth: 0
       }
-    }, "\u2713")), /*#__PURE__*/React.createElement("span", {
+    }, ce("span", {
       style: {
-        fontSize: 15,
-        color: r.met ? C.yellow : C.text,
-        lineHeight: 1.3
+        display: "block",
+        fontFamily: FONT_D,
+        fontSize: 20,
+        fontWeight: 700
       }
-    }, r.label)), r.best !== null ? /*#__PURE__*/React.createElement("div", {
+    }, r.label), ce("span", {
       style: {
-        marginTop: 4,
-        paddingLeft: 22
+        display: "block",
+        fontSize: 14,
+        color: r.auto ? C.teal : C.muted,
+        marginTop: 1
       }
-    }, /*#__PURE__*/React.createElement("div", {
+    }, r.best !== null ? r.auto ? `Tu r\xE9cord: ${r.best} ${r.unit}` : `Vas en ${r.best} de ${r.target} ${r.unit}` : r.manual ? "Marcado a mano" : "Sin registro en PRs"), r.best !== null && !r.auto && ce("span", {
       style: {
-        fontSize: 13,
-        color: r.auto ? C.teal : C.muted
+        display: "block",
+        height: 4,
+        background: C.card2,
+        borderRadius: 2,
+        marginTop: 6,
+        maxWidth: 220,
+        overflow: "hidden"
       }
-    }, r.auto ? `✓ tu récord: ${r.best} ${r.unit}` : `vas en ${r.best} de ${r.target} ${r.unit}`), !r.auto && /*#__PURE__*/React.createElement("div", {
+    }, ce("span", {
       style: {
-        height: 2,
-        background: C.border,
-        borderRadius: 1,
-        marginTop: 3
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
+        display: "block",
         width: `${pctR * 100}%`,
         height: "100%",
-        background: C.orange,
-        borderRadius: 1
+        background: C.yellow
       }
-    }))) : /*#__PURE__*/React.createElement("div", {
-      style: {
-        marginTop: 3,
-        paddingLeft: 22,
-        fontSize: 13,
-        color: C.dim
-      }
-    }, r.manual ? "marcado a mano" : "sin registro en PRs"));
-  })), /*#__PURE__*/React.createElement("div", {
+    })))));
+  }))), ce("section", {
+    "aria-labelledby": "ar-paths"
+  }, ce("h3", {
+    id: "ar-paths",
     style: {
-      fontSize: 13,
-      color: C.muted,
-      marginTop: 9,
-      lineHeight: 1.5
+      ...arH2,
+      fontSize: 26
     }
-  }, "Se marcan solos con tus r\xE9cords de la pesta\xF1a PRs. Tambi\xE9n puedes marcarlos a mano.")), /*#__PURE__*/React.createElement("div", {
+  }, "Elige tu camino"), ce("p", {
+    style: arIntro
+  }, "Toca uno para ver su plan semana a semana y sus sub-paths."), ce("ul", {
     style: {
-      display: "flex",
-      flexDirection: "column",
-      gap: 8
+      listStyle: "none",
+      margin: 0,
+      padding: 0
     }
-  }, SKILL_PATHS.map((path, i) => /*#__PURE__*/React.createElement("div", {
-    key: i,
+  }, SKILL_PATHS.map((path, i) => branch({
+    key: path.id,
+    color: path.color,
+    active: cPath === path.id,
+    first: i === 0,
+    last: i === SKILL_PATHS.length - 1,
     onClick: () => setTn(path.id),
-    style: {
-      background: C.card,
-      borderRadius: 13,
-      overflow: "hidden",
-      cursor: "pointer",
-      border: `1px solid ${cPath === path.id ? path.color : path.color + "30"}`
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      padding: "13px 14px",
-      display: "flex",
-      gap: 11,
-      alignItems: "flex-start"
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 30
-    }
-  }, path.emoji), /*#__PURE__*/React.createElement("div", {
-    style: {
-      flex: 1
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 7,
-      alignItems: "center",
-      marginBottom: 3
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 17,
-    fontFamily: FONT_D,
-      fontWeight: 700,
-      color: path.color
-    }
-  }, path.label), cPath === path.id && /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 12,
-      background: path.color,
-      color: C.bg,
-      padding: "2px 7px",
-      borderRadius: 4,
-      fontWeight: "bold"
-    }
-  }, "Activo")), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 15,
-      color: C.muted,
-      lineHeight: 1.5,
-      marginBottom: 6
-    }
-  }, path.tagline), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 5,
-      flexWrap: "wrap"
-    }
-  }, path.reqs.map((r, ri) => /*#__PURE__*/React.createElement("span", {
-    key: ri,
-    style: {
-      fontSize: 13,
-      color: C.muted,
-      background: C.card2,
-      padding: "2px 6px",
-      borderRadius: 4
-    }
-  }, r)))), /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: path.color,
-      fontSize: 19
-    }
-  }, "\u2192")), /*#__PURE__*/React.createElement("div", {
-    style: {
-      height: 3,
-      background: C.border
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      height: "100%",
-      width: cPath === path.id ? "100%" : "0%",
-      background: path.color,
-      transition: "width .5s"
-    }
-  })))))), tab === "arbol" && tn && (() => {
+    label: `${path.label}${cPath === path.id ? ", tu path activo" : ""}. Ver plan`,
+    children: ce(React.Fragment, null, ce("span", {
+      style: {
+        display: "flex",
+        alignItems: "baseline",
+        gap: 10,
+        flexWrap: "wrap"
+      }
+    }, ce("span", {
+      style: {
+        fontFamily: FONT_D,
+        fontSize: 26,
+        fontWeight: 800,
+        lineHeight: 1.05,
+        color: path.color
+      }
+    }, path.label), cPath === path.id && ce("span", {
+      style: {
+        fontSize: 14,
+        color: C.yellow,
+        fontWeight: 600
+      }
+    }, "tu path")), ce("span", {
+      style: {
+        display: "block",
+        fontSize: 15,
+        color: C.text,
+        opacity: 0.85,
+        lineHeight: 1.45,
+        margin: "4px 0 6px",
+        maxWidth: "60ch"
+      }
+    }, path.tagline), ce("span", {
+      style: {
+        display: "block",
+        fontSize: 14,
+        color: C.muted,
+        lineHeight: 1.45
+      }
+    }, "Para llegar bien: ", path.reqs.join(", ").replace(/,([^,]*)$/, " y$1"), "."))
+  }))))), tab === "arbol" && tn && (() => {
     const path = SKILL_PATHS.find(p => p.id === tn);
     if (!path) return null;
     const pathWeeks = PATH_WEEKS[path.id] || [];
@@ -13656,22 +13738,19 @@ function App() {
     }, 0) : 0;
     const need12 = Math.max(2, Math.ceil(w12n * 5 / 7)); // mismo listón, escalado al split
     const isUnlocked = reqsDone >= 4 && week12Done >= need12;
-    return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+    const isActive = cPath === path.id;
+    return ce(React.Fragment, null, ce("button", {
       onClick: () => {
         setTn(null);
         setPathDayArbol(null);
       },
       style: {
-        background: "none",
-        border: "none",
-        color: C.muted,
-        fontFamily: FONT_D,
-        fontSize: 17,
-    fontWeight: 600,
-        cursor: "pointer",
+        ...arLink,
+        textDecoration: "none",
+        color: C.text,
         padding: "0 0 14px"
       }
-    }, "\u2190 \xC1rbol"), pathDayArbol !== null && selPathWeek ? (() => {
+    }, "← \xC1rbol de skills"), pathDayArbol !== null && selPathWeek ? (() => {
       const day = selPathWeek.days[pathDayArbol];
       const col = TC[day.type] || C.dim;
       const totalI = day.blocks.reduce((a, b) => a + b.i.length, 0);
@@ -13734,66 +13813,72 @@ function App() {
           cursor: pathDayArbol === 6 ? "default" : "pointer",
           fontFamily: "inherit"
         }
-      }, "\u2192"))), /*#__PURE__*/React.createElement("div", {
+      }, "\u2192"))), ce("section", {
         style: {
-          background: col + "12",
-          border: `1px solid ${col}40`,
-          borderRadius: 8,
-          padding: 14,
-          marginBottom: 14
+          marginBottom: 22
         }
-      }, /*#__PURE__*/React.createElement("div", {
-        style: {
-          display: "flex",
-          alignItems: "center",
-          gap: 10
-        }
-      }, /*#__PURE__*/React.createElement("span", {
-        style: {
-          fontSize: 30
-        }
-      }, day.emoji), /*#__PURE__*/React.createElement("div", {
-        style: {
-          flex: 1
-        }
-      }, /*#__PURE__*/React.createElement("div", {
+      }, ce("div", {
         style: {
           fontSize: 16,
-    fontFamily: FONT_D,
+          color: C.muted
+        }
+      }, WD_FULL[pathDayArbol], ", ", selPathWeek.label.replace(/\s*[—-]+\s*/, ": ")), ce("h1", {
+        style: {
+          fontFamily: FONT_D,
+          fontSize: "clamp(52px, 15vw, 80px)",
+          fontWeight: 800,
+          lineHeight: 0.9,
+          letterSpacing: -1,
           color: col,
+          margin: "6px 0 10px"
+        }
+      }, shortType(day.type)), ce("div", {
+        style: {
+          display: "flex",
+          gap: 22,
+          alignItems: "baseline",
+          marginBottom: 12
+        }
+      }, day.dur && ce("div", null, ce("span", {
+        style: {
+          fontFamily: FONT_D,
+          fontSize: 26,
           fontWeight: 700
         }
-      }, WD_FULL[pathDayArbol], ", ", shortType(day.type), day.dur ? `, ${day.dur}` : ""), /*#__PURE__*/React.createElement("div", {
+      }, parseInt(day.dur) || day.dur), ce("span", {
         style: {
-          fontSize: 18,
-    fontFamily: FONT_D,
+          fontSize: 15,
+          color: C.muted
+        }
+      }, " min")), ce("div", null, ce("span", {
+        style: {
+          fontFamily: FONT_D,
+          fontSize: 26,
           fontWeight: 700,
-          marginTop: 2
+          color: doneI === totalI && totalI > 0 ? col : C.text
         }
-      }, selPathWeek.label)), /*#__PURE__*/React.createElement("div", {
+      }, doneI, "/", totalI), ce("span", {
         style: {
-          textAlign: "center"
+          fontSize: 15,
+          color: C.muted
         }
-      }, /*#__PURE__*/React.createElement("div", {
+      }, " ejercicios"))), ce("div", {
+        role: "progressbar",
+        "aria-valuemin": 0,
+        "aria-valuemax": totalI,
+        "aria-valuenow": doneI,
+        "aria-label": "Progreso del d\xEDa",
         style: {
-          fontSize: 19,
-    fontFamily: FONT_D,
-          fontWeight: 700,
-          color: doneI > 0 ? col : C.dim
+          height: 6,
+          background: C.card2,
+          borderRadius: 3,
+          overflow: "hidden"
         }
-      }, doneI, "/", totalI))), /*#__PURE__*/React.createElement("div", {
-        style: {
-          marginTop: 10,
-          background: C.border,
-          borderRadius: 4,
-          height: 5
-        }
-      }, /*#__PURE__*/React.createElement("div", {
+      }, ce("div", {
         style: {
           width: `${totalI > 0 ? doneI / totalI * 100 : 0}%`,
           height: "100%",
           background: col,
-          borderRadius: 4,
           transition: "width .3s"
         }
       }))), day.blocks.map((block, bi) => {
@@ -13944,384 +14029,332 @@ function App() {
           cursor: "pointer"
         }
       }, "Marcar todo"));
-    })() : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    })() : ce(React.Fragment, null, ce("section", {
       style: {
-        background: path.color + "12",
-        border: `1px solid ${path.color}40`,
-        borderRadius: 8,
-        padding: 14,
-        marginBottom: 14
+        marginBottom: 30
       }
-    }, /*#__PURE__*/React.createElement("div", {
+    }, ce("div", {
+      style: {
+        fontSize: 14,
+        color: C.muted
+      }
+    }, "Especializaci\xF3n, semanas 13–20"), ce("h2", {
+      style: {
+        fontFamily: FONT_D,
+        fontSize: "clamp(44px, 13vw, 64px)",
+        fontWeight: 800,
+        lineHeight: 0.95,
+        letterSpacing: -0.8,
+        color: path.color,
+        margin: "4px 0 10px"
+      }
+    }, path.label), ce("p", {
+      style: {
+        fontSize: 17,
+        lineHeight: 1.45,
+        marginBottom: 6,
+        maxWidth: "60ch"
+      }
+    }, path.tagline), ce("p", {
+      style: {
+        ...arIntro,
+        marginBottom: 16
+      }
+    }, "Para llegar bien: ", path.reqs.join(", ").replace(/,([^,]*)$/, " y$1"), "."), isActive ? ce("div", {
       style: {
         display: "flex",
         alignItems: "center",
-        gap: 11,
-        marginBottom: 10
+        justifyContent: "space-between",
+        gap: 12,
+        borderLeft: `3px solid ${C.yellow}`,
+        padding: "4px 0 4px 12px"
       }
-    }, /*#__PURE__*/React.createElement("span", {
+    }, ce("span", {
       style: {
-        fontSize: 32
-      }
-    }, path.emoji), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 16,
-    fontFamily: FONT_D,
-        color: path.color,
+        fontFamily: FONT_D,
+        fontSize: 20,
         fontWeight: 700
       }
-    }, "Especializaci\xF3n, semanas 13–20"), /*#__PURE__*/React.createElement("div", {
+    }, "Es tu path activo"), ce("button", {
+      onClick: () => savePath(null),
+      style: arLink
+    }, "Dejar este path")) : ce("button", {
+      onClick: () => savePath(path.id),
+      style: arSolid
+    }, "Elegir ", path.label)), !isUnlocked && ce("section", {
       style: {
-        fontSize: 20,
-    fontFamily: FONT_D,
-        fontWeight: 700,
-        color: path.color
+        borderLeft: `3px solid ${C.orange}`,
+        padding: "2px 0 2px 14px",
+        marginBottom: 34
       }
-    }, path.label), /*#__PURE__*/React.createElement("div", {
+    }, ce("h3", {
       style: {
-        fontSize: 15,
-        color: C.muted,
-        marginTop: 2
-      }
-    }, path.tagline))), /*#__PURE__*/React.createElement("button", {
-      onClick: () => savePath(cPath === path.id ? null : path.id),
-      style: {
-        width: "100%",
-        padding: "9px",
-        background: cPath === path.id ? path.color : path.color + "20",
-        border: `1px solid ${path.color}`,
-        borderRadius: 8,
-        color: cPath === path.id ? C.bg : path.color,
         fontFamily: FONT_D,
+        fontSize: 24,
         fontWeight: 700,
-        fontSize: 17,
-        cursor: "pointer"
+        marginBottom: 4
       }
-    }, cPath === path.id ? "✓ Path activo" : "Elegir este path")), !isUnlocked && /*#__PURE__*/React.createElement("div", {
-      style: {
-        background: C.card,
-        borderRadius: 8,
-        padding: 16,
-        marginBottom: 14,
-        border: `1px solid ${C.orange}40`,
-        textAlign: "center"
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 32,
-        marginBottom: 8
-      }
-    }, "\uD83D\uDD12"), /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 16,
-        fontWeight: "bold",
-        color: C.orange,
-        marginBottom: 6
-      }
-    }, "Plan bloqueado"), /*#__PURE__*/React.createElement("div", {
+    }, "🔒 Plan bloqueado"), ce("p", {
       style: {
         fontSize: 15,
-        color: C.muted,
-        lineHeight: 1.7,
-        marginBottom: 12
-      }
-    }, "Completa las 12 semanas base y al menos 4 requisitos para desbloquear el plan detallado."), /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        justifyContent: "space-around",
-        fontSize: 15
-      }
-    }, /*#__PURE__*/React.createElement("span", null, "Requisitos: ", /*#__PURE__*/React.createElement("span", {
-      style: {
-        color: reqsDone >= 4 ? C.teal : C.orange,
-        fontWeight: "bold"
-      }
-    }, reqsDone, "/6")), /*#__PURE__*/React.createElement("span", null, "Semana 12: ", /*#__PURE__*/React.createElement("span", {
-      style: {
-        color: week12Done >= need12 ? C.teal : C.orange,
-        fontWeight: "bold"
-      }
-    }, week12Done, "/", w12n, " d\xEDas")))), isUnlocked && selPathWeek && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 16,
-    fontFamily: FONT_D,
-        color: C.muted,
-        fontWeight: 700,
-        marginBottom: 8
-      }
-    }, "Plan semana a semana"), /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        gap: 4,
-        marginBottom: 12,
-        overflowX: "auto",
-        paddingBottom: 3
-      }
-    }, pathWeeks.map((w, i) => /*#__PURE__*/React.createElement("button", {
-      key: i,
-      onClick: () => setPw(i),
-      style: {
-        flexShrink: 0,
-        padding: "5px 10px",
-        borderRadius: 6,
-        border: `1px solid ${pw === i ? path.color : C.border}`,
-        background: pw === i ? path.color + "20" : "transparent",
-        cursor: "pointer",
-        fontFamily: "inherit",
-        fontSize: 14,
-        fontWeight: "bold",
-        color: pw === i ? path.color : C.muted,
-        whiteSpace: "nowrap"
-      }
-    }, "Semana ", w.week))), /*#__PURE__*/React.createElement("div", {
-      style: {
-        background: path.color + "08",
-        border: `1px solid ${path.color}30`,
-        borderRadius: 8,
-        padding: "10px 13px",
-        marginBottom: 12
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 16,
-    fontFamily: FONT_D,
-        color: path.color,
-        fontWeight: 700,
-        marginBottom: 5
-      }
-    }, "Enfoque"), /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 15,
-        color: C.text,
-        lineHeight: 1.6
-      }
-    }, selPathWeek.focus)), /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "grid",
-        gridTemplateColumns: "repeat(7,1fr)",
-        gap: 4,
-        marginBottom: 12
-      }
-    }, WD.map((d, di) => {
-      const day = selPathWeek.days[di];
-      const col = TC[day.type] || C.dim;
-      const totalI = day.blocks.reduce((a, b) => a + b.i.length, 0);
-      const doneI = day.blocks.reduce((acc, b, bi) => acc + b.i.filter((_, ii) => chk[pk(path.id, pw, di, bi, ii)]).length, 0);
-      const pct = totalI > 0 ? doneI / totalI : 0;
-      return /*#__PURE__*/React.createElement("button", {
-        key: di,
-        onClick: () => setPathDayArbol(di),
-        style: {
-          background: C.card,
-          border: `1px solid ${pct === 1 ? col : pct > 0 ? col + "60" : C.border}`,
-          borderRadius: 8,
-          padding: "7px 3px",
-          cursor: "pointer",
-          textAlign: "center",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: 3
-        }
-      }, /*#__PURE__*/React.createElement("div", {
-        style: {
-          fontSize: 12,
-          color: pct === 1 ? col : C.muted,
-          fontWeight: "bold"
-        }
-      }, d), /*#__PURE__*/React.createElement("div", {
-        style: {
-          fontSize: 20
-        }
-      }, pct === 1 ? "✅" : day.emoji), /*#__PURE__*/React.createElement("div", {
-        style: {
-          fontSize: 12,
-          color: col,
-          fontWeight: "bold"
-        }
-      }, day.type === "Long Run" ? "Long" : day.type === "HS Practice" ? "HS" : day.type === "Recovery" ? "Desc." : day.type === "Track" ? "Track" : day.type.slice(0, 4)), /*#__PURE__*/React.createElement("div", {
-        style: {
-          width: "80%",
-          height: 3,
-          background: C.border,
-          borderRadius: 2
-        }
-      }, /*#__PURE__*/React.createElement("div", {
-        style: {
-          width: `${pct * 100}%`,
-          height: "100%",
-          background: col,
-          borderRadius: 2
-        }
-      })), /*#__PURE__*/React.createElement("div", {
-        style: {
-          fontSize: 11,
-          color: C.muted
-        }
-      }, doneI, "/", totalI));
-    })), selPathWeek.days.map((day, di) => {
-      const col = TC[day.type] || C.dim;
-      const totalI = day.blocks.reduce((a, b) => a + b.i.length, 0);
-      const doneI = day.blocks.reduce((acc, b, bi) => acc + b.i.filter((_, ii) => chk[pk(path.id, pw, di, bi, ii)]).length, 0);
-      return /*#__PURE__*/React.createElement("div", {
-        key: di,
-        onClick: () => setPathDayArbol(di),
-        style: {
-          background: C.card,
-          borderRadius: 8,
-          padding: "11px 13px",
-          marginBottom: 5,
-          border: `1px solid ${doneI === totalI && totalI > 0 ? col + "60" : C.border}`,
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          gap: 10
-        }
-      }, /*#__PURE__*/React.createElement("div", {
-        style: {
-          fontSize: 22
-        }
-      }, doneI === totalI && totalI > 0 ? "✅" : day.emoji), /*#__PURE__*/React.createElement("div", {
-        style: {
-          flex: 1
-        }
-      }, /*#__PURE__*/React.createElement("div", {
-        style: {
-          display: "flex",
-          gap: 7,
-          alignItems: "center"
-        }
-      }, /*#__PURE__*/React.createElement("span", {
-        style: {
-          fontSize: 16,
-          fontWeight: "bold"
-        }
-      }, WD[di]), /*#__PURE__*/React.createElement("span", {
-        style: {
-          fontSize: 13,
-          color: col,
-          fontWeight: "bold"
-        }
-      }, shortType(day.type))), /*#__PURE__*/React.createElement("div", {
-        style: {
-          fontSize: 14,
-          color: C.muted,
-          marginTop: 1
-        }
-      }, day.blocks.length, " bloques")), /*#__PURE__*/React.createElement("div", {
-        style: {
-          textAlign: "right"
-        }
-      }, /*#__PURE__*/React.createElement("div", {
-        style: {
-          fontSize: 16,
-          fontWeight: "bold",
-          color: doneI > 0 ? col : C.dim
-        }
-      }, doneI, "/", totalI), /*#__PURE__*/React.createElement("div", {
-        style: {
-          width: 38,
-          height: 4,
-          background: C.border,
-          borderRadius: 2,
-          marginTop: 3
-        }
-      }, /*#__PURE__*/React.createElement("div", {
-        style: {
-          width: `${totalI > 0 ? doneI / totalI * 100 : 0}%`,
-          height: "100%",
-          background: col,
-          borderRadius: 2
-        }
-      }))));
-    })), /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 16,
-    fontFamily: FONT_D,
-        color: C.muted,
-        fontWeight: 700,
-        marginBottom: 3,
-        marginTop: 16
-      }
-    }, "Sub-paths, semanas 21–28"), /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 14,
         color: C.muted,
         lineHeight: 1.5,
-        marginBottom: 8
+        marginBottom: 12,
+        maxWidth: "60ch"
       }
-    }, "Ocho semanas de especializaci\xF3n fina. Despu\xE9s de la 28 el sub-path sigue definiendo tus ciclos, que ya no se acaban."), path.subPaths.map((sp, i) => {
-      const active = cSub === sp.id;
-      const weeks = SUB_WEEKS[sp.id] || [];
-      return /*#__PURE__*/React.createElement("div", {
-        key: i,
+    }, "Se abre cuando completes la semana 12 y tengas al menos 4 de los 6 requisitos base."), ce("div", {
+      style: {
+        display: "flex",
+        gap: 28
+      }
+    }, [[reqsDone, 6, "requisitos", reqsDone >= 4], [week12Done, w12n, "d\xEDas de la semana 12", week12Done >= need12]].map(([v, of, l, ok], i) => ce("div", {
+      key: i
+    }, ce("span", {
+      style: {
+        fontFamily: FONT_D,
+        fontSize: 34,
+        fontWeight: 800,
+        color: ok ? C.teal : C.text
+      }
+    }, v), ce("span", {
+      style: {
+        fontSize: 15,
+        color: C.muted
+      }
+    }, " de ", of), ce("div", {
+      style: {
+        fontSize: 14,
+        color: C.muted
+      }
+    }, l))))), isUnlocked && selPathWeek && ce("section", {
+      "aria-labelledby": "ar-plan",
+      style: {
+        marginBottom: 34
+      }
+    }, ce("h3", {
+      id: "ar-plan",
+      style: {
+        ...arH2,
+        fontSize: 26
+      }
+    }, "Plan semana a semana"), ce("div", {
+      role: "group",
+      "aria-label": "Semana del path",
+      style: {
+        display: "flex",
+        gap: 6,
+        overflowX: "auto",
+        scrollbarWidth: "none",
+        margin: "10px 0 16px"
+      }
+    }, pathWeeks.map((w, i) => ce("button", {
+      key: i,
+      onClick: () => setPw(i),
+      "aria-pressed": pw === i,
+      style: {
+        flex: "0 0 auto",
+        minWidth: 52,
+        minHeight: 44,
+        borderRadius: 6,
+        border: `1.5px solid ${pw === i ? C.text : C.border}`,
+        background: pw === i ? C.text : "transparent",
+        color: pw === i ? C.bg : C.text,
+        fontFamily: FONT_D,
+        fontSize: 18,
+        fontWeight: 700,
+        cursor: "pointer"
+      }
+    }, w.week))), ce("p", {
+      style: {
+        fontSize: 17,
+        lineHeight: 1.45,
+        borderLeft: `3px solid ${path.color}`,
+        paddingLeft: 14,
+        marginBottom: 18,
+        maxWidth: "60ch"
+      }
+    }, selPathWeek.focus), ce("ol", {
+      style: {
+        listStyle: "none",
+        margin: 0,
+        padding: 0
+      }
+    }, selPathWeek.days.map((day, di) => {
+      const col = TC[day.type] || C.muted;
+      const totalI = day.blocks.reduce((a, b) => a + b.i.length, 0);
+      const doneI = day.blocks.reduce((acc, b, bi) => acc + b.i.filter((_, ii) => chk[pk(path.id, pw, di, bi, ii)]).length, 0);
+      const full = totalI > 0 && doneI === totalI;
+      const first = di === 0,
+        last = di === selPathWeek.days.length - 1;
+      return ce("li", {
+        key: di,
         style: {
-          background: C.card,
-          borderRadius: 8,
-          padding: 13,
-          marginBottom: 7,
-          border: `1px solid ${active ? sp.color : sp.color + "40"}`
+          position: "relative"
         }
-      }, /*#__PURE__*/React.createElement("div", {
-        style: {
-          display: "flex",
-          gap: 7,
-          alignItems: "center",
-          marginBottom: 5
-        }
-      }, /*#__PURE__*/React.createElement("span", {
-        style: {
-          fontSize: 16,
-          fontWeight: "bold",
-          color: sp.color
-        }
-      }, sp.label), active && /*#__PURE__*/React.createElement("span", {
-        style: {
-          fontSize: 12,
-          background: sp.color,
-          color: C.bg,
-          padding: "2px 7px",
-          borderRadius: 4,
-          fontWeight: "bold"
-        }
-      }, "Activo")), /*#__PURE__*/React.createElement("div", {
-        style: {
-          fontSize: 15,
-          color: C.muted,
-          lineHeight: 1.5,
-          marginBottom: 9
-        }
-      }, sp.desc), weeks.length > 0 && /*#__PURE__*/React.createElement("div", {
-        style: {
-          fontSize: 13,
-          color: C.muted,
-          lineHeight: 1.5,
-          marginBottom: 9,
-          paddingLeft: 9,
-          borderLeft: `2px solid ${sp.color}30`
-        }
-      }, /*#__PURE__*/React.createElement("div", {
-        style: {
-          color: sp.color,
-          fontWeight: "bold",
-          marginBottom: 2
-        }
-      }, "Semana 21 arranca as\xED:"), weeks[0].focus.split(". ")[0], "."), /*#__PURE__*/React.createElement("button", {
-        onClick: () => saveSub(active ? null : sp.id),
+      }, ce("button", {
+        onClick: () => setPathDayArbol(di),
+        "aria-label": `${WD_FULL[di]}, ${shortType(day.type)}: ${doneI} de ${totalI} hechos`,
         style: {
           width: "100%",
-          background: active ? "transparent" : sp.color + "18",
-          border: `1px solid ${sp.color}${active ? "50" : "45"}`,
-          borderRadius: 8,
-          padding: "9px 8px",
-          color: sp.color,
-          fontFamily: FONT_D,
-          fontSize: 17,
-          fontWeight: 700,
+          display: "grid",
+          gridTemplateColumns: "40px 1fr auto",
+          alignItems: "center",
+          gap: 10,
+          background: "transparent",
+          border: "none",
+          padding: "11px 0",
+          textAlign: "left",
+          color: C.text,
+          fontFamily: "inherit",
           cursor: "pointer"
         }
-      }, active ? "Soltar este sub-path" : "Elegir este sub-path"));
-    })));
+      }, ce("span", {
+        "aria-hidden": true,
+        style: {
+          position: "relative",
+          alignSelf: "stretch",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center"
+        }
+      }, !first && ce("span", {
+        style: {
+          position: "absolute",
+          left: 19,
+          width: 2,
+          top: -11,
+          height: "calc(50% + 11px)",
+          background: C.border
+        }
+      }), !last && ce("span", {
+        style: {
+          position: "absolute",
+          left: 19,
+          width: 2,
+          top: "50%",
+          height: "calc(50% + 11px)",
+          background: C.border
+        }
+      }), ce("span", {
+        style: {
+          position: "relative",
+          width: 14,
+          height: 14,
+          borderRadius: "50%",
+          background: full ? col : C.bg,
+          border: `2.5px solid ${full ? col : C.border}`
+        }
+      })), ce("span", {
+        style: {
+          minWidth: 0
+        }
+      }, ce("span", {
+        style: {
+          display: "block",
+          fontFamily: FONT_D,
+          fontSize: 21,
+          fontWeight: 700
+        }
+      }, WD_FULL[di]), ce("span", {
+        style: {
+          display: "block",
+          fontSize: 15
+        }
+      }, ce("span", {
+        style: {
+          color: col,
+          fontWeight: 600
+        }
+      }, shortType(day.type)), ce("span", {
+        style: {
+          color: C.muted
+        }
+      }, day.dur ? `, ${day.dur}` : ""))), ce("span", {
+        style: {
+          fontFamily: FONT_D,
+          fontSize: 18,
+          fontWeight: 700,
+          color: full ? col : doneI > 0 ? C.text : C.muted
+        }
+      }, full ? "Hecho" : `${doneI}/${totalI}`)));
+    }))), ce("section", {
+      "aria-labelledby": "ar-subs"
+    }, ce("h3", {
+      id: "ar-subs",
+      style: {
+        ...arH2,
+        fontSize: 26
+      }
+    }, "Sub-paths, semanas 21–28"), ce("p", {
+      style: arIntro
+    }, "Ocho semanas de especializaci\xF3n fina. Despu\xE9s de la 28 el sub-path sigue definiendo tus ciclos, que ya no se acaban."), ce("ul", {
+      style: {
+        listStyle: "none",
+        margin: 0,
+        padding: 0
+      }
+    }, path.subPaths.map((sp, i) => {
+      const active = cSub === sp.id;
+      const weeks = SUB_WEEKS[sp.id] || [];
+      return branch({
+        key: sp.id,
+        color: sp.color || path.color,
+        active,
+        first: i === 0,
+        last: i === path.subPaths.length - 1,
+        children: ce(React.Fragment, null, ce("div", {
+          style: {
+            display: "flex",
+            alignItems: "baseline",
+            gap: 10,
+            flexWrap: "wrap"
+          }
+        }, ce("h4", {
+          style: {
+            fontFamily: FONT_D,
+            fontSize: 23,
+            fontWeight: 800,
+            color: sp.color || path.color
+          }
+        }, sp.label.replace(/^\p{Extended_Pictographic}\uFE0F?\s*/u, "")), active && ce("span", {
+          style: {
+            fontSize: 14,
+            color: C.yellow,
+            fontWeight: 600
+          }
+        }, "tu sub-path")), ce("p", {
+          style: {
+            fontSize: 15,
+            lineHeight: 1.45,
+            margin: "4px 0 6px",
+            maxWidth: "60ch"
+          }
+        }, sp.desc), weeks.length > 0 && ce("p", {
+          style: {
+            fontSize: 14,
+            color: C.muted,
+            lineHeight: 1.45,
+            marginBottom: 10,
+            maxWidth: "60ch"
+          }
+        }, "La semana 21 arranca as\xED: ", weeks[0].focus.split(". ")[0], "."), active ? ce("button", {
+          onClick: () => saveSub(null),
+          style: arLink
+        }, "Soltar este sub-path") : ce("button", {
+          onClick: () => saveSub(sp.id),
+          style: {
+            ...arSolid,
+            width: "auto",
+            minHeight: 44,
+            padding: "8px 16px",
+            fontSize: 17,
+            background: "transparent",
+            border: `1.5px solid ${C.border}`,
+            color: C.text
+          }
+        }, "Elegir este sub-path"))
+      });
+    })))));
   })(), tab === "tecnica" && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
