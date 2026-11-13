@@ -553,9 +553,15 @@ const hash32 = str => {
   }
   return (h >>> 0).toString(36);
 };
-const _keyCache = {};
+// Cache por OBJETO de día (y scope). Antes era solo por scope: al condensar el
+// plan a menos días, el mismo día de la semana cambiaba de contenido y la cache
+// devolvía llaves viejas con menos bloques, y la app tronaba. Las llaves salen
+// del contenido, así que recalcular nunca cambia una llave ya guardada.
+const _keyCache = new WeakMap();
 const dayKeys = (scope, day) => {
-  if (_keyCache[scope]) return _keyCache[scope];
+  let byScope = _keyCache.get(day);
+  if (!byScope) _keyCache.set(day, byScope = {});
+  if (byScope[scope]) return byScope[scope];
   const seen = {},
     out = [];
   day.blocks.forEach((b, bi) => {
@@ -565,7 +571,7 @@ const dayKeys = (scope, day) => {
       return scope + "-" + base + (n > 1 ? "." + n : "");
     });
   });
-  _keyCache[scope] = out;
+  byScope[scope] = out;
   return out;
 };
 const bk = (wi, di, bi, ii) => dayKeys(`w${WEEKS[wi].week}-d${di}`, WEEKS[wi].days[di])[bi][ii];
@@ -11717,138 +11723,240 @@ function App() {
       ...linkBtn,
       color: C.text
     }
-  }, "Hablar con el coach")), (!startD || showAnchor) && ce("section", {
-    style: {
-      background: C.card,
-      borderRadius: 8,
-      padding: "18px 16px",
-      marginBottom: 28,
-      border: `1px solid ${C.border}`
-    }
-  }, ce("h2", {
-    style: {
-      fontFamily: FONT_D,
-      fontSize: 28,
-      fontWeight: 700,
-      lineHeight: 1.05
-    }
-  }, "Ancla tu plan"), ce("p", {
-    style: {
-      fontSize: 15,
-      color: C.muted,
-      lineHeight: 1.5,
-      margin: "6px 0 16px",
-      maxWidth: "60ch"
-    }
-  }, "Dime en qu\xE9 semana vas y la app calcula sola tu semana y el d\xEDa de hoy cada vez que la abras."), ce("label", {
-    style: {
-      display: "flex",
-      gap: 10,
-      alignItems: "center",
-      marginBottom: 20
-    }
-  }, ce("span", {
-    style: {
-      fontSize: 15,
-      color: C.muted,
-      flexShrink: 0
-    }
-  }, "Voy en la"), ce("select", {
-    value: anchorWeek,
-    onChange: e => setAnchorWeek(Number(e.target.value)),
-    style: {
-      flex: 1,
-      background: C.card2,
-      border: `1px solid ${C.border}`,
-      borderRadius: 6,
-      color: C.text,
-      fontFamily: FONT_D,
-      fontSize: 19,
-      fontWeight: 600,
-      padding: "9px 10px"
-    }
-  }, Array.from({
-    length: 40
-  }, (_, i) => ce("option", {
-    key: i,
-    value: i + 1
-  }, "Semana ", i + 1)))), ce("h3", {
-    style: {
-      fontFamily: FONT_D,
-      fontSize: 20,
-      fontWeight: 700
-    }
-  }, "D\xEDas que entrenas"), ce("p", {
-    style: {
-      fontSize: 14,
-      color: C.muted,
-      lineHeight: 1.5,
-      margin: "4px 0 10px",
-      maxWidth: "60ch"
-    }
-  }, "El plan se condensa solo a los d\xEDas que marques. No pierdes contenido: las sesiones que salen absorben lo importante de las que no caben."), ce("div", {
-    style: {
-      display: "flex",
-      gap: 5,
-      marginBottom: 10
-    }
-  }, WD.map((d, i) => {
-    const on = split.includes(i);
-    return ce("button", {
-      key: i,
-      onClick: () => saveSplit(on ? split.filter(x => x !== i) : [...split, i]),
-      "aria-pressed": on,
-      "aria-label": WD_FULL[i],
-      style: {
-        flex: 1,
-        padding: "10px 0",
-        borderRadius: 6,
-        border: `1.5px solid ${on ? C.yellow : C.border}`,
-        background: on ? C.yellow : "transparent",
-        color: on ? C.bg : C.muted,
-        fontFamily: FONT_D,
-        fontSize: 16,
-        fontWeight: 700,
-        cursor: "pointer"
-      }
-    }, WD2[i].charAt(0) + WD2[i].slice(1).toLowerCase());
-  })), (() => {
+  }, "Hablar con el coach")), (!startD || showAnchor) && (() => {
     const prev = weekFor(Math.max(1, anchorWeek), cPath, cSub, prs, split);
-    if (!prev.week) return null;
-    const min = prev.week.days.reduce((a, d) => a + (parseInt(d.dur) || 0), 0);
+    const min = prev.week ? prev.week.days.reduce((a, d) => a + (parseInt(d.dur) || 0), 0) : 0;
     const full = weekForRaw(Math.max(1, anchorWeek), cPath, cSub, prs);
     const fmin = full.week ? full.week.days.reduce((a, d) => a + (parseInt(d.dur) || 0), 0) : 0;
-    return ce("div", {
+    const step = (n, title, hint, body, last) => ce("li", {
+      style: {
+        position: "relative",
+        paddingLeft: 42,
+        paddingBottom: last ? 0 : 26
+      }
+    }, !last && ce("span", {
+      "aria-hidden": true,
+      style: {
+        position: "absolute",
+        left: 13,
+        top: 30,
+        bottom: 0,
+        width: 2,
+        background: C.border
+      }
+    }), ce("span", {
+      "aria-hidden": true,
+      style: {
+        position: "absolute",
+        left: 0,
+        top: 0,
+        width: 28,
+        height: 28,
+        borderRadius: "50%",
+        border: `2.5px solid ${C.text}`,
+        color: C.text,
+        fontFamily: FONT_D,
+        fontSize: 15,
+        fontWeight: 700,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center"
+      }
+    }, n), ce("h3", {
+      style: {
+        fontFamily: FONT_D,
+        fontSize: 23,
+        fontWeight: 700,
+        lineHeight: 1.1,
+        paddingTop: 2
+      }
+    }, title), hint && ce("p", {
       style: {
         fontSize: 14,
         color: C.muted,
-        lineHeight: 1.55,
-        marginBottom: 16
+        lineHeight: 1.45,
+        margin: "3px 0 0",
+        maxWidth: "60ch"
       }
-    }, ce("b", {
+    }, hint), ce("div", {
       style: {
-        color: C.text
+        marginTop: 12
       }
-    }, split.length, " ", split.length === 1 ? "sesión" : "sesiones", ", ", min, " min por semana"), fmin > min && ` (el plan completo son ${fmin})`, ce("div", {
+    }, body));
+    const stepBtn = off => ({
+      width: 52,
+      height: 52,
+      flexShrink: 0,
+      background: "transparent",
+      border: `1.5px solid ${C.border}`,
+      borderRadius: 6,
+      color: off ? C.dim : C.text,
+      fontFamily: FONT_D,
+      fontSize: 28,
+      fontWeight: 700,
+      cursor: off ? "default" : "pointer"
+    });
+    return ce("section", {
+      "aria-labelledby": "anchor-title",
       style: {
-        marginTop: 2
+        marginBottom: 34
       }
-    }, prev.week.days.map((d, i) => `${WD_FULL[split[i]]}: ${shortType(d.type).toLowerCase()}`).join(", ")));
-  })(), ce("button", {
-    onClick: () => {
-      saveStart(startForWeek(anchorWeek));
-      setShowAnchor(false);
-      setSd(null);
-    },
-    style: primaryBtn
-  }, "Anclar en semana ", anchorWeek), startD && ce("button", {
-    onClick: () => setShowAnchor(false),
-    style: {
-      ...linkBtn,
-      display: "block",
-      margin: "8px auto 0"
-    }
-  }, "Cancelar")), startD && !showAnchor && todayRes && todayRes.week && (() => {
+    }, ce("div", {
+      style: {
+        fontSize: 14,
+        color: C.muted
+      }
+    }, startD ? "Ajustar el plan" : "Antes de empezar"), ce("h2", {
+      id: "anchor-title",
+      style: {
+        fontFamily: FONT_D,
+        fontSize: 40,
+        fontWeight: 800,
+        lineHeight: 1,
+        letterSpacing: -0.5,
+        margin: "2px 0 8px"
+      }
+    }, "Ancla tu plan"), ce("p", {
+      style: {
+        fontSize: 15,
+        color: C.muted,
+        lineHeight: 1.5,
+        marginBottom: 22,
+        maxWidth: "60ch"
+      }
+    }, "Dime en qu\xE9 semana vas y qu\xE9 d\xEDas entrenas. Despu\xE9s la app sabe sola qu\xE9 te toca cada vez que la abres."), ce("ol", {
+      style: {
+        listStyle: "none",
+        margin: "0 0 22px",
+        padding: 0
+      }
+    }, step(1, "\xBFEn qu\xE9 semana vas?", "Si apenas empiezas, es la semana 1.", ce("div", {
+      role: "group",
+      "aria-label": "Semana del plan",
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 10
+      }
+    }, ce("button", {
+      onClick: () => setAnchorWeek(w => Math.max(1, w - 1)),
+      disabled: anchorWeek <= 1,
+      "aria-label": "Una semana menos",
+      style: stepBtn(anchorWeek <= 1)
+    }, "−"), ce("div", {
+      "aria-live": "polite",
+      style: {
+        flex: 1,
+        textAlign: "center",
+        fontFamily: FONT_D,
+        fontSize: 34,
+        fontWeight: 800,
+        lineHeight: 1
+      }
+    }, "Semana ", anchorWeek), ce("button", {
+      onClick: () => setAnchorWeek(w => Math.min(40, w + 1)),
+      disabled: anchorWeek >= 40,
+      "aria-label": "Una semana m\xE1s",
+      style: stepBtn(anchorWeek >= 40)
+    }, "+"))), step(2, "\xBFQu\xE9 d\xEDas entrenas?", "El plan se condensa a los d\xEDas que marques sin perder lo importante. Esto se guarda al tocar.", ce(React.Fragment, null, ce("div", {
+      role: "group",
+      "aria-label": "D\xEDas de entrenamiento",
+      style: {
+        display: "flex",
+        gap: 5
+      }
+    }, WD.map((d, i) => {
+      const on = split.includes(i);
+      return ce("button", {
+        key: i,
+        onClick: () => saveSplit(on ? split.filter(x => x !== i) : [...split, i]),
+        "aria-pressed": on,
+        "aria-label": WD_FULL[i],
+        style: {
+          flex: 1,
+          minHeight: 46,
+          borderRadius: 6,
+          border: `1.5px solid ${on ? C.yellow : C.border}`,
+          background: on ? C.yellow : "transparent",
+          color: on ? C.bg : C.muted,
+          fontFamily: FONT_D,
+          fontSize: 16,
+          fontWeight: 700,
+          cursor: "pointer"
+        }
+      }, WD2[i].charAt(0) + WD2[i].slice(1).toLowerCase());
+    })), prev.week && ce("div", {
+      style: {
+        marginTop: 18
+      }
+    }, ce("div", {
+      style: {
+        display: "flex",
+        alignItems: "baseline",
+        gap: 8,
+        flexWrap: "wrap",
+        marginBottom: 6
+      }
+    }, ce("span", {
+      style: {
+        fontFamily: FONT_D,
+        fontSize: 19,
+        fontWeight: 700
+      }
+    }, "As\xED queda tu semana ", anchorWeek), ce("span", {
+      style: {
+        fontSize: 14,
+        color: C.muted
+      }
+    }, split.length, " ", split.length === 1 ? "sesi\xF3n" : "sesiones", ", ", min, " min", fmin > min ? ` (el plan completo son ${fmin})` : "")), ce("ul", {
+      style: {
+        listStyle: "none",
+        margin: 0,
+        padding: 0
+      }
+    }, prev.week.days.map((d, i) => ce("li", {
+      key: i,
+      style: {
+        display: "flex",
+        alignItems: "baseline",
+        gap: 10,
+        padding: "6px 0",
+        borderTop: i ? `1px solid ${C.border}` : "none"
+      }
+    }, ce("span", {
+      style: {
+        width: 92,
+        flexShrink: 0,
+        fontSize: 15
+      }
+    }, WD_FULL[split[i]]), ce("span", {
+      style: {
+        flex: 1,
+        fontSize: 15,
+        fontWeight: 600,
+        color: TC[d.type] || C.muted
+      }
+    }, shortType(d.type)), ce("span", {
+      style: {
+        fontSize: 14,
+        color: C.muted
+      }
+    }, d.dur || "")))))), true)), ce("button", {
+      onClick: () => {
+        saveStart(startForWeek(anchorWeek));
+        setShowAnchor(false);
+        setSd(null);
+      },
+      style: primaryBtn
+    }, "Anclar en semana ", anchorWeek), startD && ce("button", {
+      onClick: () => setShowAnchor(false),
+      style: {
+        ...linkBtn,
+        display: "block",
+        margin: "8px auto 0"
+      }
+    }, "Cancelar"));
+  })(), startD && !showAnchor && todayRes && todayRes.week && (() => {
     // Hero: lo que toca hoy
     const day = restToday ? null : todayRes.week.days[tdPos];
     if (!restToday && !day) return null;
