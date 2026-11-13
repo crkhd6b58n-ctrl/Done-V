@@ -12732,345 +12732,637 @@ function App() {
         }
       }, "Se guarda solo."));
     })());
-  })(), tab === "prs" && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: C.card,
-      borderRadius: 8,
-      padding: 14,
-      marginBottom: 14,
-      border: `1px solid ${C.border}`
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 16,
-    fontFamily: FONT_D,
-      color: C.muted,
-      fontWeight: 700,
-      marginBottom: 10
-    }
-  }, "Consistencia"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 7,
-      marginBottom: 13
-    }
-  }, [{
-    v: streakNow,
-    l: "Racha",
-    sub: streakNow === 1 ? "día" : "días",
-    c: streakNow > 0 ? C.orange : C.dim
-  }, {
-    v: bestStreak,
-    l: "Mejor",
-    sub: bestStreak === 1 ? "día" : "días",
-    c: C.gold
-  }, {
-    v: sessionStats.done,
-    l: "Sesiones",
-    sub: "completadas",
-    c: C.teal
-  }].map((st, i) => /*#__PURE__*/React.createElement("div", {
-    key: i,
-    style: {
-      flex: 1,
-      background: C.card2,
-      borderRadius: 6,
-      padding: "9px 6px",
-      textAlign: "center",
-      border: `1px solid ${C.border}`
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 14,
-    fontFamily: FONT_D,
-    fontWeight: 600,
-      color: C.muted,
-      marginBottom: 3
-    }
-  }, st.l), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 36,
-    fontFamily: FONT_D,
+  })(), tab === "prs" && (() => {
+    const H2 = {
+      fontFamily: FONT_D,
+      fontSize: 30,
       fontWeight: 800,
-      color: st.c,
-      lineHeight: 1
-    }
-  }, st.v), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 12,
-      color: C.muted,
-      marginTop: 2
-    }
-  }, st.sub)))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 14,
-    fontFamily: FONT_D,
-    fontWeight: 600,
-      color: C.muted,
+      lineHeight: 1,
+      letterSpacing: -0.3,
       marginBottom: 6
-    }
-  }, "\xDAltimas 12 semanas"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 4
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      flexDirection: "column",
-      gap: 3,
-      flexShrink: 0
-    }
-  }, WD.map((d, i) => /*#__PURE__*/React.createElement("div", {
-    key: i,
-    style: {
-      fontSize: 6,
-      color: C.dim,
-      flex: 1,
-      display: "flex",
-      alignItems: "center"
-    }
-  }, d[0]))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 3,
-      flex: 1
-    }
-  }, heat.map((week, wi) => /*#__PURE__*/React.createElement("div", {
-    key: wi,
-    style: {
-      display: "flex",
-      flexDirection: "column",
-      gap: 3,
-      flex: 1
-    }
-  }, week.map(cell => {
-    const isToday = cell.key === dateStr();
-    const bg = cell.future ? "transparent" : cell.n === 0 ? C.card2 : cell.n < 3 ? C.orange + "35" : cell.n < 7 ? C.orange + "75" : C.orange;
-    return /*#__PURE__*/React.createElement("div", {
-      key: cell.key,
-      title: `${cell.key}: ${cell.n}`,
-      style: {
-        width: "100%",
-        aspectRatio: "1",
-        borderRadius: 2,
-        background: bg,
-        border: isToday ? `1px solid ${C.yellow}` : cell.future ? `1px dashed ${C.border}` : "none"
-      }
-    });
-  }))))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginTop: 8
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 12,
-      color: C.dim
-    }
-  }, "hace 12 semanas"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 3,
-      alignItems: "center"
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 12,
-      color: C.dim
-    }
-  }, "menos"), [C.card2, C.orange + "35", C.orange + "75", C.orange].map((c, i) => /*#__PURE__*/React.createElement("div", {
-    key: i,
-    style: {
-      width: 8,
-      height: 8,
-      borderRadius: 2,
-      background: c
-    }
-  })), /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 12,
-      color: C.dim
-    }
-  }, "m\xE1s")))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: C.card,
-      borderRadius: 8,
-      padding: 14,
-      marginBottom: 14,
-      border: `1px solid ${C.border}`
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 16,
-    fontFamily: FONT_D,
-      color: C.muted,
-      fontWeight: 700,
-      marginBottom: 10
-    }
-  }, "Volumen por semana"), !volAny ? /*#__PURE__*/React.createElement("div", {
-    style: {
+    };
+    const intro = {
       fontSize: 15,
       color: C.muted,
-      lineHeight: 1.6
-    }
-  }, "Todav\xEDa no hay series registradas. Abre un ejercicio del d\xEDa y toca ", /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: C.teal
-    }
-  }, "\u270E"), " para anotar reps y peso reales; el volumen aparece aqu\xED solo.") : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 5,
-      marginBottom: 11
-    }
-  }, VOL_MEASURES.map(m => {
-    const on = m.id === volMeasure;
-    return /*#__PURE__*/React.createElement("button", {
-      key: m.id,
-      onClick: () => setVolMeasure(m.id),
-      style: {
-        flex: 1,
-        padding: "6px 4px",
-        borderRadius: 6,
-        border: `1px solid ${on ? C.teal : C.border}`,
-        background: on ? C.teal + "18" : "transparent",
-        color: on ? C.teal : C.muted,
-        fontFamily: FONT_D,
-        fontSize: 16,
-        fontWeight: 700,
-        cursor: "pointer"
+      lineHeight: 1.5,
+      marginBottom: 14,
+      maxWidth: "62ch"
+    };
+    const sub = {
+      fontFamily: FONT_D,
+      fontSize: 19,
+      fontWeight: 700,
+      marginBottom: 8
+    };
+    const fmtDay = d => {
+      try {
+        return parseDay(d).toLocaleDateString("es-MX", {
+          day: "numeric",
+          month: "short"
+        });
+      } catch {
+        return d;
       }
-    }, m.label);
-  })), (() => {
-    const d = volData[volIdx];
-    const prev = volIdx > 0 ? volData[volIdx - 1] : null;
-    const v = d ? d[volMeasure] : 0;
-    const pv = prev ? prev[volMeasure] : 0;
-    const diff = pv > 0 ? Math.round((v - pv) / pv * 100) : null;
-    const isLast = volIdx === volData.length - 1;
-    return /*#__PURE__*/React.createElement("div", {
-      style: {
-        marginBottom: 9
+    };
+    // Metas como tramo del camino: la flecha marca dónde vas
+    const goalRoute = (m, best) => {
+      const ms = m.milestones,
+        n = ms.length;
+      const hit = ms.map(v => best !== null && (m.lower ? best <= v : best >= v));
+      const k = hit.filter(Boolean).length;
+      let pos = k / n;
+      if (best !== null && k < n && !m.lower) {
+        const prev = k > 0 ? ms[k - 1] : 0,
+          next = ms[k];
+        pos = (k + Math.max(0, Math.min(1, (best - prev) / (next - prev || 1)))) / n;
       }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 14,
-    fontFamily: FONT_D,
-    fontWeight: 600,
-        color: C.muted,
-        marginBottom: 2
-      }
-    }, isLast ? "Esta semana" : `SEMANA DEL ${d ? d.date.toLocaleDateString("es-MX", {
-      day: "numeric",
-      month: "short"
-    }) : ""}`), /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        alignItems: "baseline",
-        gap: 7
-      }
-    }, /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontSize: 26,
-    fontFamily: FONT_D,
-        fontWeight: 700,
-        color: C.text,
-        lineHeight: 1
-      }
-    }, v.toLocaleString("es-MX")), /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontSize: 15,
-        color: C.muted
-      }
-    }, volMeta.unit), diff !== null && v > 0 && /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontSize: 14,
-        fontWeight: "bold",
-        color: diff > 0 ? C.teal : diff < 0 ? C.orange : C.muted
-      }
-    }, diff > 0 ? "↑" : diff < 0 ? "↓" : "=", " ", Math.abs(diff), "% vs la anterior")));
-  })(), /*#__PURE__*/React.createElement(VolumeBars, {
-    data: volData,
-    measure: volMeasure,
-    color: C.teal,
-    sel: volIdx,
-    onSelect: setVolSel
-  }), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      justifyContent: "space-between",
-      marginTop: 4
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 12,
-      color: C.dim
-    }
-  }, volData[0] ? volData[0].date.toLocaleDateString("es-MX", {
-    day: "numeric",
-    month: "short"
-  }) : ""), /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 12,
-      color: C.dim
-    }
-  }, "l\xEDnea punteada = promedio"), /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 12,
-      color: C.dim
-    }
-  }, "esta semana")))), (() => {
-    const list = Object.keys(notes).map(k => ({
+      return ce("div", {
+        style: {
+          position: "relative",
+          height: 58,
+          margin: "6px 10px 0 4px"
+        }
+      }, ce("div", {
+        style: {
+          position: "absolute",
+          left: 0,
+          right: 0,
+          top: 14,
+          height: 2,
+          background: C.border
+        }
+      }), best !== null && ce("div", {
+        style: {
+          position: "absolute",
+          left: 0,
+          top: 13,
+          height: 4,
+          borderRadius: 2,
+          width: `${pos * 100}%`,
+          background: C.yellow
+        }
+      }), ms.map((v, i) => ce("div", {
+        key: i,
+        style: {
+          position: "absolute",
+          left: `${(i + 1) / n * 100}%`,
+          top: 0,
+          transform: "translateX(-50%)",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center"
+        }
+      }, ce("span", {
+        style: {
+          width: 14,
+          height: 14,
+          marginTop: 9,
+          borderRadius: "50%",
+          border: `2.5px solid ${hit[i] ? C.yellow : C.border}`,
+          background: hit[i] ? C.yellow : C.bg
+        }
+      }), ce("span", {
+        style: {
+          fontFamily: FONT_D,
+          fontSize: 18,
+          fontWeight: 700,
+          marginTop: 6,
+          color: hit[i] ? C.text : C.muted
+        }
+      }, v))), best !== null && k < n && ce("div", {
+        "aria-hidden": true,
+        style: {
+          position: "absolute",
+          top: 1,
+          left: `calc(${pos * 100}% - 13px)`
+        }
+      }, ce(Waymark, {
+        size: 26
+      })));
+    };
+    const heatBg = cell => cell.future ? "transparent" : cell.n === 0 ? C.card2 : cell.n < 3 ? C.orange + "40" : cell.n < 7 ? C.orange + "88" : C.orange;
+    const notesList = Object.keys(notes).map(k => ({
       scope: k,
       ...notes[k],
       loc: parseScope(k)
     })).filter(x => x.loc).sort((a, b) => String(b.d).localeCompare(String(a.d)) || b.loc.week - a.loc.week);
-    if (list.length === 0) return null;
-    return /*#__PURE__*/React.createElement("div", {
+    return ce(React.Fragment, null,
+    // 1. Récords
+    ce("section", {
+      "aria-labelledby": "pr-recs",
       style: {
-        background: C.card,
-        borderRadius: 8,
-        border: `1px solid ${C.border}`,
-        marginBottom: 14,
-        overflow: "hidden"
+        marginBottom: 36
       }
-    }, /*#__PURE__*/React.createElement("button", {
-      onClick: () => setShowNotes(v => !v),
+    }, ce("h2", {
+      id: "pr-recs",
+      style: H2
+    }, "Tus récords"), ce("p", {
+      style: intro
+    }, "Toca un ejercicio para anotar una marca nueva y ver qué tan cerca vas de la siguiente meta."), ce("ul", {
       style: {
-        width: "100%",
-        background: "none",
-        border: "none",
-        padding: "13px 14px",
+        listStyle: "none",
+        margin: 0,
+        padding: 0,
+        borderTop: `1px solid ${C.border}`
+      }
+    }, PR_METRICS.map(m => {
+      const d = prs[m.id] || [];
+      const best = bestOf(d, m.lower);
+      const open = selMetric === m.id;
+      return ce("li", {
+        key: m.id,
+        style: {
+          borderBottom: `1px solid ${C.border}`
+        }
+      }, ce("button", {
+        onClick: () => {
+          setSelMetric(m.id);
+          setPrInput("");
+        },
+        "aria-expanded": open,
+        style: {
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          padding: "14px 0",
+          background: "transparent",
+          border: "none",
+          color: C.text,
+          fontFamily: "inherit",
+          textAlign: "left",
+          cursor: "pointer"
+        }
+      }, ce("span", {
+        "aria-hidden": true,
+        style: {
+          width: 4,
+          alignSelf: "stretch",
+          borderRadius: 2,
+          background: open ? m.color : "transparent"
+        }
+      }), ce("span", {
+        style: {
+          flex: 1,
+          minWidth: 0
+        }
+      }, ce("span", {
+        style: {
+          display: "block",
+          fontFamily: FONT_D,
+          fontSize: 21,
+          fontWeight: 700,
+          color: open ? m.color : C.text
+        }
+      }, m.label), ce("span", {
+        style: {
+          display: "block",
+          fontSize: 14,
+          color: C.muted
+        }
+      }, d.length ? `${d.length} ${d.length === 1 ? "registro" : "registros"}, último el ${fmtDay(d[d.length - 1].date)}` : "Sin registro todavía")), ce("span", {
+        style: {
+          textAlign: "right",
+          flexShrink: 0
+        }
+      }, ce("span", {
+        style: {
+          fontFamily: FONT_D,
+          fontSize: 30,
+          fontWeight: 800,
+          color: best !== null ? C.text : C.dim
+        }
+      }, best !== null ? best : "—"), ce("span", {
+        style: {
+          fontSize: 14,
+          color: C.muted,
+          marginLeft: 4
+        }
+      }, m.unit))), open && ce("div", {
+        style: {
+          padding: "2px 0 20px 16px"
+        }
+      }, ce("div", {
+        style: {
+          display: "flex",
+          gap: 8,
+          marginBottom: 20
+        }
+      }, ce("label", {
+        style: {
+          flex: 1,
+          minWidth: 0,
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          background: C.card,
+          border: `1.5px solid ${C.border}`,
+          borderRadius: 6,
+          padding: "0 12px"
+        }
+      }, ce("input", {
+        type: "number",
+        inputMode: "decimal",
+        value: prInput,
+        "aria-label": `Marca nueva de ${m.label} en ${m.unit}`,
+        onChange: e => setPrInput(e.target.value),
+        onKeyDown: e => e.key === "Enter" && addPr(m.id, prInput),
+        placeholder: lastVal !== null ? `Última: ${lastVal}` : `Ej: ${m.milestones[0]}`,
+        style: {
+          flex: 1,
+          minWidth: 0,
+          background: "transparent",
+          border: "none",
+          outline: "none",
+          color: C.text,
+          fontFamily: FONT_D,
+          fontSize: 24,
+          fontWeight: 700,
+          padding: "10px 0"
+        }
+      }), ce("span", {
+        style: {
+          fontSize: 15,
+          color: C.muted
+        }
+      }, m.unit)), ce("button", {
+        onClick: () => addPr(m.id, prInput),
+        disabled: !prInput,
+        style: {
+          background: prInput ? C.yellow : C.card2,
+          border: "none",
+          borderRadius: 6,
+          padding: "0 18px",
+          minHeight: 52,
+          color: prInput ? C.bg : C.muted,
+          fontFamily: FONT_D,
+          fontSize: 19,
+          fontWeight: 700,
+          cursor: prInput ? "pointer" : "default"
+        }
+      }, "Anotar")), ce("div", {
+        style: sub
+      }, "Metas"), goalRoute(m, best), ce("p", {
+        style: {
+          borderLeft: `3px solid ${m.color}`,
+          padding: "2px 0 2px 12px",
+          fontSize: 16,
+          lineHeight: 1.5,
+          margin: "16px 0 22px",
+          color: best !== null ? C.text : C.muted
+        }
+      }, best !== null ? m.calc(best) : "Anota tu primera marca para ver cuánto te falta para la siguiente meta."), metricData.length >= 2 && ce(React.Fragment, null, ce("div", {
+        style: sub
+      }, "Progreso"), ce("div", {
+        style: {
+          marginBottom: 20
+        }
+      }, ce(Sparkline, {
+        data: metricData,
+        color: m.color,
+        lower: m.lower
+      }))), metricData.length > 0 && ce(React.Fragment, null, ce("div", {
+        style: sub
+      }, "Historial"), (() => {
+        // Marca las entradas que rompieron tu récord en su momento
+        let run = null;
+        const isRecord = metricData.map(e => {
+          const better = run === null || (m.lower ? e.value < run : e.value > run);
+          if (better) run = e.value;
+          return better;
+        });
+        return ce("ul", {
+          style: {
+            listStyle: "none",
+            margin: 0,
+            padding: 0
+          }
+        }, [...metricData].reverse().map((entry, i) => {
+          const j = metricData.length - 1 - i;
+          return ce("li", {
+            key: j,
+            style: {
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              padding: "6px 0",
+              borderTop: i ? `1px solid ${C.border}` : "none"
+            }
+          }, ce("span", {
+            style: {
+              fontSize: 15,
+              color: C.muted,
+              width: 72,
+              flexShrink: 0
+            }
+          }, fmtDay(entry.date)), ce("span", {
+            style: {
+              flex: 1,
+              fontFamily: FONT_D,
+              fontSize: 20,
+              fontWeight: 700
+            }
+          }, entry.value, ce("span", {
+            style: {
+              fontFamily: FONT,
+              fontSize: 14,
+              fontWeight: 400,
+              color: C.muted
+            }
+          }, " ", m.unit), isRecord[j] && ce("span", {
+            style: {
+              fontFamily: FONT,
+              fontSize: 13,
+              fontWeight: 600,
+              color: C.yellow,
+              marginLeft: 8
+            }
+          }, "récord")), ce("button", {
+            onClick: () => delPr(m.id, j),
+            "aria-label": `Borrar ${entry.value} ${m.unit} del ${fmtDay(entry.date)}`,
+            style: {
+              width: 36,
+              height: 36,
+              background: "none",
+              border: "none",
+              color: C.muted,
+              cursor: "pointer",
+              fontSize: 15
+            }
+          }, "✕"));
+        }));
+      })())));
+    }))),
+    // 2. Constancia
+    ce("section", {
+      "aria-labelledby": "pr-const",
+      style: {
+        marginBottom: 36
+      }
+    }, ce("h2", {
+      id: "pr-const",
+      style: H2
+    }, "Constancia"), ce("div", {
+      style: {
+        display: "flex",
+        gap: 26,
+        margin: "8px 0 18px"
+      }
+    }, [[streakNow, streakNow === 1 ? "día de racha" : "días de racha", streakNow > 0 ? C.orange : C.muted], [bestStreak, "tu mejor racha", C.text], [sessionStats.done, sessionStats.done === 1 ? "sesión completa" : "sesiones completas", C.text]].map(([v, l, c], i) => ce("div", {
+      key: i
+    }, ce("div", {
+      style: {
+        fontFamily: FONT_D,
+        fontSize: 44,
+        fontWeight: 800,
+        lineHeight: 1,
+        color: c
+      }
+    }, v), ce("div", {
+      style: {
+        fontSize: 14,
+        color: C.muted,
+        marginTop: 2
+      }
+    }, l)))), ce("div", {
+      style: sub
+    }, "\xDAltimas 12 semanas"), ce("div", {
+      style: {
+        display: "flex",
+        gap: 6
+      }
+    }, ce("div", {
+      "aria-hidden": true,
+      style: {
+        display: "flex",
+        flexDirection: "column",
+        gap: 3,
+        flexShrink: 0
+      }
+    }, WD.map((d, i) => ce("div", {
+      key: i,
+      style: {
+        fontSize: 11,
+        color: C.muted,
+        flex: 1,
+        display: "flex",
+        alignItems: "center"
+      }
+    }, i % 2 === 0 ? d : ""))), ce("div", {
+      style: {
+        display: "flex",
+        gap: 3,
+        flex: 1
+      }
+    }, heat.map((week, wi) => ce("div", {
+      key: wi,
+      style: {
+        display: "flex",
+        flexDirection: "column",
+        gap: 3,
+        flex: 1
+      }
+    }, week.map(cell => {
+      const isToday = cell.key === dateStr();
+      return ce("div", {
+        key: cell.key,
+        title: `${cell.key}: ${cell.n}`,
+        style: {
+          width: "100%",
+          aspectRatio: "1",
+          borderRadius: 3,
+          background: heatBg(cell),
+          boxShadow: isToday ? `0 0 0 2px ${C.yellow}` : "none",
+          border: cell.future ? `1px dashed ${C.border}` : "none"
+        }
+      });
+    }))))), ce("div", {
+      style: {
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
+        marginTop: 8,
+        fontSize: 13,
+        color: C.muted
+      }
+    }, ce("span", null, "Hace 12 semanas"), ce("span", {
+      style: {
+        display: "flex",
+        gap: 4,
+        alignItems: "center"
+      }
+    }, "Menos", [{
+      n: 0
+    }, {
+      n: 1
+    }, {
+      n: 4
+    }, {
+      n: 9
+    }].map((c, i) => ce("span", {
+      key: i,
+      style: {
+        width: 11,
+        height: 11,
+        borderRadius: 2,
+        background: heatBg(c)
+      }
+    })), "más"))),
+    // 3. Volumen
+    ce("section", {
+      "aria-labelledby": "pr-vol",
+      style: {
+        marginBottom: 36
+      }
+    }, ce("h2", {
+      id: "pr-vol",
+      style: H2
+    }, "Volumen por semana"), !volAny ? ce("p", {
+      style: intro
+    }, "Todav\xEDa no hay series registradas. Abre un ejercicio del d\xEDa y toca ✎ para anotar reps y peso reales; el volumen aparece aqu\xED solo.") : ce(React.Fragment, null, ce("div", {
+      role: "group",
+      "aria-label": "Medida",
+      style: {
+        display: "flex",
+        gap: 6,
+        margin: "10px 0 14px"
+      }
+    }, VOL_MEASURES.map(m => {
+      const on = m.id === volMeasure;
+      return ce("button", {
+        key: m.id,
+        onClick: () => setVolMeasure(m.id),
+        "aria-pressed": on,
+        style: {
+          flex: 1,
+          minHeight: 42,
+          borderRadius: 6,
+          border: `1.5px solid ${on ? C.text : C.border}`,
+          background: on ? C.text : "transparent",
+          color: on ? C.bg : C.text,
+          fontFamily: FONT_D,
+          fontSize: 17,
+          fontWeight: 700,
+          cursor: "pointer"
+        }
+      }, m.label);
+    })), (() => {
+      const d = volData[volIdx];
+      const prev = volIdx > 0 ? volData[volIdx - 1] : null;
+      const v = d ? d[volMeasure] : 0;
+      const pv = prev ? prev[volMeasure] : 0;
+      const diff = pv > 0 ? Math.round((v - pv) / pv * 100) : null;
+      const isLast = volIdx === volData.length - 1;
+      return ce("div", {
+        style: {
+          marginBottom: 10
+        }
+      }, ce("div", {
+        style: {
+          fontSize: 14,
+          color: C.muted
+        }
+      }, isLast ? "Esta semana" : `Semana del ${d ? d.date.toLocaleDateString("es-MX", {
+        day: "numeric",
+        month: "short"
+      }) : ""}`), ce("div", {
+        style: {
+          display: "flex",
+          alignItems: "baseline",
+          gap: 8,
+          flexWrap: "wrap"
+        }
+      }, ce("span", {
+        style: {
+          fontFamily: FONT_D,
+          fontSize: 40,
+          fontWeight: 800,
+          lineHeight: 1
+        }
+      }, v.toLocaleString("es-MX")), ce("span", {
+        style: {
+          fontSize: 15,
+          color: C.muted
+        }
+      }, volMeta.unit), diff !== null && v > 0 && ce("span", {
+        style: {
+          fontSize: 15,
+          fontWeight: 600,
+          color: diff > 0 ? C.teal : diff < 0 ? C.orange : C.muted
+        }
+      }, diff > 0 ? "↑" : diff < 0 ? "↓" : "=", " ", Math.abs(diff), "% contra la anterior")));
+    })(), ce(VolumeBars, {
+      data: volData,
+      measure: volMeasure,
+      color: C.teal,
+      sel: volIdx,
+      onSelect: setVolSel
+    }), ce("div", {
+      style: {
+        display: "flex",
+        justifyContent: "space-between",
+        marginTop: 6,
+        fontSize: 13,
+        color: C.muted
+      }
+    }, ce("span", null, volData[0] ? volData[0].date.toLocaleDateString("es-MX", {
+      day: "numeric",
+      month: "short"
+    }) : ""), ce("span", null, "Punteado: promedio"), ce("span", null, "Esta semana")))),
+    // 4. Notas
+    notesList.length > 0 && ce("section", {
+      "aria-labelledby": "pr-notes"
+    }, ce("button", {
+      onClick: () => setShowNotes(v => !v),
+      "aria-expanded": showNotes,
+      style: {
+        width: "100%",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        background: "none",
+        border: "none",
+        padding: 0,
+        color: C.text,
         cursor: "pointer",
-        fontFamily: "inherit"
+        textAlign: "left"
       }
-    }, /*#__PURE__*/React.createElement("span", {
+    }, ce("h2", {
+      id: "pr-notes",
       style: {
-        fontSize: 16,
-    fontFamily: FONT_D,
+        ...H2,
+        marginBottom: 0
+      }
+    }, "Notas de sesi\xF3n", ce("span", {
+      style: {
+        fontFamily: FONT,
+        fontSize: 15,
+        fontWeight: 400,
         color: C.muted,
-        fontWeight: 700
+        marginLeft: 8,
+        letterSpacing: 0
       }
-    }, "Notas (", list.length, ")"), /*#__PURE__*/React.createElement("span", {
+    }, notesList.length)), ce("span", {
       style: {
-        color: C.dim,
-        fontSize: 15
+        fontSize: 15,
+        color: C.muted,
+        textDecoration: "underline",
+        textUnderlineOffset: 3
       }
-    }, showNotes ? "▲" : "▼")), showNotes && /*#__PURE__*/React.createElement("div", {
+    }, showNotes ? "Ocultar" : "Ver")), showNotes && ce("ul", {
       style: {
-        padding: "0 14px 12px"
+        listStyle: "none",
+        margin: "12px 0 0",
+        padding: 0
       }
-    }, list.map((x, i) => /*#__PURE__*/React.createElement("div", {
-      key: x.scope
+    }, notesList.map(x => ce("li", {
+      key: x.scope,
+      style: {
+        borderTop: `1px solid ${C.border}`
+      }
+    }, ce("button", {
       // changeTab limpia el dia seleccionado, asi que el salto
       // tiene que fijarse DESPUES de cambiar de pestana.
-      ,
       onClick: () => {
         changeTab("semana");
         saveCw(x.loc.week - 1);
@@ -13078,420 +13370,41 @@ function App() {
         setSd(q < 0 ? null : q);
       },
       style: {
-        padding: "10px 0",
-        borderTop: `1px solid ${C.border}`,
+        width: "100%",
+        background: "none",
+        border: "none",
+        padding: "12px 0",
+        textAlign: "left",
+        color: C.text,
+        fontFamily: "inherit",
         cursor: "pointer"
       }
-    }, /*#__PURE__*/React.createElement("div", {
+    }, ce("span", {
       style: {
-        display: "flex",
-        gap: 7,
-        alignItems: "center",
-        marginBottom: 4
-      }
-    }, /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontSize: 16,
-    fontFamily: FONT_D,
-        color: C.teal,
+        display: "block",
+        fontFamily: FONT_D,
+        fontSize: 18,
         fontWeight: 700
       }
-    }, "Semana ", x.loc.week, " \xB7 ", WD[x.loc.day]), /*#__PURE__*/React.createElement("span", {
+    }, WD_FULL[x.loc.day], ", semana ", x.loc.week, ce("span", {
       style: {
-        fontSize: 13,
-        color: C.muted
-      }
-    }, x.d), /*#__PURE__*/React.createElement("span", {
-      style: {
-        flex: 1
-      }
-    }), /*#__PURE__*/React.createElement("span", {
-      style: {
+        fontFamily: FONT,
         fontSize: 14,
-        color: C.dim
+        fontWeight: 400,
+        color: C.muted,
+        marginLeft: 8
       }
-    }, "\u2192")), /*#__PURE__*/React.createElement("div", {
+    }, x.d ? fmtDay(x.d) : "")), ce("span", {
       style: {
+        display: "block",
         fontSize: 15,
-        color: C.text,
-        lineHeight: 1.6,
-        whiteSpace: "pre-wrap"
+        lineHeight: 1.5,
+        whiteSpace: "pre-wrap",
+        marginTop: 3,
+        maxWidth: "62ch"
       }
-    }, x.t)))));
-  })(), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 16,
-    fontFamily: FONT_D,
-      color: C.muted,
-      fontWeight: 700,
-      marginBottom: 10
-    }
-  }, "R\xE9cords personales"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 5,
-      overflowX: "auto",
-      marginBottom: 14,
-      paddingBottom: 4
-    }
-  }, PR_METRICS.map(m => /*#__PURE__*/React.createElement("button", {
-    key: m.id,
-    onClick: () => {
-      setSelMetric(m.id);
-      setAddingPr(false);
-    },
-    style: {
-      flexShrink: 0,
-      padding: "6px 12px",
-      borderRadius: 8,
-      border: `1px solid ${selMetric === m.id ? m.color : C.border}`,
-      background: selMetric === m.id ? m.color + "20" : "transparent",
-      cursor: "pointer",
-      fontFamily: "inherit",
-      fontSize: 15,
-      fontWeight: "bold",
-      color: selMetric === m.id ? m.color : C.muted,
-      whiteSpace: "nowrap"
-    }
-  }, m.emoji, " ", m.label))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: C.card,
-      borderRadius: 8,
-      border: `1px solid ${metric.color}40`,
-      overflow: "hidden",
-      marginBottom: 12
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: metric.color + "10",
-      padding: "12px 14px",
-      borderBottom: `1px solid ${metric.color}25`,
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center"
-    }
-  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 16,
-    fontFamily: FONT_D,
-      color: metric.color,
-      fontWeight: 700
-    }
-  }, metric.emoji, " ", metric.label), bestVal !== null ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "baseline",
-      gap: 6,
-      marginTop: 2
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 24,
-    fontFamily: FONT_D,
-      fontWeight: 700
-    }
-  }, bestVal), /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 15,
-      color: C.muted
-    }
-  }, metric.unit), /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 14,
-    fontFamily: FONT_D,
-      color: metric.color,
-      fontWeight: 700
-    }
-  }, "R\xE9cord")), lastVal !== bestVal && /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 14,
-      color: C.muted,
-      marginTop: 1
-    }
-  }, "\xDAltimo: ", lastVal, " ", metric.unit)) : /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 17,
-      color: C.dim,
-      marginTop: 2
-    }
-  }, "Sin registro a\xFAn")), /*#__PURE__*/React.createElement("button", {
-    onClick: () => setAddingPr(a => !a),
-    style: {
-      background: metric.color,
-      border: "none",
-      borderRadius: 8,
-      padding: "8px 14px",
-      color: C.bg,
-      fontFamily: "inherit",
-      fontSize: 15,
-      fontWeight: "bold",
-      cursor: "pointer"
-    }
-  }, addingPr ? "✕ Cancelar" : "+ Registrar")), addingPr && /*#__PURE__*/React.createElement("div", {
-    style: {
-      padding: "12px 14px",
-      borderBottom: `1px solid ${C.border}`,
-      display: "flex",
-      gap: 8,
-      alignItems: "center"
-    }
-  }, /*#__PURE__*/React.createElement("input", {
-    type: "number",
-    value: prInput,
-    onChange: e => setPrInput(e.target.value),
-    placeholder: `Ej: ${metric.milestones[0]}`,
-    style: {
-      flex: 1,
-      background: C.card2,
-      border: `1px solid ${metric.color}40`,
-      borderRadius: 8,
-      padding: "10px 12px",
-      color: C.text,
-      fontFamily: "inherit",
-      fontSize: 19,
-      outline: "none"
-    },
-    onKeyDown: e => e.key === "Enter" && addPr(metric.id, prInput),
-    autoFocus: true
-  }), /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: C.muted,
-      fontSize: 15,
-      flexShrink: 0
-    }
-  }, metric.unit), /*#__PURE__*/React.createElement("button", {
-    onClick: () => addPr(metric.id, prInput),
-    style: {
-      background: metric.color,
-      border: "none",
-      borderRadius: 8,
-      padding: "10px 16px",
-      color: C.bg,
-      fontFamily: "inherit",
-      fontSize: 16,
-      fontWeight: "bold",
-      cursor: "pointer"
-    }
-  }, "\u2713")), /*#__PURE__*/React.createElement("div", {
-    style: {
-      padding: "10px 14px",
-      borderBottom: `1px solid ${C.border}`
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 16,
-    fontFamily: FONT_D,
-      color: C.muted,
-      fontWeight: 700,
-      marginBottom: 7
-    }
-  }, "Metas"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 6
-    }
-  }, metric.milestones.map((ms, i) => {
-    const reached = bestVal !== null && (metric.lower ? bestVal <= ms : bestVal >= ms);
-    return /*#__PURE__*/React.createElement("div", {
-      key: i,
-      style: {
-        flex: 1,
-        background: reached ? metric.color + "20" : C.card2,
-        borderRadius: 6,
-        padding: "6px 8px",
-        textAlign: "center",
-        border: `1px solid ${reached ? metric.color + "50" : C.border}`
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 17,
-    fontFamily: FONT_D,
-        fontWeight: 700,
-        color: reached ? metric.color : C.dim
-      }
-    }, reached ? "✓" : "", ms), /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 13,
-        color: C.muted
-      }
-    }, metric.unit));
-  }))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      padding: "10px 14px",
-      borderBottom: `1px solid ${C.border}`
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 16,
-    fontFamily: FONT_D,
-      color: C.muted,
-      fontWeight: 700,
-      marginBottom: 8
-    }
-  }, "Progreso"), /*#__PURE__*/React.createElement(Sparkline, {
-    data: metricData,
-    color: metric.color,
-    lower: metric.lower
-  })), /*#__PURE__*/React.createElement("div", {
-    style: {
-      padding: "10px 14px",
-      borderBottom: `1px solid ${C.border}`,
-      background: metric.color + "06"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 16,
-    fontFamily: FONT_D,
-      color: metric.color,
-      fontWeight: 700,
-      marginBottom: 6
-    }
-  }, "Calculadora de progresi\xF3n"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 16,
-      color: C.text,
-      lineHeight: 1.6
-    }
-  }, bestVal !== null ? metric.calc(bestVal) : /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: C.muted
-    }
-  }, "Registra tu primer PR para ver la estimaci\xF3n personalizada"))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      padding: "10px 14px"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 16,
-    fontFamily: FONT_D,
-      color: C.muted,
-      fontWeight: 700,
-      marginBottom: 7
-    }
-  }, "Historial"), metricData.length === 0 ? /*#__PURE__*/React.createElement("div", {
-    style: {
-      color: C.muted,
-      fontSize: 15,
-      textAlign: "center",
-      padding: "10px 0"
-    }
-  }, "A\xFAn sin registros -- presiona \"+ Registrar\"") : (() => {
-    // Marca las entradas que rompieron tu record en su momento
-    let run = null;
-    const isRecord = metricData.map(e => {
-      const better = run === null || (metric.lower ? e.value < run : e.value > run);
-      if (better) run = e.value;
-      return better;
-    });
-    return [...metricData].reverse().map((entry, i) => {
-      const j = metricData.length - 1 - i;
-      return /*#__PURE__*/React.createElement("div", {
-        key: j,
-        style: {
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          gap: 8,
-          padding: "7px 0",
-          borderBottom: i < metricData.length - 1 ? `1px solid ${C.border}` : "none"
-        }
-      }, /*#__PURE__*/React.createElement("span", {
-        style: {
-          fontSize: 15,
-          color: C.muted,
-          flexShrink: 0
-        }
-      }, entry.date), /*#__PURE__*/React.createElement("div", {
-        style: {
-          flex: 1,
-          display: "flex",
-          justifyContent: "flex-end",
-          alignItems: "center",
-          gap: 6
-        }
-      }, isRecord[j] && /*#__PURE__*/React.createElement("span", {
-        style: {
-          fontSize: 13,
-    fontFamily: FONT_D,
-          background: metric.color + "25",
-          color: metric.color,
-          padding: "2px 5px",
-          borderRadius: 3,
-          fontWeight: 700
-        }
-      }, "PR"), /*#__PURE__*/React.createElement("span", {
-        style: {
-          fontSize: 17,
-    fontFamily: FONT_D,
-          fontWeight: 700,
-          color: isRecord[j] ? metric.color : C.text
-        }
-      }, entry.value, " ", /*#__PURE__*/React.createElement("span", {
-        style: {
-          fontSize: 14,
-          color: C.muted
-        }
-      }, metric.unit))), /*#__PURE__*/React.createElement("button", {
-        onClick: () => delPr(metric.id, j),
-        style: {
-          background: "none",
-          border: "none",
-          color: C.dim,
-          cursor: "pointer",
-          fontSize: 17,
-          fontFamily: "inherit",
-          flexShrink: 0
-        }
-      }, "\u2715"));
-    });
-  })())), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 16,
-    fontFamily: FONT_D,
-      color: C.muted,
-      fontWeight: 700,
-      marginBottom: 8
-    }
-  }, "Resumen general"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "grid",
-      gridTemplateColumns: "1fr 1fr",
-      gap: 6
-    }
-  }, PR_METRICS.map(m => {
-    const d = prs[m.id] || [];
-    const v = d.length > 0 ? d[d.length - 1].value : null;
-    return /*#__PURE__*/React.createElement("div", {
-      key: m.id,
-      onClick: () => setSelMetric(m.id),
-      style: {
-        background: C.card,
-        borderRadius: 8,
-        padding: "10px 12px",
-        border: `1px solid ${selMetric === m.id ? m.color : C.border}`,
-        cursor: "pointer"
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 15,
-        color: m.color,
-        fontWeight: "bold",
-        marginBottom: 3
-      }
-    }, m.emoji, " ", m.label), /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 21,
-    fontFamily: FONT_D,
-        fontWeight: 700,
-        color: v !== null ? m.color : C.dim
-      }
-    }, v !== null ? `${v}` : "--"), /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 13,
-        color: C.muted
-      }
-    }, m.unit));
-  }))), tab === "arbol" && !tn && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    }, x.t)))))));
+  })(), tab === "arbol" && !tn && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     style: {
       marginBottom: 22
     }
