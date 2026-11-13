@@ -11312,6 +11312,8 @@ function App() {
   const [volMeasure, setVolMeasure] = useState("reps");
   const [volSel, setVolSel] = useState(null);
   const [showNotes, setShowNotes] = useState(false);
+  const [histAll, setHistAll] = useState(false);
+  const [prUndo, setPrUndo] = useState(null);
 
   //  Non-persistent UI state 
   const [sd, setSd] = useState(null);
@@ -11411,6 +11413,26 @@ function App() {
       return n;
     });
   }, []);
+  // Deshacer el último borrado: vuelve a meter la marca en su lugar
+  const undoPr = () => {
+    if (!prUndo) return;
+    const {
+      id,
+      idx,
+      entry
+    } = prUndo;
+    setPrs(p => {
+      const arr = [...(p[id] || [])];
+      arr.splice(Math.min(idx, arr.length), 0, entry);
+      const n = {
+        ...p,
+        [id]: arr
+      };
+      save("dvfit_prs", n);
+      return n;
+    });
+    setPrUndo(null);
+  };
 
   //  Backup handlers 
   const flash = useCallback((type, text) => {
@@ -13491,6 +13513,8 @@ function App() {
         onClick: () => {
           setSelMetric(m.id);
           setPrInput("");
+          setHistAll(false);
+          setPrUndo(null);
         },
         "aria-expanded": open,
         style: {
@@ -13641,73 +13665,227 @@ function App() {
       }))), metricData.length > 0 && ce(React.Fragment, null, ce("div", {
         style: sub
       }, "Historial"), (() => {
-        // Marca las entradas que rompieron tu récord en su momento
+        // Récords en su momento, la mejor marca y el cambio contra la anterior
         let run = null;
         const isRecord = metricData.map(e => {
           const better = run === null || (m.lower ? e.value < run : e.value > run);
           if (better) run = e.value;
           return better;
         });
-        return ce("ul", {
-          style: {
-            listStyle: "none",
-            margin: 0,
-            padding: 0
+        const vals = metricData.map(e => e.value);
+        const bestJ = vals.lastIndexOf(m.lower ? Math.min(...vals) : Math.max(...vals));
+        const num = v => Number.isInteger(v) ? String(v) : v.toFixed(1);
+        const LIMIT = 8;
+        const rows = [...metricData].map((e, j) => ({
+          e,
+          j
+        })).reverse();
+        const shownRows = histAll ? rows : rows.slice(0, LIMIT);
+        const monthOf = d => {
+          try {
+            const s = parseDay(d).toLocaleDateString("es-MX", {
+              month: "long",
+              year: "numeric"
+            });
+            return s.charAt(0).toUpperCase() + s.slice(1);
+          } catch {
+            return "";
           }
-        }, [...metricData].reverse().map((entry, i) => {
-          const j = metricData.length - 1 - i;
-          return ce("li", {
+        };
+        const thisYear = String(new Date().getFullYear());
+        const out = [];
+        let lastMonth = null;
+        shownRows.forEach(({
+          e,
+          j
+        }) => {
+          const mo = monthOf(e.date).replace(" de " + thisYear, "").replace(" " + thisYear, "");
+          if (mo !== lastMonth) {
+            out.push(ce("li", {
+              key: "m" + j,
+              "aria-hidden": true,
+              style: {
+                fontSize: 13,
+                color: C.muted,
+                padding: out.length ? "14px 0 4px" : "0 0 4px"
+              }
+            }, mo));
+            lastMonth = mo;
+          }
+          const prev = j > 0 ? metricData[j - 1].value : null;
+          const diff = prev === null ? null : e.value - prev;
+          const better = diff !== null && (m.lower ? diff < 0 : diff > 0);
+          const best = j === bestJ;
+          out.push(ce("li", {
             key: j,
             style: {
               display: "flex",
               alignItems: "center",
-              gap: 10,
+              gap: 12,
               padding: "6px 0",
-              borderTop: i ? `1px solid ${C.border}` : "none"
+              borderTop: `1px solid ${C.border}`
+            }
+          }, ce("span", {
+            "aria-hidden": true,
+            style: {
+              width: 14,
+              display: "flex",
+              justifyContent: "center",
+              flexShrink: 0
             }
           }, ce("span", {
             style: {
-              fontSize: 15,
-              color: C.muted,
-              width: 72,
-              flexShrink: 0
+              width: best ? 12 : 9,
+              height: best ? 12 : 9,
+              borderRadius: "50%",
+              background: best ? C.yellow : isRecord[j] ? C.text : "transparent",
+              border: best ? "none" : `2px solid ${isRecord[j] ? C.text : C.muted}`
             }
-          }, fmtDay(entry.date)), ce("span", {
+          })), ce("span", {
+            style: {
+              width: 58,
+              flexShrink: 0,
+              fontSize: 15,
+              color: C.muted
+            }
+          }, fmtDay(e.date)), ce("span", {
             style: {
               flex: 1,
+              minWidth: 0,
               fontFamily: FONT_D,
-              fontSize: 20,
-              fontWeight: 700
+              fontSize: 21,
+              fontWeight: 700,
+              color: best ? C.yellow : C.text
             }
-          }, entry.value, ce("span", {
+          }, num(e.value), ce("span", {
             style: {
               fontFamily: FONT,
               fontSize: 14,
               fontWeight: 400,
               color: C.muted
             }
-          }, " ", m.unit), isRecord[j] && ce("span", {
+          }, " ", m.unit), best ? ce("span", {
             style: {
               fontFamily: FONT,
               fontSize: 13,
               fontWeight: 600,
-              color: C.yellow,
               marginLeft: 8
             }
-          }, "récord")), ce("button", {
-            onClick: () => delPr(m.id, j),
-            "aria-label": `Borrar ${entry.value} ${m.unit} del ${fmtDay(entry.date)}`,
+          }, "tu r\xE9cord") : isRecord[j] && ce("span", {
+            className: "dv-sr",
+            style: {
+              position: "absolute",
+              width: 1,
+              height: 1,
+              overflow: "hidden",
+              clip: "rect(0 0 0 0)"
+            }
+          }, ", r\xE9cord en su momento")), diff !== null && ce("span", {
+            "aria-label": diff === 0 ? "igual que la anterior" : `${diff > 0 ? "m\xE1s" : "menos"} ${num(Math.abs(diff))} que la anterior`,
+            style: {
+              fontFamily: FONT_D,
+              fontSize: 16,
+              fontWeight: 700,
+              color: diff === 0 ? C.muted : better ? C.teal : C.orange,
+              minWidth: 40,
+              textAlign: "right"
+            }
+          }, diff === 0 ? "=" : `${diff > 0 ? "+" : "−"}${num(Math.abs(diff))}`), ce("button", {
+            onClick: () => {
+              setPrUndo({
+                id: m.id,
+                idx: j,
+                entry: e
+              });
+              delPr(m.id, j);
+            },
+            "aria-label": `Borrar ${num(e.value)} ${m.unit} del ${fmtDay(e.date)}`,
             style: {
               width: 36,
               height: 36,
+              flexShrink: 0,
               background: "none",
               border: "none",
               color: C.muted,
               cursor: "pointer",
               fontSize: 15
             }
-          }, "✕"));
-        }));
+          }, "✕")));
+        });
+        const dot = (bg, bd) => ce("span", {
+          style: {
+            display: "inline-block",
+            width: 9,
+            height: 9,
+            borderRadius: "50%",
+            background: bg,
+            border: bd,
+            marginRight: 5,
+            verticalAlign: "middle"
+          }
+        });
+        return ce(React.Fragment, null, ce("p", {
+          "aria-hidden": true,
+          style: {
+            fontSize: 13,
+            color: C.muted,
+            margin: "-2px 0 10px"
+          }
+        }, dot(C.text, "none"), "r\xE9cord en su momento", ce("span", {
+          style: {
+            marginLeft: 14
+          }
+        }, dot("transparent", `2px solid ${C.muted}`), "sin r\xE9cord"), ce("span", {
+          style: {
+            marginLeft: 14
+          }
+        }, "\xB1 cambio")), prUndo && prUndo.id === m.id && ce("div", {
+          role: "status",
+          style: {
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 10,
+            borderLeft: `3px solid ${C.muted}`,
+            padding: "4px 0 4px 12px",
+            marginBottom: 10,
+            fontSize: 15
+          }
+        }, ce("span", null, "Borraste ", num(prUndo.entry.value), " ", m.unit, " del ", fmtDay(prUndo.entry.date), "."), ce("button", {
+          onClick: undoPr,
+          style: {
+            background: "transparent",
+            border: `1.5px solid ${C.border}`,
+            borderRadius: 6,
+            minHeight: 36,
+            padding: "4px 12px",
+            color: C.text,
+            fontFamily: FONT_D,
+            fontSize: 16,
+            fontWeight: 700,
+            cursor: "pointer"
+          }
+        }, "Deshacer")), ce("ul", {
+          style: {
+            listStyle: "none",
+            margin: 0,
+            padding: 0
+          }
+        }, out), rows.length > LIMIT && ce("button", {
+          onClick: () => setHistAll(v => !v),
+          "aria-expanded": histAll,
+          style: {
+            background: "none",
+            border: "none",
+            color: C.text,
+            fontFamily: "inherit",
+            fontSize: 15,
+            cursor: "pointer",
+            padding: "10px 0 0",
+            textDecoration: "underline",
+            textUnderlineOffset: 3
+          }
+        }, histAll ? "Ver solo las \xFAltimas" : `Ver todo (${rows.length})`));
       })())));
     }))),
     // 2. Constancia
