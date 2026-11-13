@@ -3140,166 +3140,206 @@ function Timer({
   };
   const pct = left !== null ? (secs - left) / secs * 100 : 0;
   const fmt = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-  return /*#__PURE__*/React.createElement("div", {
+  const done = left === 0;
+  const label = p => p < 60 ? `${p} s` : p === 60 ? "1 min" : p === 90 ? "1:30" : `${p / 60} min`;
+  // Teclado: Esc cierra, espacio arranca o pausa
+  const toggleRef = useRef(null);
+  toggleRef.current = running ? pause : start;
+  useEffect(() => {
+    const onKey = e => {
+      if (e.key === "Escape") onClose();else if (e.key === " " && e.target.tagName !== "BUTTON") {
+        e.preventDefault();
+        toggleRef.current();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+  return ce("div", {
+    role: "dialog",
+    "aria-modal": "true",
+    "aria-label": "Temporizador",
     style: {
       position: "fixed",
       inset: 0,
-      background: "rgba(0,0,0,0.85)",
+      background: C.bg,
       zIndex: 1000,
       display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      padding: 20
+      flexDirection: "column",
+      padding: "max(16px, env(safe-area-inset-top)) 16px max(20px, env(safe-area-inset-bottom))",
+      fontFamily: FONT,
+      color: C.text,
+      overflowY: "auto"
     }
-  }, /*#__PURE__*/React.createElement("div", {
+  }, ce("div", {
     style: {
-      background: C.card,
-      borderRadius: 20,
-      padding: 28,
       width: "100%",
-      maxWidth: 340,
-      border: `1px solid ${C.border}`
+      maxWidth: 520,
+      margin: "0 auto",
+      flex: 1,
+      display: "flex",
+      flexDirection: "column"
     }
-  }, /*#__PURE__*/React.createElement("div", {
+  }, ce("div", {
     style: {
       display: "flex",
       justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: 20
+      alignItems: "center"
     }
-  }, /*#__PURE__*/React.createElement("div", {
+  }, ce("h2", {
     style: {
-      fontSize: 16,
-    fontFamily: FONT_D,
-      color: C.muted,
+      fontFamily: FONT_D,
+      fontSize: 26,
       fontWeight: 700
     }
-  }, "\u23F1 Timer"), /*#__PURE__*/React.createElement("button", {
+  }, "Temporizador"), ce("button", {
     onClick: onClose,
+    "aria-label": "Cerrar temporizador",
     style: {
-      background: "none",
-      border: "none",
-      color: C.muted,
-      fontSize: 24,
-      cursor: "pointer",
-      fontFamily: "inherit",
-      lineHeight: 1
+      width: 44,
+      height: 44,
+      background: "transparent",
+      border: `1.5px solid ${C.border}`,
+      borderRadius: 6,
+      color: C.text,
+      fontSize: 18,
+      cursor: "pointer"
     }
-  }, "\u2715")), /*#__PURE__*/React.createElement("div", {
+  }, "✕")), ce("div", {
     style: {
+      flex: 1,
       display: "flex",
-      gap: 5,
-      flexWrap: "wrap",
-      marginBottom: 20,
-      justifyContent: "center"
+      flexDirection: "column",
+      justifyContent: "center",
+      padding: "24px 0"
     }
-  }, PRESETS.map(p => /*#__PURE__*/React.createElement("button", {
+  }, ce("div", {
+    "aria-live": "polite",
+    style: {
+      textAlign: "center",
+      fontFamily: FONT_D,
+      fontSize: "clamp(112px, 38vw, 200px)",
+      fontWeight: 800,
+      lineHeight: 0.9,
+      letterSpacing: -2,
+      fontVariantNumeric: "tabular-nums",
+      color: done ? C.yellow : C.text
+    }
+  }, done ? "Listo" : left !== null ? fmt(left) : fmt(secs)), ce("div", {
+    style: {
+      textAlign: "center",
+      fontSize: 17,
+      color: C.muted,
+      marginTop: 10,
+      minHeight: 24
+    }
+  }, done ? `Pasaron ${label(secs)}. A la siguiente serie.` : running ? `de ${label(secs)}` : left !== null ? "En pausa" : ""), ce("div", {
+    "aria-hidden": true,
+    style: {
+      position: "relative",
+      height: 36,
+      margin: "28px 14px 0"
+    }
+  }, ce("div", {
+    style: {
+      position: "absolute",
+      left: 0,
+      right: 0,
+      top: 17,
+      height: 2,
+      background: C.border
+    }
+  }), ce("div", {
+    style: {
+      position: "absolute",
+      left: 0,
+      top: 16,
+      height: 4,
+      borderRadius: 2,
+      width: `${pct}%`,
+      background: C.yellow,
+      transition: "width .25s linear"
+    }
+  }), ce("div", {
+    style: {
+      position: "absolute",
+      right: -6,
+      top: 12,
+      width: 12,
+      height: 12,
+      borderRadius: "50%",
+      border: `2.5px solid ${done ? C.yellow : C.border}`,
+      background: done ? C.yellow : C.bg
+    }
+  }), !done && ce("div", {
+    style: {
+      position: "absolute",
+      top: 4,
+      left: `calc(${pct}% - 14px)`,
+      transition: "left .25s linear"
+    }
+  }, ce(Waymark, {
+    size: 28
+  })))), ce("div", {
+    role: "group",
+    "aria-label": "Duración",
+    style: {
+      display: "grid",
+      gridTemplateColumns: "repeat(4, 1fr)",
+      gap: 6,
+      marginBottom: 12
+    }
+  }, PRESETS.map(p => ce("button", {
     key: p,
     onClick: () => {
       setSecs(p);
       reset();
     },
+    "aria-pressed": secs === p,
     style: {
-      padding: "5px 10px",
-      borderRadius: 8,
-      border: `1px solid ${secs === p ? C.yellow : C.border}`,
-      background: secs === p ? C.yellow + "20" : "transparent",
-      color: secs === p ? C.yellow : C.muted,
-      fontFamily: "inherit",
-      fontSize: 15,
-      cursor: "pointer",
-      fontWeight: "bold"
-    }
-  }, p < 60 ? `${p}s` : p === 60 ? "1min" : p === 90 ? "1:30" : p === 120 ? "2min" : "3min"))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      position: "relative",
-      width: 180,
-      height: 180,
-      margin: "0 auto 24px"
-    }
-  }, /*#__PURE__*/React.createElement("svg", {
-    width: "180",
-    height: "180",
-    style: {
-      transform: "rotate(-90deg)"
-    }
-  }, /*#__PURE__*/React.createElement("circle", {
-    cx: "90",
-    cy: "90",
-    r: "80",
-    fill: "none",
-    stroke: C.border,
-    strokeWidth: "8"
-  }), /*#__PURE__*/React.createElement("circle", {
-    cx: "90",
-    cy: "90",
-    r: "80",
-    fill: "none",
-    stroke: running ? C.yellow : left === 0 ? C.teal : C.dim,
-    strokeWidth: "8",
-    strokeDasharray: `${2 * Math.PI * 80}`,
-    strokeDashoffset: `${2 * Math.PI * 80 * (1 - pct / 100)}`,
-    style: {
-      transition: "stroke-dashoffset 0.5s linear,stroke 0.3s"
-    }
-  })), /*#__PURE__*/React.createElement("div", {
-    style: {
-      position: "absolute",
-      inset: 0,
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 42,
-    fontFamily: FONT_D,
+      minHeight: 48,
+      borderRadius: 6,
+      border: `1.5px solid ${secs === p ? C.text : C.border}`,
+      background: secs === p ? C.text : "transparent",
+      color: secs === p ? C.bg : C.text,
+      fontFamily: FONT_D,
+      fontSize: 19,
       fontWeight: 700,
-      color: left === 0 ? C.teal : C.text,
-      fontVariantNumeric: "tabular-nums"
+      cursor: "pointer"
     }
-  }, left !== null ? fmt(left) : fmt(secs)), left === 0 && /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 18,
-    fontFamily: FONT_D,
-      color: C.teal,
-      fontWeight: 700
-    }
-  }, "\xA1Listo!"))), /*#__PURE__*/React.createElement("div", {
+  }, label(p)))), ce("div", {
     style: {
       display: "flex",
-      gap: 10,
-      justifyContent: "center"
+      gap: 8
     }
-  }, /*#__PURE__*/React.createElement("button", {
+  }, ce("button", {
     onClick: reset,
+    "aria-label": "Reiniciar",
+    disabled: left === null,
     style: {
-      padding: "10px 20px",
-      borderRadius: 8,
-      border: `1px solid ${C.border}`,
+      width: 64,
+      borderRadius: 6,
+      border: `1.5px solid ${C.border}`,
       background: "transparent",
-      color: C.muted,
-      fontFamily: "inherit",
-      fontSize: 16,
-      cursor: "pointer",
-      fontWeight: "bold"
+      color: left === null ? C.dim : C.text,
+      fontSize: 22,
+      cursor: left === null ? "default" : "pointer"
     }
-  }, "\u21BA"), /*#__PURE__*/React.createElement("button", {
+  }, "↺"), ce("button", {
     onClick: running ? pause : start,
     style: {
-      padding: "10px 40px",
-      borderRadius: 8,
-      border: "none",
-      background: running ? C.orange : left === 0 ? C.teal : C.yellow,
-      color: C.bg,
+      flex: 1,
+      minHeight: 64,
+      borderRadius: 6,
+      border: running ? `1.5px solid ${C.text}` : "none",
+      background: running ? "transparent" : C.yellow,
+      color: running ? C.text : C.bg,
       fontFamily: FONT_D,
-      fontSize: 17,
-      cursor: "pointer",
+      fontSize: 24,
       fontWeight: 700,
-      flex: 1
+      cursor: "pointer"
     }
-  }, running ? "⏸ Pausa" : left === 0 ? "↺ Otra vez" : "▶ Empezar"))));
+  }, running ? "Pausar" : done ? "Otra vez" : left !== null ? "Seguir" : "Empezar"))));
 }
 
 //  BARRAS DE VOLUMEN 
