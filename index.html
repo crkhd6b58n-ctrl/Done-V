@@ -10375,32 +10375,46 @@ function CoachTab({
     marginBottom: 10
   };
   const cur = weeks[weeks.length - 1];
-  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  const linkBtn = {
+    background: "none",
+    border: "none",
+    color: C.muted,
+    fontFamily: "inherit",
+    fontSize: 14,
+    cursor: "pointer",
+    padding: "6px 0",
+    textDecoration: "underline",
+    textUnderlineOffset: 3
+  };
+  const empty = chat.length === 0 && !busy;
+  return ce(React.Fragment, null, ce("section", {
     style: {
-      ...card,
-      border: `1px solid ${lvCol}50`,
-      background: lvCol + "0A"
+      borderLeft: `3px solid ${lvCol}`,
+      padding: "2px 0 2px 14px",
+      marginBottom: 26
     }
-  }, /*#__PURE__*/React.createElement("div", {
+  }, ce("div", {
     style: {
-      ...label,
-      color: lvCol
+      fontSize: 14,
+      color: lvCol === C.muted ? C.muted : lvCol
     }
-  }, verdict.level === "bad" ? "El coach te tiene que decir algo" : verdict.level === "warn" ? "Resumen del coach" : "Coach"), /*#__PURE__*/React.createElement("div", {
+  }, verdict.level === "bad" ? "El coach te tiene que decir algo" : verdict.level === "warn" ? "Resumen del coach" : "Resumen del coach"), ce("h2", {
     style: {
-      fontSize: 17,
-    fontFamily: FONT_D,
+      fontFamily: FONT_D,
+      fontSize: 26,
       fontWeight: 700,
-      lineHeight: 1.4,
-      marginBottom: 8
+      lineHeight: 1.1,
+      margin: "4px 0 8px"
     }
-  }, verdict.title), verdict.lines.map((l, i) => /*#__PURE__*/React.createElement("div", {
+  }, verdict.title), verdict.lines.map((l, i) => ce("p", {
     key: i,
     style: {
-      fontSize: 15,
+      fontSize: 16,
       color: C.text,
-      lineHeight: 1.55,
-      marginBottom: 5
+      opacity: 0.88,
+      lineHeight: 1.5,
+      marginBottom: 6,
+      maxWidth: "62ch"
     }
   }, l))), /*#__PURE__*/React.createElement("div", {
     style: card
@@ -10553,175 +10567,212 @@ function CoachTab({
       cursor: "pointer",
       padding: "0 0 0 4px"
     }
-  }, "Cambiar d\xEDas"))), /*#__PURE__*/React.createElement("div", {
-    style: card
-  }, /*#__PURE__*/React.createElement("div", {
+  }, "Cambiar d\xEDas"))), ce("section", {
+    "aria-label": "Chat con el coach",
+    style: {
+      marginTop: 30
+    }
+  }, ce("div", {
     style: {
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
-      marginBottom: 10
+      gap: 10,
+      marginBottom: 14
     }
-  }, /*#__PURE__*/React.createElement("div", {
+  }, ce("h2", {
     style: {
-      ...label,
-      marginBottom: 0,
-      color: C.purple
+      fontFamily: FONT_D,
+      fontSize: 32,
+      fontWeight: 800,
+      lineHeight: 1,
+      letterSpacing: -0.3
     }
-  }, "Chat con el coach"), key && /*#__PURE__*/React.createElement("div", {
+  }, "Habla con el coach"), key && ce("div", {
     style: {
       display: "flex",
-      gap: 6
+      gap: 12,
+      alignItems: "center"
     }
-  }, chat.length > 0 && /*#__PURE__*/React.createElement("button", {
+  }, chat.length > 0 && ce("button", {
     onClick: () => {
       if (window.confirm("¿Borrar la conversación con el coach?")) saveChat([]);
     },
-    style: {
-      background: "transparent",
-      border: `1px solid ${C.border}`,
-      borderRadius: 6,
-      color: C.muted,
-      fontFamily: "inherit",
-      fontSize: 13,
-      padding: "3px 8px",
-      cursor: "pointer"
-    }
-  }, "Borrar"), /*#__PURE__*/React.createElement("button", {
+    style: linkBtn
+  }, "Borrar chat"), ce("button", {
     onClick: () => setShowKey(v => !v),
     "aria-label": "Configurar API key",
+    "aria-expanded": showKey,
     style: {
-      background: "transparent",
-      border: `1px solid ${C.border}`,
+      width: 40,
+      height: 40,
+      background: showKey ? C.card2 : "transparent",
+      border: `1.5px solid ${C.border}`,
       borderRadius: 6,
-      color: C.muted,
-      fontFamily: "inherit",
-      fontSize: 15,
-      padding: "2px 8px",
+      color: C.text,
+      fontSize: 17,
       cursor: "pointer"
     }
-  }, "⚙"))), (!key || showKey) && /*#__PURE__*/React.createElement("div", {
+  }, "⚙"))), (!key || showKey) && ce("div", {
     style: {
-      background: C.card2,
-      borderRadius: 6,
-      padding: 12,
-      marginBottom: 10,
+      background: C.card,
+      borderRadius: 8,
+      padding: "16px 14px",
+      marginBottom: 18,
       border: `1px solid ${C.border}`
     }
-  }, /*#__PURE__*/React.createElement("div", {
+  }, ce("h3", {
+    style: {
+      fontFamily: FONT_D,
+      fontSize: 21,
+      fontWeight: 700,
+      marginBottom: 6
+    }
+  }, key ? "Tu API key" : "Conecta tu API key"), ce("p", {
     style: {
       fontSize: 15,
-      color: C.text,
-      lineHeight: 1.55,
-      marginBottom: 9
+      color: C.muted,
+      lineHeight: 1.5,
+      marginBottom: 12,
+      maxWidth: "62ch"
     }
-  }, "El coach IA usa Claude con ", /*#__PURE__*/React.createElement("b", null, "tu propia API key"), " de Anthropic (cons\xEDguela en console.anthropic.com). Se guarda solo en este dispositivo y no va en los respaldos. Cada pregunta env\xEDa a Anthropic un resumen de tu constancia, volumen, PRs y notas."), /*#__PURE__*/React.createElement("div", {
+  }, "El coach usa Claude con ", ce("b", {
+    style: {
+      color: C.text
+    }
+  }, "tu propia API key"), " de Anthropic (cons\xEDguela en console.anthropic.com). Se guarda solo en este dispositivo y no va en los respaldos. Cada pregunta env\xEDa a Anthropic un resumen de tu constancia, volumen, PRs y notas."), ce("div", {
     style: {
       display: "flex",
-      gap: 6
+      gap: 8
     }
-  }, /*#__PURE__*/React.createElement("input", {
+  }, ce("input", {
     type: "password",
     autoComplete: "off",
+    "aria-label": "API key de Anthropic",
     value: keyDraft,
     onChange: e => setKeyDraft(e.target.value),
+    onKeyDown: e => {
+      if (e.key === "Enter" && keyDraft.trim()) saveKey(keyDraft);
+    },
     placeholder: key ? "Nueva key (vacío = no cambiar)" : "sk-ant-...",
     style: {
       flex: 1,
       minWidth: 0,
-      background: C.card,
-      border: `1px solid ${C.border}`,
+      background: C.bg,
+      border: `1.5px solid ${C.border}`,
       borderRadius: 6,
-      padding: "9px 10px",
+      padding: "11px 12px",
       color: C.text,
       fontFamily: "inherit",
-      fontSize: 15
+      fontSize: 16
     }
-  }), /*#__PURE__*/React.createElement("button", {
+  }), ce("button", {
     onClick: () => keyDraft.trim() && saveKey(keyDraft),
+    disabled: !keyDraft.trim(),
     style: {
-      background: C.purple,
+      background: keyDraft.trim() ? C.yellow : C.card2,
       border: "none",
       borderRadius: 6,
-      padding: "0 14px",
-      color: C.bg,
-      fontFamily: "inherit",
-      fontSize: 15,
-      fontWeight: "bold",
-      cursor: "pointer"
+      padding: "0 18px",
+      color: keyDraft.trim() ? C.bg : C.muted,
+      fontFamily: FONT_D,
+      fontSize: 18,
+      fontWeight: 700,
+      cursor: keyDraft.trim() ? "pointer" : "default"
     }
-  }, "Guardar")), key && /*#__PURE__*/React.createElement("button", {
+  }, "Guardar")), key && ce("button", {
     onClick: () => saveKey(""),
     style: {
-      marginTop: 8,
-      background: "none",
-      border: "none",
-      padding: 0,
+      ...linkBtn,
       color: C.red,
-      fontFamily: "inherit",
-      fontSize: 14,
-      cursor: "pointer",
-      textDecoration: "underline"
+      marginTop: 6
     }
-  }, "Quitar la key de este dispositivo")), key && /*#__PURE__*/React.createElement(React.Fragment, null, chat.length === 0 && !busy && /*#__PURE__*/React.createElement("div", {
+  }, "Quitar la key de este dispositivo")), key && ce(React.Fragment, null, empty && ce("p", {
     style: {
-      fontSize: 15,
+      fontSize: 16,
       color: C.muted,
-      lineHeight: 1.55,
-      marginBottom: 10
+      lineHeight: 1.5,
+      marginBottom: 14,
+      maxWidth: "62ch"
     }
-  }, "Preg\xFAntale lo que quieras. Ya conoce tus d\xEDas de entrenamiento, qu\xE9 d\xEDas faltaste, tu volumen y tus PRs."), chat.map((m, i) => /*#__PURE__*/React.createElement(CoachBubble, {
+  }, "Preg\xFAntale lo que quieras. Ya conoce tus d\xEDas de entrenamiento, qu\xE9 d\xEDas faltaste, tu volumen y tus PRs."), ce("div", {
+    role: "log",
+    "aria-live": "polite"
+  }, chat.map((m, i) => ce(CoachBubble, {
     key: i,
     m: m
-  })), busy && /*#__PURE__*/React.createElement(CoachBubble, {
+  })), busy && ce(CoachBubble, {
     m: {
       role: "assistant",
       text: live || "Revisando tus números…"
     },
     pending: !live
-  }), err && /*#__PURE__*/React.createElement("div", {
+  })), err && ce("div", {
+    role: "alert",
     style: {
+      borderLeft: `3px solid ${C.orange}`,
+      padding: "4px 0 4px 12px",
       fontSize: 15,
-      color: C.orange,
-      background: C.orange + "15",
-      border: `1px solid ${C.orange}40`,
-      borderRadius: 8,
-      padding: "8px 10px",
-      marginBottom: 8,
-      lineHeight: 1.5
+      color: C.text,
+      lineHeight: 1.5,
+      marginBottom: 14
     }
-  }, err), /*#__PURE__*/React.createElement("div", {
-    ref: endRef
-  }), /*#__PURE__*/React.createElement("div", {
+  }, err), ce("div", {
+    ref: endRef,
     style: {
-      display: "flex",
-      gap: 5,
-      flexWrap: "wrap",
-      margin: "4px 0 8px"
+      scrollMarginBottom: 170
     }
-  }, COACH_CHIPS.map(c => /*#__PURE__*/React.createElement("button", {
+  }), ce("div", {
+    style: {
+      position: "sticky",
+      bottom: 0,
+      background: C.bg,
+      margin: "0 -16px",
+      padding: "10px 16px max(10px, env(safe-area-inset-bottom))",
+      borderTop: empty ? "none" : `1px solid ${C.border}`
+    }
+  }, ce("div", {
+    role: "group",
+    "aria-label": "Preguntas sugeridas",
+    style: empty ? {
+      display: "flex",
+      flexDirection: "column",
+      gap: 6,
+      marginBottom: 12
+    } : {
+      display: "flex",
+      gap: 6,
+      overflowX: "auto",
+      scrollbarWidth: "none",
+      marginBottom: 10
+    }
+  }, COACH_CHIPS.map(c => ce("button", {
     key: c,
     disabled: busy,
     onClick: () => send(c),
     style: {
-      background: C.card2,
-      border: `1px solid ${C.border}`,
-      borderRadius: 14,
-      padding: "5px 10px",
-      color: busy ? C.dim : C.muted,
+      flex: empty ? "none" : "0 0 auto",
+      background: "transparent",
+      border: `1.5px solid ${C.border}`,
+      borderRadius: 6,
+      padding: empty ? "11px 12px" : "7px 11px",
+      color: busy ? C.dim : C.text,
       fontFamily: "inherit",
-      fontSize: 14,
+      fontSize: 15,
+      whiteSpace: empty ? "normal" : "nowrap",
       cursor: busy ? "default" : "pointer",
       textAlign: "left"
     }
-  }, c))), /*#__PURE__*/React.createElement("div", {
+  }, c))), ce("div", {
     style: {
       display: "flex",
-      gap: 6
+      gap: 8,
+      alignItems: "stretch"
     }
-  }, /*#__PURE__*/React.createElement("textarea", {
+  }, ce("textarea", {
     value: draft,
     rows: 2,
+    "aria-label": "Mensaje para el coach",
     onChange: e => setDraft(e.target.value),
     onKeyDown: e => {
       if (e.key === "Enter" && !e.shiftKey) {
@@ -10734,71 +10785,112 @@ function CoachTab({
       flex: 1,
       minWidth: 0,
       resize: "none",
-      background: C.card2,
-      border: `1px solid ${C.border}`,
-      borderRadius: 8,
-      padding: "8px 10px",
+      background: C.card,
+      border: `1.5px solid ${C.border}`,
+      borderRadius: 6,
+      padding: "10px 12px",
       color: C.text,
       fontFamily: "inherit",
-      fontSize: 15,
+      fontSize: 16,
       lineHeight: 1.4
     }
-  }), busy ? /*#__PURE__*/React.createElement("button", {
+  }), busy ? ce("button", {
     onClick: () => abortRef.current && abortRef.current.abort(),
     style: {
       background: "transparent",
-      border: `1px solid ${C.border}`,
-      borderRadius: 8,
-      padding: "0 12px",
-      color: C.muted,
-      fontFamily: "inherit",
-      fontSize: 15,
+      border: `1.5px solid ${C.text}`,
+      borderRadius: 6,
+      padding: "0 16px",
+      color: C.text,
+      fontFamily: FONT_D,
+      fontSize: 18,
+      fontWeight: 700,
       cursor: "pointer"
     }
-  }, "■") : /*#__PURE__*/React.createElement("button", {
+  }, "Detener") : ce("button", {
     onClick: () => send(draft),
     disabled: !draft.trim(),
     style: {
-      background: draft.trim() ? C.purple : C.card2,
+      background: draft.trim() ? C.yellow : C.card2,
       border: "none",
-      borderRadius: 8,
-      padding: "0 14px",
-      color: draft.trim() ? C.bg : C.dim,
-      fontFamily: "inherit",
-      fontSize: 16,
-      fontWeight: "bold",
+      borderRadius: 6,
+      padding: "0 18px",
+      color: draft.trim() ? C.bg : C.muted,
+      fontFamily: FONT_D,
+      fontSize: 18,
+      fontWeight: 700,
       cursor: draft.trim() ? "pointer" : "default"
     }
-  }, "↑")))));
+  }, "Enviar"))))));
 }
+// **negritas** del coach se pintan como negritas; el resto, texto tal cual
+const coachRich = s => String(s).split(/(\*\*[^*]+\*\*)/g).map((part, i) => /^\*\*[^*]+\*\*$/.test(part) ? ce("b", {
+  key: i,
+  style: {
+    fontWeight: 600,
+    color: C.text
+  }
+}, part.slice(2, -2)) : part);
 function CoachBubble({
   m,
   pending
 }) {
   const me = m.role === "user";
-  return /*#__PURE__*/React.createElement("div", {
+  if (me) return ce("div", {
     style: {
       display: "flex",
-      justifyContent: me ? "flex-end" : "flex-start",
-      marginBottom: 8
+      justifyContent: "flex-end",
+      margin: "0 0 16px"
     }
-  }, /*#__PURE__*/React.createElement("div", {
+  }, ce("div", {
     style: {
-      maxWidth: "88%",
+      maxWidth: "82%",
       whiteSpace: "pre-wrap",
       wordBreak: "break-word",
-      fontSize: 15,
-      lineHeight: 1.55,
-      padding: "8px 11px",
+      fontSize: 16,
+      lineHeight: 1.45,
+      padding: "9px 13px",
       borderRadius: 8,
-      borderBottomRightRadius: me ? 3 : 11,
-      borderBottomLeftRadius: me ? 11 : 3,
-      background: me ? C.purple + "25" : C.card2,
-      border: `1px solid ${me ? C.purple + "50" : C.border}`,
-      color: pending ? C.muted : me ? C.text : C.text,
+      background: C.card2,
+      color: C.text
+    }
+  }, m.text));
+  return ce("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "26px 1fr",
+      gap: 10,
+      margin: "0 0 20px"
+    }
+  }, ce("span", {
+    "aria-hidden": true,
+    style: {
+      paddingTop: 2,
+      opacity: pending ? 0.5 : 1
+    }
+  }, ce(Waymark, {
+    size: 22
+  })), ce("div", {
+    style: {
+      minWidth: 0,
+      whiteSpace: "pre-wrap",
+      wordBreak: "break-word",
+      fontSize: 16,
+      lineHeight: 1.55,
+      maxWidth: "62ch",
+      color: pending ? C.muted : C.text,
       fontStyle: pending ? "italic" : "normal"
     }
-  }, String(m.text).replace(/\*\*(.+?)\*\*/g, "$1")));
+  }, ce("span", {
+    className: "dv-sr",
+    style: {
+      position: "absolute",
+      width: 1,
+      height: 1,
+      overflow: "hidden",
+      clip: "rect(0 0 0 0)"
+    }
+  }, "Coach: "), coachRich(m.text)));
 }
 
 function App() {
