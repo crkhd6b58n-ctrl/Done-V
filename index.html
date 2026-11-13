@@ -9919,75 +9919,142 @@ function ItemAnim({
 //  SPARKLINE CHART 
 function Sparkline({
   data,
-  color,
-  lower = false
+  unit = "",
+  lower = false,
+  goal = null
 }) {
-  if (!data || data.length < 2) return /*#__PURE__*/React.createElement("div", {
+  if (!data || data.length < 2) return ce("p", {
     style: {
       color: C.muted,
       fontSize: 15,
-      padding: "20px 0",
-      textAlign: "center"
+      padding: "6px 0"
     }
-  }, "Agrega al menos 2 registros para ver la gr\xE1fica");
-  const W = 300,
-    H = 80,
-    pad = 8;
+  }, "Anota otra marca para ver tu progreso.");
+  const day = s => {
+    try {
+      return parseDay(s).toLocaleDateString("es-MX", {
+        day: "numeric",
+        month: "short"
+      }).replace(".", "");
+    } catch {
+      return s;
+    }
+  };
+  const num = v => Number.isInteger(v) ? String(v) : v.toFixed(1);
   const vals = data.map(d => d.value);
-  const min = Math.min(...vals),
-    max = Math.max(...vals);
-  const range = max - min || 1;
-  const pts = data.map((d, i) => ({
-    x: pad + i / (data.length - 1) * (W - pad * 2),
-    y: H - pad - (d.value - min) / range * (H - pad * 2)
-  }));
-  const path = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ");
+  const span = [...vals, ...(goal !== null ? [goal] : [])];
+  let lo = Math.min(...span),
+    hi = Math.max(...span);
+  const padV = (hi - lo || Math.abs(hi) || 1) * 0.12;
+  lo -= padV;
+  hi += padV;
+  const yPct = v => (1 - (v - lo) / (hi - lo)) * 100;
+  const xPct = i => i / (data.length - 1) * 100;
+  // récords en su momento y la mejor marca
+  let run = null;
+  const isRec = vals.map(v => {
+    const better = run === null || (lower ? v < run : v > run);
+    if (better) run = v;
+    return better;
+  });
+  const bestI = vals.lastIndexOf(lower ? Math.min(...vals) : Math.max(...vals));
   const trend = vals[vals.length - 1] - vals[0];
-  const trendGood = lower ? trend < 0 : trend > 0;
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("svg", {
-    width: "100%",
-    viewBox: `0 0 ${W} ${H}`,
+  const good = lower ? trend < 0 : trend > 0;
+  const lastI = data.length - 1;
+  return ce("div", null, ce("p", {
     style: {
+      fontSize: 15,
+      fontWeight: 600,
+      color: trend === 0 ? C.muted : good ? C.teal : C.orange,
+      marginBottom: 10
+    }
+  }, trend === 0 ? `Sin cambio desde el ${day(data[0].date)}` : `${trend > 0 ? "+" : "−"}${num(Math.abs(trend))} ${unit} desde el ${day(data[0].date)}`), ce("div", {
+    role: "img",
+    "aria-label": `Progreso: ${data.map(d => `${day(d.date)}, ${num(d.value)} ${unit}`).join("; ")}${goal !== null ? `. Siguiente meta: ${goal} ${unit}` : ""}`,
+    style: {
+      position: "relative",
+      height: 130,
+      margin: "0 10px"
+    }
+  }, goal !== null && ce(React.Fragment, null, ce("div", {
+    "aria-hidden": true,
+    style: {
+      position: "absolute",
+      left: -10,
+      right: -10,
+      top: `${yPct(goal)}%`,
+      borderTop: `1.5px dashed ${C.yellow}`
+    }
+  }), ce("span", {
+    "aria-hidden": true,
+    style: {
+      position: "absolute",
+      right: -10,
+      top: `${yPct(goal)}%`,
+      transform: "translateY(-120%)",
+      fontSize: 13,
+      color: C.yellow
+    }
+  }, "Siguiente meta: ", goal, " ", unit)), ce("svg", {
+    "aria-hidden": true,
+    viewBox: "0 0 100 100",
+    preserveAspectRatio: "none",
+    style: {
+      position: "absolute",
+      inset: 0,
+      width: "100%",
+      height: "100%",
       overflow: "visible"
     }
-  }, /*#__PURE__*/React.createElement("path", {
-    d: path,
+  }, ce("polyline", {
+    points: vals.map((v, i) => `${xPct(i)},${yPct(v)}`).join(" "),
     fill: "none",
-    stroke: color,
-    strokeWidth: "2.5",
+    stroke: C.text,
+    strokeWidth: 2,
+    strokeLinejoin: "round",
     strokeLinecap: "round",
-    strokeLinejoin: "round"
-  }), pts.map((p, i) => /*#__PURE__*/React.createElement("circle", {
-    key: i,
-    cx: p.x,
-    cy: p.y,
-    r: "3.5",
-    fill: i === pts.length - 1 ? color : C.card,
-    stroke: color,
-    strokeWidth: "1.5"
-  }))), /*#__PURE__*/React.createElement("div", {
+    vectorEffect: "non-scaling-stroke"
+  })), vals.map((v, i) => {
+    const best = i === bestI;
+    const size = best ? 13 : 9;
+    return ce(React.Fragment, {
+      key: i
+    }, ce("span", {
+      "aria-hidden": true,
+      style: {
+        position: "absolute",
+        left: `${xPct(i)}%`,
+        top: `${yPct(v)}%`,
+        width: size,
+        height: size,
+        transform: "translate(-50%, -50%)",
+        borderRadius: "50%",
+        background: best ? C.yellow : isRec[i] ? C.text : C.bg,
+        border: best ? "none" : `2px solid ${isRec[i] ? C.text : C.muted}`
+      }
+    }), (best || i === lastI) && ce("span", {
+      "aria-hidden": true,
+      style: {
+        position: "absolute",
+        left: `${xPct(i)}%`,
+        top: `${yPct(v)}%`,
+        transform: `translate(${i === lastI ? "-85%" : i === 0 ? "-15%" : "-50%"}, -160%)`,
+        fontFamily: FONT_D,
+        fontSize: 16,
+        fontWeight: 700,
+        whiteSpace: "nowrap",
+        color: best ? C.yellow : C.text
+      }
+    }, num(v), best && i !== lastI ? " r\xE9cord" : ""));
+  })), ce("div", {
     style: {
       display: "flex",
       justifyContent: "space-between",
-      marginTop: 4
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
+      marginTop: 8,
       fontSize: 13,
       color: C.muted
     }
-  }, data[0].date), /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 15,
-      fontWeight: "bold",
-      color: trendGood ? C.teal : trend === 0 ? C.muted : C.orange
-    }
-  }, trendGood ? "↑" : "↓", " ", Math.abs(trend).toFixed(1), " ", lower ? "(mejora)" : ""), /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 13,
-      color: C.muted
-    }
-  }, data[data.length - 1].date)));
+  }, ce("span", null, day(data[0].date)), ce("span", null, day(data[lastI].date))));
 }
 
 //  MAIN APP 
@@ -13565,8 +13632,12 @@ function App() {
         }
       }, ce(Sparkline, {
         data: metricData,
-        color: m.color,
-        lower: m.lower
+        unit: m.unit,
+        lower: m.lower,
+        goal: (() => {
+          const g = m.milestones.find(v => best === null || (m.lower ? best > v : best < v));
+          return g === undefined ? null : g;
+        })()
       }))), metricData.length > 0 && ce(React.Fragment, null, ce("div", {
         style: sub
       }, "Historial"), (() => {
