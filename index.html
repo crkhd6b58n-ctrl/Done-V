@@ -10528,20 +10528,6 @@ function CoachTab({
     }
   };
   const shown = weeks.filter(w => !w.beforePlan);
-  const card = {
-    background: C.card,
-    borderRadius: 8,
-    padding: 14,
-    marginBottom: 12,
-    border: `1px solid ${C.border}`
-  };
-  const label = {
-    fontSize: 16,
-    fontFamily: FONT_D,
-    color: C.muted,
-    fontWeight: 700,
-    marginBottom: 10
-  };
   const cur = weeks[weeks.length - 1];
   const linkBtn = {
     background: "none",
@@ -10698,88 +10684,157 @@ function CoachTab({
       background: f ? c : "transparent",
       border: `1.5px solid ${c}`
     }
-  }), l)))),  /*#__PURE__*/React.createElement("div", {
-    style: card
-  }, /*#__PURE__*/React.createElement("div", {
-    style: label
-  }, "Constancia: d\xEDas hechos contra planeados"), shown.length === 0 ? /*#__PURE__*/React.createElement("div", {
+  }), l)))),  ce("section", {
+    "aria-labelledby": "co-const",
     style: {
-      fontSize: 15,
-      color: C.dim
+      marginBottom: 30
     }
-  }, "A\xFAn no hay semanas desde que anclaste el plan.") : /*#__PURE__*/React.createElement("div", {
+  }, (() => {
+    const past = shown.filter(w => !w.current);
+    const met = past.filter(w => w.planned && w.done >= w.planned).length;
+    return ce(React.Fragment, null, ce("h3", {
+      id: "co-const",
+      style: {
+        fontFamily: FONT_D,
+        fontSize: 26,
+        fontWeight: 800,
+        lineHeight: 1,
+        marginBottom: 6
+      }
+    }, "Constancia"), past.length > 0 ? ce("div", {
+      style: {
+        marginBottom: 16
+      }
+    }, ce("span", {
+      style: {
+        fontFamily: FONT_D,
+        fontWeight: 800,
+        lineHeight: 1
+      }
+    }, ce("span", {
+      style: {
+        fontSize: 40,
+        color: met === past.length ? C.teal : C.text
+      }
+    }, met), ce("span", {
+      style: {
+        fontSize: 22,
+        color: C.muted
+      }
+    }, " de ", past.length, past.length === 1 ? " semana cumplida" : " semanas cumplidas"))) : ce("p", {
+      style: {
+        fontSize: 15,
+        color: C.muted,
+        lineHeight: 1.5,
+        marginBottom: 16
+      }
+    }, shown.length ? "Esta es tu primera semana con el plan anclado. La gr\xE1fica se llena conforme cierras semanas." : "A\xFAn no hay semanas desde que anclaste el plan."));
+  })(), shown.length > 0 && ce("div", {
+    role: "img",
+    "aria-label": "D\xEDas hechos por semana: " + shown.map(w => `${w.current ? "esta semana" : "semana del " + w.mon.toLocaleDateString("es-MX", {
+      day: "numeric",
+      month: "short"
+    })}, ${w.done} de ${w.planned}`).join("; "),
+    style: {
+      position: "relative",
+      paddingTop: 22
+    }
+  }, ce("div", {
+    "aria-hidden": true,
+    style: {
+      position: "absolute",
+      left: 0,
+      right: 0,
+      top: 22 + 20,
+      borderTop: `1.5px dashed ${C.muted}`
+    }
+  }), ce("span", {
+    "aria-hidden": true,
+    style: {
+      position: "absolute",
+      right: 0,
+      top: 0,
+      fontSize: 13,
+      color: C.muted
+    }
+  }, "Tu plan: ", split.length, " d\xEDas"), ce("div", {
+    "aria-hidden": true,
     style: {
       display: "flex",
       gap: 6,
-      alignItems: "flex-end",
-      height: 110
+      alignItems: "flex-end"
     }
   }, shown.map(w => {
     const p = Math.min(1, w.planned ? w.done / w.planned : 0);
-    const c = w.current ? C.blue : p >= 1 ? C.teal : p >= 0.75 ? C.yellow : p >= 0.5 ? C.orange : C.red;
-    return /*#__PURE__*/React.createElement("div", {
+    const c = w.current ? C.text : p >= 1 ? C.teal : p >= 0.5 ? C.orange : C.red;
+    return ce("div", {
       key: w.key,
       style: {
         flex: 1,
         display: "flex",
         flexDirection: "column",
-        alignItems: "center",
-        height: "100%",
-        justifyContent: "flex-end"
+        alignItems: "center"
       }
-    }, /*#__PURE__*/React.createElement("div", {
+    }, ce("div", {
       style: {
-        fontSize: 13,
-        fontWeight: "bold",
-        color: c,
-        marginBottom: 3
+        fontFamily: FONT_D,
+        fontSize: 16,
+        fontWeight: 700,
+        color: w.current ? C.text : c,
+        height: 20,
+        lineHeight: "20px"
       }
-    }, w.done, "/", w.planned), /*#__PURE__*/React.createElement("div", {
+    }, w.done), ce("div", {
       style: {
         width: "100%",
-        maxWidth: 34,
-        height: 70,
-        background: C.card2,
-        borderRadius: 5,
+        maxWidth: 40,
+        height: 96,
         display: "flex",
         alignItems: "flex-end",
-        overflow: "hidden",
-        border: w.current ? `1px dashed ${C.blue}60` : "none"
+        borderBottom: `1.5px solid ${C.border}`
       }
-    }, /*#__PURE__*/React.createElement("div", {
+    }, ce("div", {
       style: {
         width: "100%",
         height: `${Math.max(p * 100, 3)}%`,
-        background: c,
-        opacity: w.current ? 0.6 : 1
+        background: w.current ? "transparent" : c,
+        border: w.current ? `1.5px dashed ${C.text}` : "none",
+        borderRadius: "4px 4px 0 0"
       }
-    })), /*#__PURE__*/React.createElement("div", {
+    })), ce("div", {
       style: {
-        fontSize: 12,
-        color: w.current ? C.blue : C.dim,
-        marginTop: 4
+        fontSize: 13,
+        fontWeight: w.current ? 700 : 400,
+        color: w.current ? C.text : C.muted,
+        marginTop: 5,
+        whiteSpace: "nowrap"
       }
-    }, w.current ? "Hoy" : w.key.slice(5).replace("-", "/")));
-  })), /*#__PURE__*/React.createElement("div", {
+    }, w.current ? "Esta" : w.mon.toLocaleDateString("es-MX", {
+      day: "numeric",
+      month: "short"
+    }).replace(".", "")));
+  }))), ce("p", {
     style: {
-      fontSize: 13,
-      color: C.dim,
-      marginTop: 10,
-      lineHeight: 1.5
+      fontSize: 14,
+      color: C.muted,
+      marginTop: 12,
+      lineHeight: 1.5,
+      maxWidth: "62ch"
     }
-  }, "Un d\xEDa cuenta cuando marcas algo o registras series. Tu plan: ", split.length, " d\xEDas (", split.map(d => WD[d]).join(" "), ").", onSplit && /*#__PURE__*/React.createElement("button", {
+  }, "Un d\xEDa cuenta cuando marcas algo o registras series. Entrenas ", listDays(split), ".", onSplit && ce("button", {
     onClick: onSplit,
     style: {
       background: "none",
       border: "none",
-      color: C.muted,
+      color: C.text,
       textDecoration: "underline",
+      textUnderlineOffset: 3,
       fontFamily: "inherit",
-      fontSize: 13,
+      fontSize: 14,
       cursor: "pointer",
-      padding: "0 0 0 4px"
+      padding: "0 0 0 6px"
     }
-  }, "Cambiar d\xEDas"))), ce("section", {
+  }, "Cambiar d\xEDas"))),  ce("section", {
     "aria-label": "Chat con el coach",
     style: {
       marginTop: 30
