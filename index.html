@@ -13405,24 +13405,32 @@ function App() {
         n = ms.length;
       const hit = ms.map(v => best !== null && (m.lower ? best <= v : best >= v));
       const k = hit.filter(Boolean).length;
+      // Punto de partida: 0, o para métricas donde bajar es mejor, un paso antes de la primera meta
+      const start = m.lower ? ms[0] + (ms[0] - (ms[1] !== undefined ? ms[1] : ms[0])) : 0;
       let pos = k / n;
-      if (best !== null && k < n && !m.lower) {
-        const prev = k > 0 ? ms[k - 1] : 0,
+      if (best !== null && k < n) {
+        const prev = k > 0 ? ms[k - 1] : start,
           next = ms[k];
-        pos = (k + Math.max(0, Math.min(1, (best - prev) / (next - prev || 1)))) / n;
+        const frac = m.lower ? (prev - best) / (prev - next || 1) : (best - prev) / (next - prev || 1);
+        pos = (k + Math.max(0, Math.min(1, frac))) / n;
       }
+      const num = v => Number.isInteger(v) ? String(v) : v.toFixed(1);
+      const LINE = 34;
+      const summary = `Metas: ${ms.join(", ")} ${m.unit}. ` + (best === null ? "Sin marca todav\xEDa." : `Tu r\xE9cord: ${num(best)}; alcanzaste ${k} de ${n}.` + (k < n ? ` Siguiente: ${ms[k]}.` : " Ya pasaste todas."));
       return ce("div", {
+        role: "img",
+        "aria-label": summary,
         style: {
           position: "relative",
-          height: 58,
-          margin: "6px 10px 0 4px"
+          height: 82,
+          margin: "4px 14px 0 6px"
         }
       }, ce("div", {
         style: {
           position: "absolute",
           left: 0,
           right: 0,
-          top: 14,
+          top: LINE,
           height: 2,
           background: C.border
         }
@@ -13430,49 +13438,94 @@ function App() {
         style: {
           position: "absolute",
           left: 0,
-          top: 13,
+          top: LINE - 1,
           height: 4,
           borderRadius: 2,
           width: `${pos * 100}%`,
           background: C.yellow
         }
-      }), ms.map((v, i) => ce("div", {
-        key: i,
+      }), ce("span", {
         style: {
           position: "absolute",
-          left: `${(i + 1) / n * 100}%`,
+          left: 0,
+          top: LINE - 5,
+          width: 2,
+          height: 12,
+          background: C.muted
+        }
+      }), ce("span", {
+        style: {
+          position: "absolute",
+          left: 0,
+          top: LINE + 14,
+          transform: "translateX(-30%)",
+          fontSize: 13,
+          color: C.muted
+        }
+      }, num(start)), ms.map((v, i) => {
+        const isNext = i === k && best !== null;
+        const size = isNext ? 16 : 14;
+        return ce(React.Fragment, {
+          key: i
+        }, ce("span", {
+          style: {
+            position: "absolute",
+            left: `${(i + 1) / n * 100}%`,
+            top: LINE + 1 - size / 2,
+            width: size,
+            height: size,
+            transform: "translateX(-50%)",
+            borderRadius: "50%",
+            background: hit[i] ? C.text : C.bg,
+            border: hit[i] ? "none" : `${isNext ? 3 : 2}px solid ${isNext ? C.yellow : C.border}`
+          }
+        }), ce("span", {
+          style: {
+            position: "absolute",
+            left: `${(i + 1) / n * 100}%`,
+            top: LINE + 12,
+            transform: "translateX(-50%)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            whiteSpace: "nowrap"
+          }
+        }, ce("span", {
+          style: {
+            fontFamily: FONT_D,
+            fontSize: 18,
+            fontWeight: 700,
+            color: isNext ? C.yellow : hit[i] ? C.text : C.muted
+          }
+        }, v), i === n - 1 && ce("span", {
+          style: {
+            fontSize: 12,
+            color: C.muted,
+            marginTop: -2
+          }
+        }, m.unit)));
+      }), best !== null && ce("div", {
+        "aria-hidden": true,
+        style: {
+          position: "absolute",
           top: 0,
-          transform: "translateX(-50%)",
+          left: `${pos * 100}%`,
+          transform: `translateX(${pos > 0.92 ? "-85%" : pos < 0.08 ? "-15%" : "-50%"})`,
           display: "flex",
           flexDirection: "column",
           alignItems: "center"
         }
       }, ce("span", {
         style: {
-          width: 14,
-          height: 14,
-          marginTop: 9,
-          borderRadius: "50%",
-          border: `2.5px solid ${hit[i] ? C.yellow : C.border}`,
-          background: hit[i] ? C.yellow : C.bg
-        }
-      }), ce("span", {
-        style: {
           fontFamily: FONT_D,
-          fontSize: 18,
+          fontSize: 17,
           fontWeight: 700,
-          marginTop: 6,
-          color: hit[i] ? C.text : C.muted
+          color: C.yellow,
+          lineHeight: "18px",
+          whiteSpace: "nowrap"
         }
-      }, v))), best !== null && k < n && ce("div", {
-        "aria-hidden": true,
-        style: {
-          position: "absolute",
-          top: 1,
-          left: `calc(${pos * 100}% - 13px)`
-        }
-      }, ce(Waymark, {
-        size: 26
+      }, num(best)), k < n && ce(Waymark, {
+        size: 22
       })));
     };
     const heatBg = cell => cell.future ? "transparent" : cell.n === 0 ? C.card2 : cell.n < 3 ? C.orange + "40" : cell.n < 7 ? C.orange + "88" : C.orange;
