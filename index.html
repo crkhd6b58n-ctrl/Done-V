@@ -10250,6 +10250,170 @@ const aiErrorText = e => {
 };
 const COACH_CHIPS = ["Analiza mi semana pasada y regáñame si hace falta", "¿Por qué no estoy progresando?", "Solo puedo ir 2 días esta semana, ¿qué priorizo?", "Arma mi plan de esta semana para no volver a fallar"];
 
+// Veredicto del coach sobre la semana pasada. Se usa en el inicio (resumido,
+// con acciones) y en la pestaña Coach (completo).
+function CoachVerdict({
+  verdict,
+  full = false,
+  onTalk,
+  onHide
+}) {
+  const lvCol = {
+    ok: C.teal,
+    warn: C.orange,
+    bad: C.red,
+    none: C.muted
+  }[verdict.level] || C.muted;
+  const last = verdict.last;
+  const hasWeek = verdict.level !== "none" && last;
+  const quip = hasWeek ? String(verdict.title).split(/d[ií]as\.\s*/)[1] || verdict.title : verdict.title;
+  const lines = full ? verdict.lines : verdict.lines.slice(0, 1);
+  return ce("section", {
+    role: full ? undefined : "status",
+    "aria-label": "Mensaje del coach sobre la semana pasada",
+    style: {
+      borderLeft: `3px solid ${lvCol}`,
+      padding: "2px 0 2px 14px",
+      marginBottom: 30
+    }
+  }, ce("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 8,
+      marginBottom: 8
+    }
+  }, ce(Waymark, {
+    size: 20
+  }), ce("span", {
+    style: {
+      fontSize: 14,
+      color: C.muted
+    }
+  }, "El coach, sobre la semana pasada")), hasWeek && ce("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 14,
+      flexWrap: "wrap",
+      marginBottom: 8
+    }
+  }, ce("div", {
+    style: {
+      fontFamily: FONT_D,
+      fontWeight: 800,
+      lineHeight: 1
+    }
+  }, ce("span", {
+    style: {
+      fontSize: 40,
+      color: lvCol
+    }
+  }, last.done), ce("span", {
+    style: {
+      fontSize: 22,
+      color: C.muted
+    }
+  }, " de ", last.planned, " d\xEDas")), last.days && ce("div", {
+    "aria-hidden": true,
+    style: {
+      display: "flex",
+      gap: 4
+    }
+  }, last.days.map(x => {
+    const st = x.active ? x.planned ? "done" : "extra" : x.planned ? "miss" : "rest";
+    const c = {
+      done: C.teal,
+      extra: C.purple,
+      miss: C.red,
+      rest: C.border
+    }[st];
+    const filled = st === "done" || st === "extra";
+    return ce("div", {
+      key: x.d,
+      style: {
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 3
+      }
+    }, ce("span", {
+      style: {
+        width: 22,
+        height: 22,
+        borderRadius: 4,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: 12,
+        fontWeight: 700,
+        background: filled ? c : "transparent",
+        border: `1.5px solid ${c}`,
+        color: filled ? C.bg : c
+      }
+    }, filled ? "✓" : st === "miss" ? "✕" : ""), ce("span", {
+      style: {
+        fontSize: 11,
+        color: C.muted
+      }
+    }, WD[x.d].charAt(0)));
+  }))), ce("p", {
+    style: {
+      fontFamily: FONT_D,
+      fontSize: 22,
+      fontWeight: 700,
+      lineHeight: 1.15,
+      marginBottom: 6,
+      maxWidth: "40ch"
+    }
+  }, quip), lines.map((l, i) => ce("p", {
+    key: i,
+    style: {
+      fontSize: 15,
+      color: C.text,
+      opacity: 0.85,
+      lineHeight: 1.5,
+      marginBottom: i === lines.length - 1 ? 0 : 8,
+      maxWidth: "62ch"
+    }
+  }, l)), (onTalk || onHide) && ce("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 16,
+      flexWrap: "wrap",
+      marginTop: 12
+    }
+  }, onTalk && ce("button", {
+    onClick: onTalk,
+    style: {
+      background: "transparent",
+      border: `1.5px solid ${C.border}`,
+      borderRadius: 6,
+      minHeight: 42,
+      padding: "6px 14px",
+      color: C.text,
+      fontFamily: FONT_D,
+      fontSize: 17,
+      fontWeight: 700,
+      cursor: "pointer"
+    }
+  }, "Hablar con el coach"), onHide && ce("button", {
+    onClick: onHide,
+    style: {
+      background: "none",
+      border: "none",
+      color: C.muted,
+      fontFamily: "inherit",
+      fontSize: 14,
+      cursor: "pointer",
+      padding: "6px 0",
+      textDecoration: "underline",
+      textUnderlineOffset: 3
+    }
+  }, "Ocultar hasta el lunes")));
+}
+
 //  PESTAÑA COACH
 function CoachTab({
   weeks,
@@ -10363,12 +10527,6 @@ function CoachTab({
       abortRef.current = null;
     }
   };
-  const lvCol = {
-    ok: C.teal,
-    warn: C.yellow,
-    bad: C.red,
-    none: C.muted
-  }[verdict.level];
   const shown = weeks.filter(w => !w.beforePlan);
   const card = {
     background: C.card,
@@ -10397,36 +10555,10 @@ function CoachTab({
     textUnderlineOffset: 3
   };
   const empty = chat.length === 0 && !busy;
-  return ce(React.Fragment, null, ce("section", {
-    style: {
-      borderLeft: `3px solid ${lvCol}`,
-      padding: "2px 0 2px 14px",
-      marginBottom: 26
-    }
-  }, ce("div", {
-    style: {
-      fontSize: 14,
-      color: lvCol === C.muted ? C.muted : lvCol
-    }
-  }, verdict.level === "bad" ? "El coach te tiene que decir algo" : verdict.level === "warn" ? "Resumen del coach" : "Resumen del coach"), ce("h2", {
-    style: {
-      fontFamily: FONT_D,
-      fontSize: 26,
-      fontWeight: 700,
-      lineHeight: 1.1,
-      margin: "4px 0 8px"
-    }
-  }, verdict.title), verdict.lines.map((l, i) => ce("p", {
-    key: i,
-    style: {
-      fontSize: 16,
-      color: C.text,
-      opacity: 0.88,
-      lineHeight: 1.5,
-      marginBottom: 6,
-      maxWidth: "62ch"
-    }
-  }, l))), /*#__PURE__*/React.createElement("div", {
+  return ce(React.Fragment, null, ce(CoachVerdict, {
+    verdict,
+    full: true
+  }), /*#__PURE__*/React.createElement("div", {
     style: card
   }, /*#__PURE__*/React.createElement("div", {
     style: label
@@ -11672,146 +11804,14 @@ function App() {
       padding: "20px 16px 100px",
       paddingBottom: "max(100px, calc(80px + env(safe-area-inset-bottom)))"
     }
-  }, tab === "semana" && !dd && ce(React.Fragment, null, showNag && (() => {
-    const lvCol = verdict.level === "bad" ? C.red : verdict.level === "warn" ? C.orange : C.teal;
-    const last = verdict.last;
-    const quip = String(verdict.title).split(/d[ií]as\.\s*/)[1] || verdict.title;
-    const hide = () => {
-      setCoachSeen(last.key);
-      save("dvfit_coach_seen", last.key);
-    };
-    return ce("section", {
-      role: "status",
-      "aria-label": "Mensaje del coach sobre la semana pasada",
-      style: {
-        borderLeft: `3px solid ${lvCol}`,
-        padding: "2px 0 2px 14px",
-        marginBottom: 30
-      }
-    }, ce("div", {
-      style: {
-        display: "flex",
-        alignItems: "center",
-        gap: 8,
-        marginBottom: 8
-      }
-    }, ce(Waymark, {
-      size: 20
-    }), ce("span", {
-      style: {
-        fontSize: 14,
-        color: C.muted
-      }
-    }, "El coach, sobre la semana pasada")), ce("div", {
-      style: {
-        display: "flex",
-        alignItems: "center",
-        gap: 14,
-        flexWrap: "wrap",
-        marginBottom: 8
-      }
-    }, ce("div", {
-      style: {
-        fontFamily: FONT_D,
-        fontWeight: 800,
-        lineHeight: 1
-      }
-    }, ce("span", {
-      style: {
-        fontSize: 40,
-        color: lvCol
-      }
-    }, last.done), ce("span", {
-      style: {
-        fontSize: 22,
-        color: C.muted
-      }
-    }, " de ", last.planned, " d\xEDas")), last.days && ce("div", {
-      "aria-hidden": true,
-      style: {
-        display: "flex",
-        gap: 4
-      }
-    }, last.days.map(x => {
-      const st = x.active ? x.planned ? "done" : "extra" : x.planned ? "miss" : "rest";
-      const c = {
-        done: C.teal,
-        extra: C.purple,
-        miss: C.red,
-        rest: C.border
-      }[st];
-      return ce("div", {
-        key: x.d,
-        style: {
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: 3
-        }
-      }, ce("span", {
-        style: {
-          width: 22,
-          height: 22,
-          borderRadius: 4,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: 12,
-          fontWeight: 700,
-          background: st === "done" || st === "extra" ? c : "transparent",
-          border: `1.5px solid ${c}`,
-          color: st === "done" || st === "extra" ? C.bg : c
-        }
-      }, st === "done" || st === "extra" ? "✓" : st === "miss" ? "✕" : ""), ce("span", {
-        style: {
-          fontSize: 11,
-          color: C.muted
-        }
-      }, WD[x.d].charAt(0)));
-    }))), ce("p", {
-      style: {
-        fontFamily: FONT_D,
-        fontSize: 22,
-        fontWeight: 700,
-        lineHeight: 1.15,
-        marginBottom: 6,
-        maxWidth: "40ch"
-      }
-    }, quip), ce("p", {
-      style: {
-        fontSize: 15,
-        color: C.text,
-        opacity: 0.85,
-        lineHeight: 1.5,
-        marginBottom: 12,
-        maxWidth: "62ch"
-      }
-    }, verdict.lines[0]), ce("div", {
-      style: {
-        display: "flex",
-        alignItems: "center",
-        gap: 16,
-        flexWrap: "wrap"
-      }
-    }, ce("button", {
-      onClick: () => changeTab("coach"),
-      style: {
-        background: "transparent",
-        border: `1.5px solid ${C.border}`,
-        borderRadius: 6,
-        minHeight: 42,
-        padding: "6px 14px",
-        color: C.text,
-        fontFamily: FONT_D,
-        fontSize: 17,
-        fontWeight: 700,
-        cursor: "pointer"
-      }
-    }, "Hablar con el coach"), ce("button", {
-      onClick: hide,
-      style: linkBtn
-    }, "Ocultar hasta el lunes")));
-  })(), (!startD || showAnchor) && (() => {
+  }, tab === "semana" && !dd && ce(React.Fragment, null, showNag && ce(CoachVerdict, {
+    verdict,
+    onTalk: () => changeTab("coach"),
+    onHide: () => {
+      setCoachSeen(verdict.last.key);
+      save("dvfit_coach_seen", verdict.last.key);
+    }
+  }), (!startD || showAnchor) && (() => {
     const prev = weekFor(Math.max(1, anchorWeek), cPath, cSub, prs, split);
     const min = prev.week ? prev.week.days.reduce((a, d) => a + (parseInt(d.dur) || 0), 0) : 0;
     const full = weekForRaw(Math.max(1, anchorWeek), cPath, cSub, prs);
