@@ -10558,14 +10558,63 @@ function CoachTab({
   return ce(React.Fragment, null, ce(CoachVerdict, {
     verdict,
     full: true
-  }), /*#__PURE__*/React.createElement("div", {
-    style: card
-  }, /*#__PURE__*/React.createElement("div", {
-    style: label
-  }, "Esta semana"), /*#__PURE__*/React.createElement("div", {
+  }), ce("section", {
+    "aria-labelledby": "co-week",
     style: {
-      display: "flex",
-      gap: 4
+      marginBottom: 30
+    }
+  }, (() => {
+    const todayI = todayIdx();
+    const hoy = cur.pending.includes(todayI);
+    const rest = cur.pending.filter(d => d !== todayI);
+    const note = cur.done >= cur.planned ? "Ya cumpliste lo de esta semana." : hoy ? rest.length ? `Hoy toca, y te quedan ${listDays(rest)}.` : "Hoy toca, y es el \xFAltimo d\xEDa de la semana." : cur.pending.length ? `Te quedan ${listDays(cur.pending)}.` : "Ya no quedan d\xEDas de tu plan esta semana.";
+    return ce(React.Fragment, null, ce("h3", {
+      id: "co-week",
+      style: {
+        fontFamily: FONT_D,
+        fontSize: 26,
+        fontWeight: 800,
+        lineHeight: 1,
+        marginBottom: 6
+      }
+    }, "Esta semana"), ce("div", {
+      style: {
+        display: "flex",
+        alignItems: "baseline",
+        gap: 10,
+        flexWrap: "wrap",
+        marginBottom: 14
+      }
+    }, ce("span", {
+      style: {
+        fontFamily: FONT_D,
+        fontWeight: 800,
+        lineHeight: 1
+      }
+    }, ce("span", {
+      style: {
+        fontSize: 40
+      }
+    }, cur.done), ce("span", {
+      style: {
+        fontSize: 22,
+        color: C.muted
+      }
+    }, " de ", cur.planned, " d\xEDas")), ce("span", {
+      style: {
+        fontSize: 15,
+        color: C.muted
+      }
+    }, note)));
+  })(), ce("ol", {
+    "aria-label": "D\xEDas de esta semana",
+    style: {
+      listStyle: "none",
+      margin: 0,
+      padding: 0,
+      display: "grid",
+      gridTemplateColumns: "repeat(7, 1fr)",
+      gap: 5
     }
   }, cur.days.map(x => {
     const st = x.active ? x.planned ? "done" : "extra" : x.planned ? x.past ? "miss" : "todo" : "rest";
@@ -10573,62 +10622,83 @@ function CoachTab({
       done: C.teal,
       extra: C.purple,
       miss: C.red,
-      todo: C.yellow,
-      rest: C.dim
+      todo: C.text,
+      rest: C.border
     }[st];
-    return /*#__PURE__*/React.createElement("div", {
+    const filled = st === "done" || st === "extra";
+    const words = {
+      done: "hecho",
+      extra: "fuera de plan",
+      miss: "faltaste",
+      todo: x.isToday ? "hoy toca" : "pendiente",
+      rest: "descanso"
+    }[st];
+    return ce("li", {
       key: x.d,
+      "aria-label": `${WD_FULL[x.d]}: ${words}`,
       style: {
-        flex: 1,
-        textAlign: "center"
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 5
       }
-    }, /*#__PURE__*/React.createElement("div", {
+    }, ce("span", {
       style: {
-        fontSize: 12,
-        color: x.isToday ? C.text : C.muted,
-        fontWeight: x.isToday ? "bold" : "normal",
-        marginBottom: 4
+        fontSize: 13,
+        fontWeight: x.isToday ? 700 : 400,
+        color: x.isToday ? C.text : C.muted
       }
-    }, WD[x.d]), /*#__PURE__*/React.createElement("div", {
+    }, WD[x.d]), ce("span", {
+      "aria-hidden": true,
       style: {
-        height: 28,
+        width: "100%",
+        height: 42,
         borderRadius: 6,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        fontSize: 15,
-        fontWeight: "bold",
-        background: st === "done" || st === "extra" ? c : st === "miss" ? c + "22" : "transparent",
-        border: `1px solid ${st === "rest" ? C.border : c + (st === "todo" ? "90" : "")}`,
-        color: st === "done" || st === "extra" ? C.bg : c
+        fontSize: 16,
+        fontWeight: 700,
+        background: filled ? c : "transparent",
+        border: `${st === "todo" ? 2 : 1.5}px ${st === "rest" ? "dashed" : "solid"} ${c}`,
+        color: filled ? C.bg : c
       }
-    }, st === "done" || st === "extra" ? "✓" : st === "miss" ? "✕" : st === "todo" ? x.isToday ? "Hoy" : "·" : ""));
-  })), /*#__PURE__*/React.createElement("div", {
+    }, filled ? "✓" : st === "miss" ? "✕" : ""), ce("span", {
+      "aria-hidden": true,
+      style: {
+        height: 16,
+        display: "flex",
+        alignItems: "center"
+      }
+    }, x.isToday && ce(Waymark, {
+      size: 16
+    })));
+  })), ce("div", {
+    "aria-hidden": true,
     style: {
       display: "flex",
-      gap: 10,
+      gap: 14,
       flexWrap: "wrap",
       fontSize: 13,
       color: C.muted,
-      marginTop: 9
+      marginTop: 6
     }
-  }, /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("span", {
+  }, [["Hecho", C.teal, true], ["Faltaste", C.red, false], ["Pendiente", C.text, false], ["Fuera de plan", C.purple, true]].map(([l, c, f]) => ce("span", {
+    key: l,
     style: {
-      color: C.teal
+      display: "flex",
+      alignItems: "center",
+      gap: 5
     }
-  }, "■"), " hecho"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("span", {
+  }, ce("span", {
     style: {
-      color: C.red
+      width: 11,
+      height: 11,
+      borderRadius: 2,
+      background: f ? c : "transparent",
+      border: `1.5px solid ${c}`
     }
-  }, "✕"), " faltaste"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: C.yellow
-    }
-  }, "\xB7"), " pendiente"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: C.purple
-    }
-  }, "■"), " fuera de plan"))), /*#__PURE__*/React.createElement("div", {
+  }), l)))),  /*#__PURE__*/React.createElement("div", {
     style: card
   }, /*#__PURE__*/React.createElement("div", {
     style: label
