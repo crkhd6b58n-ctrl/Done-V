@@ -14650,99 +14650,41 @@ function App() {
     const done = allItems.filter(it => chk[it.id]).length;
     const urgent = allItems.filter(it => it.urgent && !chk[it.id]).length;
     const mc = bkMsg ? bkMsg.type === "ok" ? C.teal : bkMsg.type === "warn" ? C.gold : C.red : C.muted;
-    const btn = color => ({
-      flex: 1,
-      background: color + "15",
-      border: `1px solid ${color}40`,
-      borderRadius: 6,
-      padding: "10px 8px",
-      color,
-      fontFamily: "inherit",
+    const H2 = {
+      fontFamily: FONT_D,
+      fontSize: 30,
+      fontWeight: 800,
+      lineHeight: 1,
+      letterSpacing: -0.3,
+      marginBottom: 6
+    };
+    const intro = {
       fontSize: 15,
-      fontWeight: "bold",
-      cursor: "pointer",
-      letterSpacing: .5
-    });
-    return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-      style: {
-        background: C.card,
-        borderRadius: 8,
-        padding: 14,
-        marginBottom: 14,
-        border: `1px solid ${C.border}`
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 14,
-    fontFamily: FONT_D,
-    fontWeight: 600,
-        color: C.muted,
-        marginBottom: 3
-      }
-    }, "Qu\xE9 tienes a la mano"), /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 15,
-        color: C.muted,
-        lineHeight: 1.5,
-        marginBottom: 11
-      }
-    }, "Desmarca lo que no tengas y el plan sustituye los ejercicios. Lo que no se pueda sustituir se marca y ", /*#__PURE__*/React.createElement("span", {
-      style: {
-        color: C.text
-      }
-    }, "deja de contar"), " para completar el d\xEDa."), /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "grid",
-        gridTemplateColumns: "1fr 1fr",
-        gap: 6
-      }
-    }, GEAR_ITEMS.map(it => {
-      const on = !!gear[it.id];
-      return /*#__PURE__*/React.createElement("button", {
-        key: it.id,
-        onClick: () => saveGear(it.id, !on),
-        style: {
-          display: "flex",
-          gap: 8,
-          alignItems: "center",
-          padding: "10px 10px",
-          borderRadius: 6,
-          cursor: "pointer",
-          fontFamily: "inherit",
-          textAlign: "left",
-          background: on ? C.teal + "15" : C.card2,
-          border: `1px solid ${on ? C.teal + "50" : C.border}`
-        }
-      }, /*#__PURE__*/React.createElement("div", {
-        style: {
-          width: 16,
-          height: 16,
-          borderRadius: 4,
-          flexShrink: 0,
-          border: `2px solid ${on ? C.teal : C.dim}`,
-          background: on ? C.teal : "transparent",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center"
-        }
-      }, on && /*#__PURE__*/React.createElement("span", {
-        style: {
-          color: C.bg,
-          fontSize: 14,
-          fontWeight: "bold"
-        }
-      }, "\u2713")), /*#__PURE__*/React.createElement("span", {
-        style: {
-          fontSize: 17
-        }
-      }, it.emoji), /*#__PURE__*/React.createElement("span", {
-        style: {
-          fontSize: 15,
-          color: on ? C.teal : C.muted,
-          lineHeight: 1.3
-        }
-      }, it.label));
-    })), (() => {
+      color: C.muted,
+      lineHeight: 1.5,
+      marginBottom: 14,
+      maxWidth: "62ch"
+    };
+    const solid = {
+      flex: 1,
+      background: C.yellow,
+      border: "none",
+      borderRadius: 6,
+      minHeight: 48,
+      padding: "10px 12px",
+      color: C.bg,
+      fontFamily: FONT_D,
+      fontSize: 18,
+      fontWeight: 700,
+      cursor: "pointer"
+    };
+    const outline = {
+      ...solid,
+      background: "transparent",
+      border: `1.5px solid ${C.border}`,
+      color: C.text
+    };
+    const weekNote = (() => {
       const w = res && res.week;
       if (!w) return null;
       let sub = 0,
@@ -14753,107 +14695,361 @@ function App() {
         const r = subFor(i, gear);
         if (r.kind === "sub") sub++;else if (r.kind === "blocked") blk++;
       })));
-      if (sub + blk === 0) return /*#__PURE__*/React.createElement("div", {
+      const ok = sub + blk === 0;
+      return ce("div", {
         style: {
-          marginTop: 10,
-          fontSize: 14,
-          color: C.teal,
-          lineHeight: 1.5
+          borderLeft: `3px solid ${ok ? C.teal : blk > 0 ? C.orange : C.teal}`,
+          padding: "2px 0 2px 12px",
+          marginTop: 14,
+          fontSize: 15,
+          lineHeight: 1.5,
+          maxWidth: "62ch"
         }
-      }, "\u2713 Con este equipo la semana ", cw + 1, " corre completa, sin sustituciones.");
-      return /*#__PURE__*/React.createElement("div", {
-        style: {
-          marginTop: 10,
-          background: C.card2,
-          borderRadius: 8,
-          padding: "9px 11px",
-          fontSize: 14,
-          color: C.muted,
-          lineHeight: 1.6
-        }
-      }, "En la semana ", cw + 1, ": ", /*#__PURE__*/React.createElement("b", {
-        style: {
-          color: C.teal
-        }
-      }, sub), " ejercicios sustituidos", blk > 0 && /*#__PURE__*/React.createElement(React.Fragment, null, " y ", /*#__PURE__*/React.createElement("b", {
+      }, ok ? `Con este equipo la semana ${cw + 1} corre completa, sin sustituciones.` : ce(React.Fragment, null, "En la semana ", cw + 1, ": ", ce("b", null, sub), " de ", tot, " ejercicios sustituidos", blk > 0 && ce(React.Fragment, null, " y ", ce("b", {
         style: {
           color: C.orange
         }
-      }, blk), " que necesitan barra o anillas"), ", de ", tot, ".", !gear.bar && !gear.rings && /*#__PURE__*/React.createElement("div", {
+      }, blk), " que necesitan barra o anillas"), ".", !gear.bar && !gear.rings && ce("span", {
         style: {
-          marginTop: 5,
-          color: C.orange
+          display: "block",
+          marginTop: 4,
+          color: C.muted
         }
-      }, "Sin barra ni anillas no hay patr\xF3n de jal\xF3n real. Los remos bajo la mesa lo sostienen, pero no lo progresan \u2014 consigue de d\xF3nde colgarte en cuanto puedas."));
-    })()), /*#__PURE__*/React.createElement("div", {
+      }, "Sin barra ni anillas no hay patr\xF3n de jal\xF3n real. Los remos bajo la mesa lo sostienen, pero no lo progresan: consigue de d\xF3nde colgarte en cuanto puedas.")));
+    })();
+    const check = (on, col) => ce("span", {
+      "aria-hidden": true,
       style: {
-        background: C.card,
-        borderRadius: 8,
-        padding: 14,
-        marginBottom: 14,
-        border: `1px solid ${C.border}`
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 14,
-    fontFamily: FONT_D,
-    fontWeight: 600,
-        color: C.muted,
-        marginBottom: 3
-      }
-    }, "Respaldo"), /*#__PURE__*/React.createElement("div", {
-      style: {
+        width: 24,
+        height: 24,
+        borderRadius: 5,
+        flexShrink: 0,
+        border: `2px solid ${on ? col : C.dim}`,
+        background: on ? col : "transparent",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: C.bg,
         fontSize: 15,
-        color: C.muted,
-        lineHeight: 1.5,
-        marginBottom: 11
+        fontWeight: 700
       }
-    }, "Tus PRs, racha y checks viven ", /*#__PURE__*/React.createElement("span", {
+    }, on ? "✓" : "");
+    return ce(React.Fragment, null,
+    // 1. Lo que tienes
+    ce("section", {
+      "aria-labelledby": "eq-have",
       style: {
-        color: C.text
+        marginBottom: 36
       }
-    }, "solo en este navegador"), ". Si lo limpias o cambias de tel\xE9fono, se pierden. Guarda un respaldo cada tanto."), /*#__PURE__*/React.createElement("div", {
+    }, ce("h2", {
+      id: "eq-have",
+      style: H2
+    }, "Lo que tienes"), ce("p", {
+      style: intro
+    }, "Marca solo lo que de verdad tienes a la mano. El plan sustituye los ejercicios que dependen de lo dem\xE1s, y lo que no se pueda sustituir deja de contar para completar el d\xEDa."), ce("div", {
+      style: {
+        display: "grid",
+        gridTemplateColumns: "1fr 1fr",
+        gap: 6
+      }
+    }, GEAR_ITEMS.map(it => {
+      const on = !!gear[it.id];
+      return ce("button", {
+        key: it.id,
+        role: "checkbox",
+        "aria-checked": on,
+        onClick: () => saveGear(it.id, !on),
+        style: {
+          display: "flex",
+          gap: 10,
+          alignItems: "center",
+          minHeight: 56,
+          padding: "10px 12px",
+          borderRadius: 6,
+          cursor: "pointer",
+          fontFamily: "inherit",
+          textAlign: "left",
+          background: on ? C.card : "transparent",
+          border: `1.5px solid ${on ? C.yellow : C.border}`,
+          color: on ? C.text : C.muted
+        }
+      }, check(on, C.yellow), ce("span", {
+        style: {
+          fontSize: 16,
+          lineHeight: 1.25
+        }
+      }, it.label));
+    })), weekNote),
+    // 2. Lista de compras como tramo del camino
+    ce("section", {
+      "aria-labelledby": "eq-buy",
+      style: {
+        marginBottom: 36
+      }
+    }, ce("h2", {
+      id: "eq-buy",
+      style: H2
+    }, "Lista de compras"), ce("p", {
+      style: intro
+    }, "Lo que vas a necesitar, en el orden en que el plan lo pide. Toca algo cuando ya lo tengas."), ce("div", {
       style: {
         display: "flex",
-        gap: 7,
-        marginBottom: 7
+        alignItems: "baseline",
+        gap: 14,
+        marginBottom: 8
       }
-    }, /*#__PURE__*/React.createElement("button", {
+    }, ce("div", null, ce("span", {
+      style: {
+        fontFamily: FONT_D,
+        fontSize: 34,
+        fontWeight: 800
+      }
+    }, done), ce("span", {
+      style: {
+        fontSize: 15,
+        color: C.muted
+      }
+    }, " de ", allItems.length, " conseguidos")), ce("div", {
+      style: {
+        fontSize: 15,
+        color: urgent > 0 ? C.red : C.teal,
+        fontWeight: 600
+      }
+    }, urgent > 0 ? `${urgent} ${urgent === 1 ? "urgente" : "urgentes"}` : "Nada urgente")), ce("div", {
+      role: "progressbar",
+      "aria-valuemin": 0,
+      "aria-valuemax": allItems.length,
+      "aria-valuenow": done,
+      "aria-label": "Equipo conseguido",
+      style: {
+        height: 6,
+        background: C.card2,
+        borderRadius: 3,
+        overflow: "hidden",
+        marginBottom: 22
+      }
+    }, ce("div", {
+      style: {
+        width: `${allItems.length > 0 ? done / allItems.length * 100 : 0}%`,
+        height: "100%",
+        background: C.yellow,
+        transition: "width .3s"
+      }
+    })), ce("ol", {
+      style: {
+        listStyle: "none",
+        margin: 0,
+        padding: 0
+      }
+    }, EQUIPMENT.map((ph, pi) => {
+      const phDone = ph.items.filter(it => chk[it.id]).length;
+      const complete = phDone === ph.items.length;
+      const last = pi === EQUIPMENT.length - 1;
+      return ce("li", {
+        key: pi,
+        style: {
+          position: "relative",
+          paddingLeft: 34,
+          paddingBottom: last ? 0 : 26
+        }
+      }, !last && ce("span", {
+        "aria-hidden": true,
+        style: {
+          position: "absolute",
+          left: 10,
+          top: 16,
+          bottom: -2,
+          width: 2,
+          background: complete ? C.yellow : C.border
+        }
+      }), ce("span", {
+        "aria-hidden": true,
+        style: {
+          position: "absolute",
+          left: 3,
+          top: 6,
+          width: 16,
+          height: 16,
+          borderRadius: "50%",
+          border: `2.5px solid ${complete ? C.yellow : ph.color}`,
+          background: complete ? C.yellow : C.bg
+        }
+      }), ce("div", {
+        style: {
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "baseline",
+          gap: 10
+        }
+      }, ce("h3", {
+        style: {
+          fontFamily: FONT_D,
+          fontSize: 24,
+          fontWeight: 700,
+          color: ph.color
+        }
+      }, ph.label, ce("span", {
+        style: {
+          fontFamily: FONT,
+          fontSize: 14,
+          fontWeight: 400,
+          color: C.muted,
+          marginLeft: 8
+        }
+      }, ph.time.replace(/^Sem /, "semanas ").replace("-", "–"))), ce("span", {
+        style: {
+          fontFamily: FONT_D,
+          fontSize: 18,
+          fontWeight: 700,
+          color: complete ? C.yellow : C.muted
+        }
+      }, phDone, "/", ph.items.length)), ce("p", {
+        style: {
+          fontSize: 15,
+          color: C.muted,
+          lineHeight: 1.45,
+          margin: "2px 0 10px",
+          maxWidth: "62ch"
+        }
+      }, ph.subtitle.replace(/\s*--\s*/, ": ")), ph.items.map(item => {
+        const isDone = !!chk[item.id];
+        return ce("button", {
+          key: item.id,
+          role: "checkbox",
+          "aria-checked": isDone,
+          onClick: () => tick(item.id),
+          style: {
+            width: "100%",
+            display: "flex",
+            gap: 12,
+            alignItems: "flex-start",
+            background: "transparent",
+            border: "none",
+            borderTop: `1px solid ${C.border}`,
+            padding: "12px 0",
+            textAlign: "left",
+            color: C.text,
+            fontFamily: "inherit",
+            cursor: "pointer"
+          }
+        }, ce("span", {
+          style: {
+            marginTop: 1
+          }
+        }, check(isDone, C.yellow)), ce("span", {
+          style: {
+            flex: 1,
+            minWidth: 0
+          }
+        }, ce("span", {
+          style: {
+            display: "flex",
+            alignItems: "baseline",
+            gap: 8,
+            flexWrap: "wrap"
+          }
+        }, ce("span", {
+          style: {
+            fontFamily: FONT_D,
+            fontSize: 20,
+            fontWeight: 700,
+            color: isDone ? C.muted : C.text,
+            textDecoration: isDone ? "line-through" : "none"
+          }
+        }, item.name), item.urgent && !isDone && ce("span", {
+          style: {
+            fontSize: 13,
+            color: C.red,
+            fontWeight: 600
+          }
+        }, "urgente")), ce("span", {
+          style: {
+            display: "block",
+            fontSize: 15,
+            marginTop: 2
+          }
+        }, ce("span", {
+          style: {
+            color: isDone ? C.muted : C.yellow,
+            fontWeight: 600
+          }
+        }, item.price), ce("span", {
+          style: {
+            color: C.muted
+          }
+        }, `, ${item.when.toLowerCase()}`, item.priority ? `, ${item.priority.toLowerCase()}` : "")), !isDone && ce("span", {
+          style: {
+            display: "block",
+            fontSize: 15,
+            color: C.muted,
+            lineHeight: 1.45,
+            marginTop: 3
+          }
+        }, item.tip)));
+      }));
+    }))),
+    // 3. Respaldo
+    ce("section", {
+      "aria-labelledby": "eq-backup"
+    }, ce("h2", {
+      id: "eq-backup",
+      style: H2
+    }, "Respaldo"), ce("p", {
+      style: intro
+    }, "Tus PRs, racha y checks viven ", ce("b", {
+      style: {
+        color: C.text,
+        fontWeight: 600
+      }
+    }, "solo en este navegador"), ". Si lo limpias o cambias de tel\xE9fono, se pierden. Guarda un respaldo cada tanto."), ce("div", {
+      style: {
+        display: "flex",
+        gap: 8,
+        marginBottom: 8
+      }
+    }, ce("button", {
       onClick: () => {
         downloadBackup();
         flash("ok", "Archivo descargado.");
       },
-      style: btn(C.yellow)
-    }, "Descargar archivo"), /*#__PURE__*/React.createElement("button", {
+      style: solid
+    }, "Descargar respaldo"), ce("button", {
       onClick: doCopy,
-      style: btn(C.teal)
-    }, "Copiar")), /*#__PURE__*/React.createElement("button", {
+      style: outline
+    }, "Copiar texto")), ce("button", {
       onClick: () => {
         setShowRestore(v => !v);
         setRestoreText("");
       },
+      "aria-expanded": showRestore,
       style: {
-        ...btn(C.purple),
-        width: "100%"
+        background: "none",
+        border: "none",
+        color: C.muted,
+        fontFamily: "inherit",
+        fontSize: 15,
+        cursor: "pointer",
+        padding: "8px 0",
+        textDecoration: "underline",
+        textUnderlineOffset: 3
       }
-    }, showRestore ? "Cancelar" : "Restaurar respaldo"), showRestore && /*#__PURE__*/React.createElement("div", {
+    }, showRestore ? "Cancelar" : "Restaurar un respaldo"), showRestore && ce("div", {
       style: {
-        marginTop: 10,
-        paddingTop: 11,
-        borderTop: `1px solid ${C.border}`
+        marginTop: 8,
+        background: C.card,
+        border: `1px solid ${C.border}`,
+        borderRadius: 8,
+        padding: "16px 14px"
       }
-    }, /*#__PURE__*/React.createElement("div", {
+    }, ce("p", {
       style: {
-        fontSize: 14,
-        color: C.red,
+        borderLeft: `3px solid ${C.red}`,
+        padding: "2px 0 2px 12px",
+        fontSize: 15,
         lineHeight: 1.5,
-        marginBottom: 9
+        marginBottom: 14
       }
-    }, "\u26A0\uFE0F Restaurar ", /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontWeight: "bold"
-      }
-    }, "reemplaza"), " los datos actuales de este navegador."), /*#__PURE__*/React.createElement("input", {
+    }, "Restaurar ", ce("b", null, "reemplaza"), " todos los datos actuales de este navegador."), ce("input", {
       ref: fileRef,
       type: "file",
       accept: "application/json,.json",
@@ -14861,313 +15057,62 @@ function App() {
       style: {
         display: "none"
       }
-    }), /*#__PURE__*/React.createElement("button", {
+    }), ce("button", {
       onClick: () => fileRef.current && fileRef.current.click(),
       style: {
-        ...btn(C.blue),
+        ...outline,
         width: "100%",
-        marginBottom: 8
+        marginBottom: 16
       }
-    }, "Elegir archivo .json"), /*#__PURE__*/React.createElement("div", {
+    }, "Elegir archivo .json"), ce("label", {
+      htmlFor: "eq-restore-text",
       style: {
-        fontSize: 16,
-    fontFamily: FONT_D,
-    fontWeight: 600,
-        color: C.muted,
-        marginBottom: 5
+        display: "block",
+        fontFamily: FONT_D,
+        fontSize: 18,
+        fontWeight: 700,
+        marginBottom: 6
       }
-    }, "O pega el texto"), /*#__PURE__*/React.createElement("textarea", {
+    }, "O pega el texto"), ce("textarea", {
+      id: "eq-restore-text",
       value: restoreText,
       onChange: e => setRestoreText(e.target.value),
       placeholder: "{\"app\":\"danvanfit\",...}",
       spellCheck: false,
       style: {
         width: "100%",
-        height: 88,
-        background: C.card2,
-        border: `1px solid ${C.border}`,
-        borderRadius: 8,
+        height: 96,
+        background: C.bg,
+        border: `1.5px solid ${C.border}`,
+        borderRadius: 6,
         color: C.text,
         fontFamily: "inherit",
-        fontSize: 14,
-        padding: 9,
-        resize: "vertical",
-        outline: "none"
+        fontSize: 15,
+        padding: 10,
+        resize: "vertical"
       }
-    }), /*#__PURE__*/React.createElement("button", {
+    }), ce("button", {
       onClick: () => doRestore(restoreText),
       disabled: !restoreText.trim(),
-      style: restoreText.trim() ? {
-        ...btn(C.orange),
-        width: "100%",
-        marginTop: 7
-      } : {
-        ...btn(C.orange),
-        width: "100%",
-        marginTop: 7,
-        background: C.card2,
-        borderColor: C.border,
-        color: C.dim,
-        cursor: "default"
-      }
-    }, "Restaurar desde texto")), bkMsg && /*#__PURE__*/React.createElement("div", {
       style: {
-        marginTop: 10,
-        background: mc + "15",
-        border: `1px solid ${mc}40`,
-        borderRadius: 8,
-        padding: "8px 10px",
-        fontSize: 14,
-        color: mc,
+        ...solid,
+        width: "100%",
+        marginTop: 8,
+        background: restoreText.trim() ? C.red : C.card2,
+        color: restoreText.trim() ? C.bg : C.muted,
+        cursor: restoreText.trim() ? "pointer" : "default"
+      }
+    }, "Restaurar desde texto")), bkMsg && ce("div", {
+      role: "status",
+      style: {
+        marginTop: 12,
+        borderLeft: `3px solid ${mc}`,
+        padding: "2px 0 2px 12px",
+        fontSize: 15,
+        color: C.text,
         lineHeight: 1.5
       }
-    }, bkMsg.text)), /*#__PURE__*/React.createElement("div", {
-      style: {
-        background: C.card,
-        borderRadius: 8,
-        padding: 14,
-        marginBottom: 14,
-        border: `1px solid ${C.border}`
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: 8
-      }
-    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 14,
-    fontFamily: FONT_D,
-    fontWeight: 600,
-        color: C.muted,
-        marginBottom: 2
-      }
-    }, "Progreso"), /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 24,
-    fontFamily: FONT_D,
-        fontWeight: 700,
-        color: C.yellow
-      }
-    }, done, "/", allItems.length)), urgent > 0 ? /*#__PURE__*/React.createElement("div", {
-      style: {
-        background: C.red + "20",
-        border: `1px solid ${C.red}40`,
-        borderRadius: 8,
-        padding: "6px 12px",
-        textAlign: "center"
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 13,
-        color: C.red,
-        fontWeight: "bold"
-      }
-    }, "Urgente"), /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 19,
-    fontFamily: FONT_D,
-        fontWeight: 700,
-        color: C.red
-      }
-    }, urgent)) : /*#__PURE__*/React.createElement("div", {
-      style: {
-        background: C.teal + "20",
-        border: `1px solid ${C.teal}40`,
-        borderRadius: 8,
-        padding: "6px 12px"
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 13,
-        color: C.teal,
-        fontWeight: "bold"
-      }
-    }, "Todo bien"), /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 19,
-        color: C.teal
-      }
-    }, "\u2713"))), /*#__PURE__*/React.createElement("div", {
-      style: {
-        background: C.border,
-        borderRadius: 4,
-        height: 5
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        width: `${allItems.length > 0 ? done / allItems.length * 100 : 0}%`,
-        height: "100%",
-        background: C.yellow,
-        borderRadius: 4,
-        transition: "width .3s"
-      }
-    }))), EQUIPMENT.map((ph, pi) => {
-      const phDone = ph.items.filter(it => chk[it.id]).length;
-      return /*#__PURE__*/React.createElement("div", {
-        key: pi,
-        style: {
-          marginBottom: 14
-        }
-      }, /*#__PURE__*/React.createElement("div", {
-        style: {
-          background: ph.color + "10",
-          border: `1px solid ${ph.color}30`,
-          borderRadius: 8,
-          padding: "10px 14px",
-          marginBottom: 7,
-          display: "flex",
-          alignItems: "center",
-          gap: 10
-        }
-      }, /*#__PURE__*/React.createElement("span", {
-        style: {
-          fontSize: 24
-        }
-      }, ph.icon), /*#__PURE__*/React.createElement("div", {
-        style: {
-          flex: 1
-        }
-      }, /*#__PURE__*/React.createElement("div", {
-        style: {
-          display: "flex",
-          gap: 7,
-          alignItems: "center"
-        }
-      }, /*#__PURE__*/React.createElement("span", {
-        style: {
-          fontSize: 16,
-          fontWeight: "bold",
-          color: ph.color
-        }
-      }, ph.label), /*#__PURE__*/React.createElement("span", {
-        style: {
-          fontSize: 13,
-          color: C.muted,
-          background: C.card2,
-          padding: "2px 6px",
-          borderRadius: 4
-        }
-      }, ph.time)), /*#__PURE__*/React.createElement("div", {
-        style: {
-          fontSize: 15,
-          color: C.muted,
-          marginTop: 1
-        }
-      }, ph.subtitle)), /*#__PURE__*/React.createElement("div", {
-        style: {
-          textAlign: "center",
-          flexShrink: 0
-        }
-      }, /*#__PURE__*/React.createElement("div", {
-        style: {
-          fontSize: 17,
-    fontFamily: FONT_D,
-          fontWeight: 700,
-          color: phDone === ph.items.length ? ph.color : C.dim
-        }
-      }, phDone, "/", ph.items.length))), ph.items.map(item => {
-        const isDone = chk[item.id];
-        return /*#__PURE__*/React.createElement("div", {
-          key: item.id,
-          onClick: () => tick(item.id),
-          style: {
-            background: C.card,
-            borderRadius: 8,
-            marginBottom: 5,
-            padding: "11px 13px",
-            border: `1px solid ${isDone ? ph.color + "60" : item.urgent && !isDone ? C.red + "40" : C.border}`,
-            cursor: "pointer",
-            display: "flex",
-            gap: 10,
-            alignItems: "flex-start"
-          }
-        }, /*#__PURE__*/React.createElement("div", {
-          style: {
-            width: 21,
-            height: 21,
-            borderRadius: 5,
-            flexShrink: 0,
-            marginTop: 1,
-            border: `2px solid ${isDone ? ph.color : item.urgent ? C.red : C.dim}`,
-            background: isDone ? ph.color : "transparent",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center"
-          }
-        }, isDone && /*#__PURE__*/React.createElement("span", {
-          style: {
-            color: C.bg,
-            fontSize: 15,
-            fontWeight: "bold"
-          }
-        }, "\u2713")), /*#__PURE__*/React.createElement("div", {
-          style: {
-            flex: 1
-          }
-        }, /*#__PURE__*/React.createElement("div", {
-          style: {
-            display: "flex",
-            gap: 6,
-            alignItems: "center",
-            flexWrap: "wrap",
-            marginBottom: 3
-          }
-        }, /*#__PURE__*/React.createElement("span", {
-          style: {
-            fontSize: 17
-          }
-        }, item.emoji), /*#__PURE__*/React.createElement("span", {
-          style: {
-            fontSize: 16,
-            fontWeight: "bold",
-            color: isDone ? ph.color : C.text,
-            textDecoration: isDone ? "line-through" : "none"
-          }
-        }, item.name), item.urgent && !isDone && /*#__PURE__*/React.createElement("span", {
-          style: {
-            fontSize: 12,
-            background: C.red + "25",
-            color: C.red,
-            padding: "2px 6px",
-            borderRadius: 4,
-            fontWeight: "bold"
-          }
-        }, "Urgente")), /*#__PURE__*/React.createElement("div", {
-          style: {
-            display: "flex",
-            gap: 5,
-            flexWrap: "wrap",
-            marginBottom: 5
-          }
-        }, /*#__PURE__*/React.createElement("span", {
-          style: {
-            fontSize: 13,
-            background: C.yellow + "20",
-            color: C.yellow,
-            padding: "2px 7px",
-            borderRadius: 4,
-            fontWeight: "bold"
-          }
-        }, item.price), /*#__PURE__*/React.createElement("span", {
-          style: {
-            fontSize: 13,
-            background: C.card2,
-            color: C.muted,
-            padding: "2px 7px",
-            borderRadius: 4
-          }
-        }, item.when)), /*#__PURE__*/React.createElement("div", {
-          style: {
-            fontSize: 15,
-            color: C.muted,
-            lineHeight: 1.5
-          }
-        }, item.tip)));
-      }));
-    }));
+    }, bkMsg.text)));
   })()));
 }
 
