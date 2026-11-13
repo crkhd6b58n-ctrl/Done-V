@@ -645,15 +645,15 @@ const parseScope = scope => {
 // repeticiones; el tiempo bajo tension solo las de segundos.
 const VOL_MEASURES = [{
   id: "reps",
-  label: "REPS",
+  label: "Reps",
   unit: "reps"
 }, {
   id: "kg",
-  label: "TONELAJE",
+  label: "Tonelaje",
   unit: "kg"
 }, {
   id: "secs",
-  label: "SEGUNDOS",
+  label: "Segundos",
   unit: "s"
 }];
 const weeklyVolume = (sets, weeksBack) => {
@@ -1294,7 +1294,7 @@ const RUNNING_MILESTONES = [{
 const SKILL_PATHS = [{
   id: "strength",
   emoji: "🏋️",
-  label: "FUERZA PURA",
+  label: "Fuerza pura",
   color: C.yellow,
   tagline: "Weighted dips +40 kg. Pull-ups con +40 kg. Rings. One-arm pull-up prep.",
   reqs: ["Dips 3x20", "Pull-ups 15+ reps", "Pistol squat libre 3x8 c/lado"],
@@ -1342,19 +1342,19 @@ const SKILL_PATHS = [{
   }],
   subPaths: [{
     id: "ring",
-    label: "🔵 RING MASTER",
+    label: "🔵 Ring master",
     color: "#4FC3F7",
     desc: "Ring muscle ups, ring HSPU, ring L-sit. El control aumenta 10x."
   }, {
     id: "onearm",
-    label: "🔴 ONE-ARM KING",
+    label: "🔴 One-arm king",
     color: C.red,
     desc: "Hacia el one-arm pull-up. El pinnacle de la fuerza de jalón."
   }]
 }, {
   id: "skills",
   emoji: "⭐",
-  label: "SKILLS ÉLITE",
+  label: "Skills élite",
   color: C.pink,
   tagline: "Planche, front lever full, muscle up estricto. El camino más largo.",
   reqs: ["Tuck front lever 10s", "Tuck planche 10s", "Strict muscle up x1", "HS libre 20s"],
@@ -1402,19 +1402,19 @@ const SKILL_PATHS = [{
   }],
   subPaths: [{
     id: "planche",
-    label: "⚡ PLANCHE MASTER",
+    label: "⚡ Planche master",
     color: C.yellow,
     desc: "Full planche 10s → planche push-ups. El skill más difícil."
   }, {
     id: "lever",
-    label: "🎯 LEVER KING",
+    label: "🎯 Lever king",
     color: C.orange,
     desc: "Full front + back lever simultáneamente."
   }]
 }, {
   id: "endurance",
   emoji: "🏃",
-  label: "MARATONISTA",
+  label: "Maratonista",
   color: C.orange,
   tagline: "Construye el motor. Media maratón primero. Maratón completo después.",
   reqs: ["10 km sin parar", "Long run 15 km", "5K en menos de 28 min"],
@@ -1462,19 +1462,19 @@ const SKILL_PATHS = [{
   }],
   subPaths: [{
     id: "trail",
-    label: "🏔 TRAIL RUNNER",
+    label: "🏔 Trail runner",
     color: "#8BC34A",
     desc: "Trail running. Terreno variable, elevation, bastones."
   }, {
     id: "speed",
-    label: "⚡ VELOCIDAD",
+    label: "⚡ Velocidad",
     color: C.red,
     desc: "5K sub-20 min. 10K sub-45 min. Pista, intervalos, tempo."
   }]
 }, {
   id: "handstand_p",
   emoji: "🤲",
-  label: "MAESTRO DEL HS",
+  label: "Maestro del HS",
   color: C.blue,
   tagline: "Freestanding HS 60s → HSPU → Scorpion HS → One-arm HS prep.",
   reqs: ["HS libre 20s consistente", "Wall HSPU 5 reps", "Wrist conditioning sólido"],
@@ -1522,19 +1522,19 @@ const SKILL_PATHS = [{
   }],
   subPaths: [{
     id: "scorpion",
-    label: "🦂 SCORPION MASTER",
+    label: "🦂 Scorpion master",
     color: C.pink,
     desc: "Scorpion HS libre 20s → One-arm HS prep."
   }, {
     id: "hspu",
-    label: "🤸 HSPU ÉLITE",
+    label: "🤸 HSPU élite",
     color: C.yellow,
     desc: "Freestanding HSPU 3x5 → Pike HSPU."
   }]
 }, {
   id: "complete",
   emoji: "👑",
-  label: "ATLETA COMPLETO",
+  label: "Atleta completo",
   color: C.purple,
   tagline: "El camino más difícil. Todo en paralelo. Elite en todo.",
   reqs: ["TODOS los milestones Fase 3", "HS libre 20s", "10+ pull-ups", "Pistol libre", "15 km long run"],
@@ -1582,12 +1582,12 @@ const SKILL_PATHS = [{
   }],
   subPaths: [{
     id: "competitive",
-    label: "🏆 COMPETITIVO",
+    label: "🏆 Competitivo",
     color: C.gold,
     desc: "Primera competición de calistenia o carrera."
   }, {
     id: "physique",
-    label: "💎 PHYSIQUE ÉLITE",
+    label: "💎 Physique élite",
     color: C.pink,
     desc: "Calistenia + anillas + dieta = físico de atleta."
   }]
@@ -1678,7 +1678,7 @@ const PR_METRICS = [{
 }];
 
 //  WEEK DATA 
-const WD = ["LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB", "DOM"];
+const WD = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 const WDL = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
 const TC = {
   "Calistenia": C.yellow,
@@ -2842,7 +2842,7 @@ const WEEKS = [{
 //  EQUIPMENT 
 const EQUIPMENT = [{
   phase: 1,
-  label: "FASE 1",
+  label: "Fase 1",
   time: "Sem 1-4",
   color: C.teal,
   icon: "🌱",
@@ -2850,7 +2850,7 @@ const EQUIPMENT = [{
   items: [{
     id: "eq-shoes",
     name: "Zapatillas de Running",
-    priority: "OBLIGATORIO",
+    priority: "Obligatorio",
     price: "$50-120",
     when: "Semana 1",
     tip: "Saucony, Nike, Hokas. Marketplace o eBay.",
@@ -2859,7 +2859,7 @@ const EQUIPMENT = [{
   }, {
     id: "eq-bands",
     name: "Set de Bandas (3 grosores)",
-    priority: "OBLIGATORIO",
+    priority: "Obligatorio",
     price: "$15-25",
     when: "Semana 1",
     tip: "Para warm-up, pull-aparts y asistencia en pull-ups.",
@@ -2868,7 +2868,7 @@ const EQUIPMENT = [{
   }, {
     id: "eq-bar",
     name: "Barra de Dominadas",
-    priority: "OBLIGATORIO",
+    priority: "Obligatorio",
     price: "$30-60 / gratis",
     when: "Semana 1",
     tip: "Barra de puerta, techo, o parque. Para passive hang y pull-ups.",
@@ -2877,7 +2877,7 @@ const EQUIPMENT = [{
   }, {
     id: "eq-stick",
     name: "Palo de Escoba",
-    priority: "RECOMENDADO",
+    priority: "Recomendado",
     price: "$0",
     when: "Semana 1",
     tip: "Para banded pull-downs. Ya tienes uno en casa.",
@@ -2886,7 +2886,7 @@ const EQUIPMENT = [{
   }, {
     id: "eq-mat",
     name: "Colchoneta de Yoga",
-    priority: "RECOMENDADO",
+    priority: "Recomendado",
     price: "$10-20",
     when: "Semana 1",
     tip: "Para plank, hollow body, movilidad.",
@@ -2896,7 +2896,7 @@ const EQUIPMENT = [{
   total: "$95-205 USD"
 }, {
   phase: 2,
-  label: "FASE 2",
+  label: "Fase 2",
   time: "Sem 5-8",
   color: C.yellow,
   icon: "⚡",
@@ -2904,7 +2904,7 @@ const EQUIPMENT = [{
   items: [{
     id: "eq-parallel",
     name: "Paralelas Portátiles",
-    priority: "OBLIGATORIO",
+    priority: "Obligatorio",
     price: "$40-70 / gratis",
     when: "Antes de Sem 5",
     tip: "Para dips, tuck hold, L-sit. Las barras del parque funcionan.",
@@ -2913,7 +2913,7 @@ const EQUIPMENT = [{
   }, {
     id: "eq-chair",
     name: "Silla Resistente o Caja",
-    priority: "RECOMENDADO",
+    priority: "Recomendado",
     price: "$0",
     when: "Semana 5",
     tip: "Para box pistol squat y subir a la barra en negativas.",
@@ -2923,7 +2923,7 @@ const EQUIPMENT = [{
   total: "+$40-70 USD"
 }, {
   phase: 3,
-  label: "FASE 3",
+  label: "Fase 3",
   time: "Sem 9-12",
   color: C.orange,
   icon: "🔥",
@@ -2931,7 +2931,7 @@ const EQUIPMENT = [{
   items: [{
     id: "eq-vest",
     name: "Chaleco de Peso",
-    priority: "OBLIGATORIO",
+    priority: "Obligatorio",
     price: "$50-80 USD",
     when: "Antes de Sem 9",
     tip: "Para weighted dips y pull-ups. Empieza con +5 kg.",
@@ -2940,7 +2940,7 @@ const EQUIPMENT = [{
   }, {
     id: "eq-foam",
     name: "Foam Roller",
-    priority: "OBLIGATORIO",
+    priority: "Obligatorio",
     price: "$15-25 USD",
     when: "Semana 9",
     tip: "Esencial para recovery post-long run de 12-15 km.",
@@ -2949,7 +2949,7 @@ const EQUIPMENT = [{
   }, {
     id: "eq-gel",
     name: "Geles Energéticos / Dátiles",
-    priority: "RECOMENDADO",
+    priority: "Recomendado",
     price: "$1-3 / unidad",
     when: "Semana 11",
     tip: "Para carreras de más de 90 min. Los dátiles son la opción natural.",
@@ -2959,7 +2959,7 @@ const EQUIPMENT = [{
   total: "+$65-140 USD"
 }, {
   phase: 4,
-  label: "PATHS 13+",
+  label: "Paths 13+",
   time: "Sem 13+",
   color: C.purple,
   icon: "🌳",
@@ -2967,7 +2967,7 @@ const EQUIPMENT = [{
   items: [{
     id: "eq-rings",
     name: "Anillas de Madera",
-    priority: "FUERZA / SKILLS",
+    priority: "Fuerza / skills",
     price: "$25-50 USD",
     when: "Sem 13 (si aplica)",
     tip: "Para ring muscle ups, ring dips, ring L-sit.",
@@ -2976,7 +2976,7 @@ const EQUIPMENT = [{
   }, {
     id: "eq-moreweight",
     name: "Más Discos de Peso",
-    priority: "FUERZA PURA",
+    priority: "Fuerza pura",
     price: "$20-40 USD",
     when: "Sem 15+",
     tip: "Weighted dips hasta +40 kg. Compra gradualmente.",
@@ -2985,7 +2985,7 @@ const EQUIPMENT = [{
   }, {
     id: "eq-race",
     name: "Inscripción a Carrera",
-    priority: "MARATONISTA",
+    priority: "Maratonista",
     price: "$15-50 USD",
     when: "Sem 15-16",
     tip: "Una carrera oficial cambia el nivel de motivación completamente.",
@@ -3169,18 +3169,18 @@ function Timer({
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10,
+      fontSize: 16,
+    fontFamily: FONT_D,
       color: C.muted,
-      letterSpacing: 3,
-      fontWeight: "bold"
+      fontWeight: 700
     }
-  }, "\u23F1 TIMER"), /*#__PURE__*/React.createElement("button", {
+  }, "\u23F1 Timer"), /*#__PURE__*/React.createElement("button", {
     onClick: onClose,
     style: {
       background: "none",
       border: "none",
       color: C.muted,
-      fontSize: 20,
+      fontSize: 24,
       cursor: "pointer",
       fontFamily: "inherit",
       lineHeight: 1
@@ -3206,7 +3206,7 @@ function Timer({
       background: secs === p ? C.yellow + "20" : "transparent",
       color: secs === p ? C.yellow : C.muted,
       fontFamily: "inherit",
-      fontSize: 11,
+      fontSize: 15,
       cursor: "pointer",
       fontWeight: "bold"
     }
@@ -3254,18 +3254,19 @@ function Timer({
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 42,
-      fontWeight: "bold",
+    fontFamily: FONT_D,
+      fontWeight: 700,
       color: left === 0 ? C.teal : C.text,
       fontVariantNumeric: "tabular-nums"
     }
   }, left !== null ? fmt(left) : fmt(secs)), left === 0 && /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 12,
+      fontSize: 18,
+    fontFamily: FONT_D,
       color: C.teal,
-      fontWeight: "bold",
-      letterSpacing: 2
+      fontWeight: 700
     }
-  }, "\xA1LISTO!"))), /*#__PURE__*/React.createElement("div", {
+  }, "\xA1Listo!"))), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 10,
@@ -3275,12 +3276,12 @@ function Timer({
     onClick: reset,
     style: {
       padding: "10px 20px",
-      borderRadius: 10,
+      borderRadius: 8,
       border: `1px solid ${C.border}`,
       background: "transparent",
       color: C.muted,
       fontFamily: "inherit",
-      fontSize: 13,
+      fontSize: 16,
       cursor: "pointer",
       fontWeight: "bold"
     }
@@ -3288,17 +3289,17 @@ function Timer({
     onClick: running ? pause : start,
     style: {
       padding: "10px 40px",
-      borderRadius: 10,
+      borderRadius: 8,
       border: "none",
       background: running ? C.orange : left === 0 ? C.teal : C.yellow,
       color: C.bg,
-      fontFamily: "inherit",
-      fontSize: 14,
+      fontFamily: FONT_D,
+      fontSize: 17,
       cursor: "pointer",
-      fontWeight: "bold",
+      fontWeight: 700,
       flex: 1
     }
-  }, running ? "⏸ PAUSA" : left === 0 ? "↺ OTRA VEZ" : "▶ START"))));
+  }, running ? "⏸ Pausa" : left === 0 ? "↺ Otra vez" : "▶ Empezar"))));
 }
 
 //  BARRAS DE VOLUMEN 
@@ -9306,7 +9307,7 @@ function ExAnim({
   const locked = elbowAng >= 168;
   const lockEl = detail && controls && lockOn && locked ? (() => {
     const cc = C.teal;
-    const str = "\uD83D\uDD12 BLOQUEADO";
+    const str = "\uD83D\uDD12 Bloqueado";
     const fs = 4.6 * K,
       w = str.length * 2.9 * K;
     const x = Math.max(VB[0] + 1, Math.min(VB[0] + VB[2] - w - 1, s.elbow[0] + 4 * K)),
@@ -9386,7 +9387,7 @@ function ExAnim({
     borderRadius: 6,
     color: on ? c : C.muted,
     fontFamily: "inherit",
-    fontSize: 9,
+    fontSize: 13,
     fontWeight: "bold",
     padding: "3px 7px",
     cursor: "pointer"
@@ -9428,15 +9429,15 @@ function ExAnim({
     style: {
       flex: 1,
       textAlign: "right",
-      fontSize: 10,
-      fontWeight: "bold",
-      letterSpacing: 1,
+      fontSize: 16,
+    fontFamily: FONT_D,
+      fontWeight: 700,
       color: bad ? C.red : col,
       whiteSpace: "nowrap"
     }
   }, still ? "" : phase), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 13,
       color: C.muted,
       minWidth: 36,
       textAlign: "right"
@@ -9444,7 +9445,7 @@ function ExAnim({
   }, still ? "" : count)), bad ? /*#__PURE__*/React.createElement("div", {
     style: {
       padding: "6px 6px 2px",
-      fontSize: 11,
+      fontSize: 15,
       lineHeight: 1.5
     }
   }, /*#__PURE__*/React.createElement("div", {
@@ -9475,7 +9476,7 @@ function ExAnim({
       borderRadius: 8,
       background: col,
       color: C.bg,
-      fontSize: 9,
+      fontSize: 13,
       fontWeight: "bold",
       display: "flex",
       alignItems: "center",
@@ -9485,7 +9486,7 @@ function ExAnim({
   }, stepIdx + 1), /*#__PURE__*/React.createElement("span", {
     style: {
       fontSize: 11.5,
-      color: "#D8D8D8",
+      color: C.text,
       lineHeight: 1.5
     }
   }, spec.st[stepIdx])), spec.g && spec.g.length > 0 && !bad && /*#__PURE__*/React.createElement("div", {
@@ -9519,7 +9520,7 @@ function ExAnim({
     style: {
       fontSize: 10.5,
       lineHeight: 1.5,
-      color: "#C8C8C8"
+      color: C.text
     }
   }, spec.el && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -9529,7 +9530,7 @@ function ExAnim({
       fontWeight: "bold",
       marginBottom: 2
     }
-  }, "DIRECCI\xD3N DE CODOS"), spec.el.n), spec.lk && /*#__PURE__*/React.createElement("div", {
+  }, "Direcci\xF3n de codos"), spec.el.n), spec.lk && /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: spec.el ? 6 : 0,
       color: C.teal
@@ -9573,7 +9574,7 @@ function ExPhoto({
     style: {
       padding: "28px 10px",
       textAlign: "center",
-      fontSize: 11,
+      fontSize: 15,
       color: C.muted,
       lineHeight: 1.5
     }
@@ -9586,7 +9587,7 @@ function ExPhoto({
       width: "100%",
       aspectRatio: "3 / 2",
       background: "#000",
-      borderRadius: 7,
+      borderRadius: 6,
       overflow: "hidden",
       cursor: "pointer"
     }
@@ -9615,9 +9616,9 @@ function ExPhoto({
       color,
       borderRadius: 6,
       padding: "3px 8px",
-      fontSize: 10,
-      fontWeight: "bold",
-      letterSpacing: 1
+      fontSize: 16,
+    fontFamily: FONT_D,
+      fontWeight: 700
     }
   }, cur.l), paused && n > 1 && /*#__PURE__*/React.createElement("div", {
     style: {
@@ -9628,9 +9629,9 @@ function ExPhoto({
       color: C.muted,
       borderRadius: 6,
       padding: "3px 8px",
-      fontSize: 10
+      fontSize: 14
     }
-  }, "\u275A\u275A PAUSA")), /*#__PURE__*/React.createElement("div", {
+  }, "\u275A\u275A Pausa")), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 5,
@@ -9649,7 +9650,7 @@ function ExPhoto({
       borderRadius: 6,
       color: fr === i ? color : C.muted,
       fontFamily: "inherit",
-      fontSize: 9,
+      fontSize: 13,
       fontWeight: "bold",
       padding: "3px 8px",
       cursor: "pointer"
@@ -9658,7 +9659,7 @@ function ExPhoto({
     style: {
       flex: 1,
       textAlign: "right",
-      fontSize: 8,
+      fontSize: 12,
       color: C.dim
     }
   }, "Foto: ", cur.u ? /*#__PURE__*/React.createElement("a", {
@@ -9685,12 +9686,11 @@ function ExMedia({
     padding: "7px 6px",
     background: on ? col + "20" : "transparent",
     border: `1px solid ${on ? col + "70" : C.border}`,
-    borderRadius: 7,
+    borderRadius: 6,
     color: on ? col : C.muted,
-    fontFamily: "inherit",
-    fontSize: 10,
-    fontWeight: "bold",
-    letterSpacing: 1,
+    fontFamily: FONT_D,
+    fontSize: 16,
+    fontWeight: 700,
     cursor: "pointer"
   });
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
@@ -9702,10 +9702,10 @@ function ExMedia({
   }, has && /*#__PURE__*/React.createElement("button", {
     onClick: () => setTab("foto"),
     style: tb(tab === "foto")
-  }, "\uD83D\uDCF7 FOTO REAL"), /*#__PURE__*/React.createElement("button", {
+  }, "Foto real"), /*#__PURE__*/React.createElement("button", {
     onClick: () => setTab("tec"),
     style: tb(tab === "tec")
-  }, "\uD83D\uDCD0 T\xC9CNICA"), /*#__PURE__*/React.createElement("a", {
+  }, "T\xE9cnica"), /*#__PURE__*/React.createElement("a", {
     href: videoUrl(ex ? ex.name : id),
     target: "_blank",
     rel: "noopener noreferrer",
@@ -9719,7 +9719,7 @@ function ExMedia({
       alignItems: "center",
       justifyContent: "center"
     }
-  }, "\u25B6 VIDEO")), tab === "foto" && has ? /*#__PURE__*/React.createElement(ExPhoto, {
+  }, "\u25B6 Video")), tab === "foto" && has ? /*#__PURE__*/React.createElement(ExPhoto, {
     id: id,
     color: col
   }) : /*#__PURE__*/React.createElement(ExAnim, {
@@ -9791,15 +9791,15 @@ function ItemAnim({
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 16,
+    fontFamily: FONT_D,
       color,
-      fontWeight: "bold",
-      letterSpacing: 2,
+      fontWeight: 700,
       marginBottom: 4
     }
-  }, ex.name.toUpperCase()), /*#__PURE__*/React.createElement("div", {
+  }, ex.name), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10,
+      fontSize: 14,
       color: C.orange,
       marginTop: 4,
       lineHeight: 1.4
@@ -9812,13 +9812,13 @@ function ItemAnim({
       border: "none",
       padding: 0,
       color: C.muted,
-      fontFamily: "inherit",
-      fontSize: 9,
-      letterSpacing: 1,
+      fontFamily: FONT_D,
+      fontSize: 16,
+    fontWeight: 600,
       cursor: "pointer",
       textDecoration: "underline"
     }
-  }, "VER FICHA COMPLETA EN T\u00C9CNICA")));
+  }, "Ver ficha completa en T\u00E9cnica")));
 }
 
 //  SPARKLINE CHART 
@@ -9830,7 +9830,7 @@ function Sparkline({
   if (!data || data.length < 2) return /*#__PURE__*/React.createElement("div", {
     style: {
       color: C.muted,
-      fontSize: 11,
+      fontSize: 15,
       padding: "20px 0",
       textAlign: "center"
     }
@@ -9878,18 +9878,18 @@ function Sparkline({
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 9,
+      fontSize: 13,
       color: C.muted
     }
   }, data[0].date), /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 11,
+      fontSize: 15,
       fontWeight: "bold",
       color: trendGood ? C.teal : trend === 0 ? C.muted : C.orange
     }
   }, trendGood ? "↑" : "↓", " ", Math.abs(trend).toFixed(1), " ", lower ? "(mejora)" : ""), /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 9,
+      fontSize: 13,
       color: C.muted
     }
   }, data[data.length - 1].date)));
@@ -10309,16 +10309,16 @@ function CoachTab({
   const shown = weeks.filter(w => !w.beforePlan);
   const card = {
     background: C.card,
-    borderRadius: 12,
+    borderRadius: 8,
     padding: 14,
     marginBottom: 12,
     border: `1px solid ${C.border}`
   };
   const label = {
-    fontSize: 9,
+    fontSize: 16,
+    fontFamily: FONT_D,
     color: C.muted,
-    letterSpacing: 2,
-    fontWeight: "bold",
+    fontWeight: 700,
     marginBottom: 10
   };
   const cur = weeks[weeks.length - 1];
@@ -10333,18 +10333,19 @@ function CoachTab({
       ...label,
       color: lvCol
     }
-  }, verdict.level === "bad" ? "🗣️ EL COACH TE TIENE QUE DECIR ALGO" : verdict.level === "warn" ? "🗣️ RESUMEN DEL COACH" : "🗣️ COACH"), /*#__PURE__*/React.createElement("div", {
+  }, verdict.level === "bad" ? "El coach te tiene que decir algo" : verdict.level === "warn" ? "Resumen del coach" : "Coach"), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 14,
-      fontWeight: "bold",
+      fontSize: 17,
+    fontFamily: FONT_D,
+      fontWeight: 700,
       lineHeight: 1.4,
       marginBottom: 8
     }
   }, verdict.title), verdict.lines.map((l, i) => /*#__PURE__*/React.createElement("div", {
     key: i,
     style: {
-      fontSize: 12,
-      color: "#C8C8C8",
+      fontSize: 15,
+      color: C.text,
       lineHeight: 1.55,
       marginBottom: 5
     }
@@ -10352,7 +10353,7 @@ function CoachTab({
     style: card
   }, /*#__PURE__*/React.createElement("div", {
     style: label
-  }, "ESTA SEMANA"), /*#__PURE__*/React.createElement("div", {
+  }, "Esta semana"), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 4
@@ -10374,7 +10375,7 @@ function CoachTab({
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 8,
+        fontSize: 12,
         color: x.isToday ? C.text : C.muted,
         fontWeight: x.isToday ? "bold" : "normal",
         marginBottom: 4
@@ -10382,23 +10383,23 @@ function CoachTab({
     }, WD[x.d]), /*#__PURE__*/React.createElement("div", {
       style: {
         height: 28,
-        borderRadius: 7,
+        borderRadius: 6,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        fontSize: 12,
+        fontSize: 15,
         fontWeight: "bold",
         background: st === "done" || st === "extra" ? c : st === "miss" ? c + "22" : "transparent",
         border: `1px solid ${st === "rest" ? C.border : c + (st === "todo" ? "90" : "")}`,
         color: st === "done" || st === "extra" ? C.bg : c
       }
-    }, st === "done" || st === "extra" ? "✓" : st === "miss" ? "✕" : st === "todo" ? x.isToday ? "HOY" : "·" : ""));
+    }, st === "done" || st === "extra" ? "✓" : st === "miss" ? "✕" : st === "todo" ? x.isToday ? "Hoy" : "·" : ""));
   })), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 10,
       flexWrap: "wrap",
-      fontSize: 9,
+      fontSize: 13,
       color: C.muted,
       marginTop: 9
     }
@@ -10422,9 +10423,9 @@ function CoachTab({
     style: card
   }, /*#__PURE__*/React.createElement("div", {
     style: label
-  }, "CONSTANCIA \xB7 D\xCDAS HECHOS VS PLANEADOS"), shown.length === 0 ? /*#__PURE__*/React.createElement("div", {
+  }, "Constancia: d\xEDas hechos contra planeados"), shown.length === 0 ? /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 11,
+      fontSize: 15,
       color: C.dim
     }
   }, "A\xFAn no hay semanas desde que anclaste el plan.") : /*#__PURE__*/React.createElement("div", {
@@ -10449,7 +10450,7 @@ function CoachTab({
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 9,
+        fontSize: 13,
         fontWeight: "bold",
         color: c,
         marginBottom: 3
@@ -10475,14 +10476,14 @@ function CoachTab({
       }
     })), /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 8,
+        fontSize: 12,
         color: w.current ? C.blue : C.dim,
         marginTop: 4
       }
-    }, w.current ? "HOY" : w.key.slice(5).replace("-", "/")));
+    }, w.current ? "Hoy" : w.key.slice(5).replace("-", "/")));
   })), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 13,
       color: C.dim,
       marginTop: 10,
       lineHeight: 1.5
@@ -10495,7 +10496,7 @@ function CoachTab({
       color: C.muted,
       textDecoration: "underline",
       fontFamily: "inherit",
-      fontSize: 9,
+      fontSize: 13,
       cursor: "pointer",
       padding: "0 0 0 4px"
     }
@@ -10514,7 +10515,7 @@ function CoachTab({
       marginBottom: 0,
       color: C.purple
     }
-  }, "🤖 CHAT CON EL COACH IA"), key && /*#__PURE__*/React.createElement("div", {
+  }, "Chat con el coach"), key && /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 6
@@ -10529,11 +10530,11 @@ function CoachTab({
       borderRadius: 6,
       color: C.muted,
       fontFamily: "inherit",
-      fontSize: 9,
+      fontSize: 13,
       padding: "3px 8px",
       cursor: "pointer"
     }
-  }, "BORRAR"), /*#__PURE__*/React.createElement("button", {
+  }, "Borrar"), /*#__PURE__*/React.createElement("button", {
     onClick: () => setShowKey(v => !v),
     "aria-label": "Configurar API key",
     style: {
@@ -10542,22 +10543,22 @@ function CoachTab({
       borderRadius: 6,
       color: C.muted,
       fontFamily: "inherit",
-      fontSize: 11,
+      fontSize: 15,
       padding: "2px 8px",
       cursor: "pointer"
     }
   }, "⚙"))), (!key || showKey) && /*#__PURE__*/React.createElement("div", {
     style: {
       background: C.card2,
-      borderRadius: 9,
+      borderRadius: 6,
       padding: 12,
       marginBottom: 10,
       border: `1px solid ${C.border}`
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 11,
-      color: "#C8C8C8",
+      fontSize: 15,
+      color: C.text,
       lineHeight: 1.55,
       marginBottom: 9
     }
@@ -10577,26 +10578,26 @@ function CoachTab({
       minWidth: 0,
       background: C.card,
       border: `1px solid ${C.border}`,
-      borderRadius: 7,
+      borderRadius: 6,
       padding: "9px 10px",
       color: C.text,
       fontFamily: "inherit",
-      fontSize: 12
+      fontSize: 15
     }
   }), /*#__PURE__*/React.createElement("button", {
     onClick: () => keyDraft.trim() && saveKey(keyDraft),
     style: {
       background: C.purple,
       border: "none",
-      borderRadius: 7,
+      borderRadius: 6,
       padding: "0 14px",
       color: C.bg,
       fontFamily: "inherit",
-      fontSize: 11,
+      fontSize: 15,
       fontWeight: "bold",
       cursor: "pointer"
     }
-  }, "GUARDAR")), key && /*#__PURE__*/React.createElement("button", {
+  }, "Guardar")), key && /*#__PURE__*/React.createElement("button", {
     onClick: () => saveKey(""),
     style: {
       marginTop: 8,
@@ -10605,13 +10606,13 @@ function CoachTab({
       padding: 0,
       color: C.red,
       fontFamily: "inherit",
-      fontSize: 10,
+      fontSize: 14,
       cursor: "pointer",
       textDecoration: "underline"
     }
   }, "Quitar la key de este dispositivo")), key && /*#__PURE__*/React.createElement(React.Fragment, null, chat.length === 0 && !busy && /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 11,
+      fontSize: 15,
       color: C.muted,
       lineHeight: 1.55,
       marginBottom: 10
@@ -10627,7 +10628,7 @@ function CoachTab({
     pending: !live
   }), err && /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 11,
+      fontSize: 15,
       color: C.orange,
       background: C.orange + "15",
       border: `1px solid ${C.orange}40`,
@@ -10656,7 +10657,7 @@ function CoachTab({
       padding: "5px 10px",
       color: busy ? C.dim : C.muted,
       fontFamily: "inherit",
-      fontSize: 10,
+      fontSize: 14,
       cursor: busy ? "default" : "pointer",
       textAlign: "left"
     }
@@ -10686,7 +10687,7 @@ function CoachTab({
       padding: "8px 10px",
       color: C.text,
       fontFamily: "inherit",
-      fontSize: 12,
+      fontSize: 15,
       lineHeight: 1.4
     }
   }), busy ? /*#__PURE__*/React.createElement("button", {
@@ -10698,7 +10699,7 @@ function CoachTab({
       padding: "0 12px",
       color: C.muted,
       fontFamily: "inherit",
-      fontSize: 11,
+      fontSize: 15,
       cursor: "pointer"
     }
   }, "■") : /*#__PURE__*/React.createElement("button", {
@@ -10711,7 +10712,7 @@ function CoachTab({
       padding: "0 14px",
       color: draft.trim() ? C.bg : C.dim,
       fontFamily: "inherit",
-      fontSize: 13,
+      fontSize: 16,
       fontWeight: "bold",
       cursor: draft.trim() ? "pointer" : "default"
     }
@@ -10733,15 +10734,15 @@ function CoachBubble({
       maxWidth: "88%",
       whiteSpace: "pre-wrap",
       wordBreak: "break-word",
-      fontSize: 12,
+      fontSize: 15,
       lineHeight: 1.55,
       padding: "8px 11px",
-      borderRadius: 11,
+      borderRadius: 8,
       borderBottomRightRadius: me ? 3 : 11,
       borderBottomLeftRadius: me ? 11 : 3,
       background: me ? C.purple + "25" : C.card2,
       border: `1px solid ${me ? C.purple + "50" : C.border}`,
-      color: pending ? C.muted : me ? C.text : "#D8D8D8",
+      color: pending ? C.muted : me ? C.text : C.text,
       fontStyle: pending ? "italic" : "normal"
     }
   }, String(m.text).replace(/\*\*(.+?)\*\*/g, "$1")));
@@ -12057,11 +12058,11 @@ function App() {
         border: "none",
         color: C.muted,
         fontFamily: "inherit",
-        fontSize: 11,
+        fontSize: 15,
         cursor: "pointer",
         padding: 0
       }
-    }, "\u2190 SEM ", wd.week), /*#__PURE__*/React.createElement("div", {
+    }, "\u2190 Semana ", wd.week), /*#__PURE__*/React.createElement("div", {
       style: {
         display: "flex",
         gap: 5
@@ -12089,7 +12090,7 @@ function App() {
         padding: "5px 12px",
         color: C.yellow,
         fontFamily: "inherit",
-        fontSize: 11,
+        fontSize: 15,
         cursor: "pointer",
         fontWeight: "bold"
       }
@@ -12107,64 +12108,72 @@ function App() {
         cursor: sd === 6 ? "default" : "pointer",
         fontFamily: "inherit"
       }
-    }, "\u2192"))), /*#__PURE__*/React.createElement("div", {
+    }, "\u2192"))), ce("section", {
       style: {
-        background: col + "12",
-        border: `1px solid ${col}40`,
-        borderRadius: 12,
-        padding: 14,
-        marginBottom: 14
+        marginBottom: 22
       }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        alignItems: "center",
-        gap: 10
-      }
-    }, /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontSize: 32
-      }
-    }, done === total && total > 0 ? "✅" : dd.emoji), /*#__PURE__*/React.createElement("div", {
-      style: {
-        flex: 1
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 9,
-        color: col,
-        letterSpacing: 3,
-        fontWeight: "bold"
-      }
-    }, WD[split[sd]], " \xB7 ", dd.type.toUpperCase(), dd.dur ? ` · ${dd.dur}` : ""), /*#__PURE__*/React.createElement("div", {
+    }, ce("div", {
       style: {
         fontSize: 16,
-        fontWeight: "bold",
-        marginTop: 2
+        color: C.muted
       }
-    }, wd.label)), /*#__PURE__*/React.createElement("div", {
+    }, WD_FULL[split[sd]], ", ", wd.label.replace(/\s*[—-]+\s*/, ": ")), ce("h1", {
       style: {
-        textAlign: "center"
+        fontFamily: FONT_D,
+        fontSize: "clamp(52px, 15vw, 80px)",
+        fontWeight: 800,
+        lineHeight: 0.9,
+        letterSpacing: -1,
+        color: col,
+        margin: "6px 0 10px"
       }
-    }, /*#__PURE__*/React.createElement("div", {
+    }, shortType(dd.type)), ce("div", {
       style: {
-        fontSize: 18,
-        fontWeight: "bold",
-        color: done > 0 ? col : C.dim
+        display: "flex",
+        gap: 22,
+        alignItems: "baseline",
+        marginBottom: 12
       }
-    }, done, "/", total))), /*#__PURE__*/React.createElement("div", {
+    }, dd.dur && ce("div", null, ce("span", {
       style: {
-        marginTop: 10,
-        background: C.border,
-        borderRadius: 4,
-        height: 5
+        fontFamily: FONT_D,
+        fontSize: 26,
+        fontWeight: 700
       }
-    }, /*#__PURE__*/React.createElement("div", {
+    }, parseInt(dd.dur) || dd.dur), ce("span", {
+      style: {
+        fontSize: 15,
+        color: C.muted
+      }
+    }, " min")), ce("div", null, ce("span", {
+      style: {
+        fontFamily: FONT_D,
+        fontSize: 26,
+        fontWeight: 700,
+        color: done === total && total > 0 ? col : C.text
+      }
+    }, done, "/", total), ce("span", {
+      style: {
+        fontSize: 15,
+        color: C.muted
+      }
+    }, done === total && total > 0 ? " hecho" : " ejercicios"))), ce("div", {
+      role: "progressbar",
+      "aria-valuemin": 0,
+      "aria-valuemax": total,
+      "aria-valuenow": done,
+      "aria-label": "Progreso de la sesión",
+      style: {
+        height: 6,
+        background: C.card2,
+        borderRadius: 3,
+        overflow: "hidden"
+      }
+    }, ce("div", {
       style: {
         width: `${total > 0 ? done / total * 100 : 0}%`,
         height: "100%",
         background: col,
-        borderRadius: 4,
         transition: "width .3s"
       }
     }))), dd.blocks.map((block, bi) => {
@@ -12174,7 +12183,7 @@ function App() {
         key: bi,
         style: {
           background: C.card,
-          borderRadius: 10,
+          borderRadius: 8,
           overflow: "hidden",
           marginBottom: 6,
           border: `1px solid ${bDone === block.i.length ? col + "60" : C.border}`
@@ -12202,7 +12211,7 @@ function App() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontSize: 11,
+          fontSize: 15,
           color: bDone === block.i.length ? C.bg : C.muted,
           fontWeight: "bold",
           flexShrink: 0
@@ -12213,21 +12222,21 @@ function App() {
         }
       }, /*#__PURE__*/React.createElement("div", {
         style: {
-          fontSize: 12,
+          fontSize: 15,
           fontWeight: "bold",
           color: C.text,
           fontFamily: "inherit"
         }
       }, block.t), /*#__PURE__*/React.createElement("div", {
         style: {
-          fontSize: 9,
+          fontSize: 13,
           color: C.muted,
           marginTop: 2
         }
       }, bDone, "/", block.i.length, " completados")), /*#__PURE__*/React.createElement("span", {
         style: {
           color: isO ? col : C.dim,
-          fontSize: 13
+          fontSize: 16
         }
       }, isO ? "▲" : "▼")), isO && /*#__PURE__*/React.createElement("div", {
         style: {
@@ -12281,15 +12290,15 @@ function App() {
         }, done && /*#__PURE__*/React.createElement("span", {
           style: {
             color: C.bg,
-            fontSize: 10,
+            fontSize: 14,
             fontWeight: "bold"
           }
         }, "\u2713")), /*#__PURE__*/React.createElement("span", {
           onClick: () => sb.kind !== "blocked" && tick(k),
           style: {
             flex: 1,
-            fontSize: 12,
-            color: sb.kind === "blocked" ? C.dim : done ? col : "#D0D0D0",
+            fontSize: 15,
+            color: sb.kind === "blocked" ? C.dim : done ? col : C.text,
             lineHeight: 1.5,
             textDecoration: done ? "line-through" : "none",
             cursor: sb.kind === "blocked" ? "default" : "pointer"
@@ -12297,7 +12306,7 @@ function App() {
         }, shown, sb.kind === "sub" && /*#__PURE__*/React.createElement("span", {
           style: {
             display: "block",
-            fontSize: 9,
+            fontSize: 13,
             color: C.muted,
             marginTop: 2
           }
@@ -12307,10 +12316,10 @@ function App() {
             fontWeight: "bold",
             letterSpacing: 1
           }
-        }, "SUSTITUYE"), " ", sb.orig), sb.kind === "blocked" && /*#__PURE__*/React.createElement("span", {
+        }, "Sustituye"), " ", sb.orig), sb.kind === "blocked" && /*#__PURE__*/React.createElement("span", {
           style: {
             display: "block",
-            fontSize: 9,
+            fontSize: 13,
             color: C.orange,
             marginTop: 2
           }
@@ -12329,7 +12338,7 @@ function App() {
             padding: "3px 7px",
             color: logged > 0 ? col : C.muted,
             fontFamily: "inherit",
-            fontSize: 9,
+            fontSize: 13,
             fontWeight: "bold",
             cursor: "pointer",
             letterSpacing: .5
@@ -12349,14 +12358,14 @@ function App() {
           }
         }, prev ? /*#__PURE__*/React.createElement("div", {
           style: {
-            fontSize: 9,
+            fontSize: 13,
             color: C.teal,
             marginBottom: 9,
             lineHeight: 1.5
           }
         }, "La vez pasada (", prev.d, "): ", prev.s.filter(x => x.r !== null && x.r !== "").map(x => `${x.r}${x.w ? `×${x.w}kg` : ""}`).join(" · ")) : /*#__PURE__*/React.createElement("div", {
           style: {
-            fontSize: 9,
+            fontSize: 13,
             color: C.dim,
             marginBottom: 9
           }
@@ -12364,9 +12373,10 @@ function App() {
           style: {
             display: "flex",
             gap: 6,
-            fontSize: 8,
+            fontSize: 14,
+    fontFamily: FONT_D,
+    fontWeight: 600,
             color: C.muted,
-            letterSpacing: 1,
             marginBottom: 5,
             paddingLeft: 24
           }
@@ -12374,7 +12384,7 @@ function App() {
           style: {
             width: 62
           }
-        }, unit.toUpperCase()), /*#__PURE__*/React.createElement("span", {
+        }, unit), /*#__PURE__*/React.createElement("span", {
           style: {
             width: 62
           }
@@ -12389,7 +12399,7 @@ function App() {
         }, /*#__PURE__*/React.createElement("span", {
           style: {
             width: 18,
-            fontSize: 9,
+            fontSize: 13,
             color: C.muted,
             flexShrink: 0
           }
@@ -12412,7 +12422,7 @@ function App() {
             borderRadius: 6,
             color: C.text,
             fontFamily: "inherit",
-            fontSize: 14,
+            fontSize: 17,
             padding: "7px 8px",
             outline: "none",
             textAlign: "center"
@@ -12436,7 +12446,7 @@ function App() {
             borderRadius: 6,
             color: C.text,
             fontFamily: "inherit",
-            fontSize: 14,
+            fontSize: 17,
             padding: "7px 8px",
             outline: "none",
             textAlign: "center"
@@ -12448,7 +12458,7 @@ function App() {
             border: "none",
             color: C.dim,
             cursor: "pointer",
-            fontSize: 13,
+            fontSize: 16,
             fontFamily: "inherit",
             padding: "0 4px"
           }
@@ -12467,16 +12477,15 @@ function App() {
             flex: 1,
             background: "transparent",
             border: `1px solid ${C.border}`,
-            borderRadius: 7,
+            borderRadius: 6,
             padding: "8px 6px",
             color: C.muted,
-            fontFamily: "inherit",
-            fontSize: 10,
-            fontWeight: "bold",
-            cursor: "pointer",
-            letterSpacing: 1
+            fontFamily: FONT_D,
+            fontSize: 16,
+            fontWeight: 700,
+            cursor: "pointer"
           }
-        }, "+ SERIE"), /*#__PURE__*/React.createElement("button", {
+        }, "+ Serie"), /*#__PURE__*/React.createElement("button", {
           onClick: () => {
             if (!done) tick(k);
             setOpenSets(null);
@@ -12485,51 +12494,50 @@ function App() {
             flex: 1,
             background: col + "18",
             border: `1px solid ${col}50`,
-            borderRadius: 7,
+            borderRadius: 6,
             padding: "8px 6px",
             color: col,
-            fontFamily: "inherit",
-            fontSize: 10,
-            fontWeight: "bold",
-            cursor: "pointer",
-            letterSpacing: 1
+            fontFamily: FONT_D,
+            fontSize: 16,
+            fontWeight: 700,
+            cursor: "pointer"
           }
-        }, "\u2713 LISTO"))));
+        }, "\u2713 Listo"))));
       })));
     }), done === total && total > 0 ? /*#__PURE__*/React.createElement("div", {
       style: {
         textAlign: "center",
         padding: "14px 0",
         color: col,
-        fontSize: 14,
-        fontWeight: "bold"
+        fontSize: 17,
+    fontFamily: FONT_D,
+        fontWeight: 700
       }
-    }, "\uD83C\uDF89 \xA1D\xCDA COMPLETADO!") : /*#__PURE__*/React.createElement("button", {
+    }, "\xA1D\xEDa completado!") : /*#__PURE__*/React.createElement("button", {
       onClick: () => dd.blocks.forEach((b, bi) => b.i.forEach((it, ii) => {
         if (subFor(it, gear).kind !== "blocked") tick(wkKey(res, sd, bi, ii));
       })),
       style: {
         width: "100%",
-        marginTop: 9,
-        padding: "11px",
-        background: col + "15",
-        border: `1px solid ${col}40`,
-        borderRadius: 10,
-        color: col,
-        fontFamily: "inherit",
-        fontWeight: "bold",
-        fontSize: 11,
-        cursor: "pointer",
-        letterSpacing: 1
+        marginTop: 12,
+        padding: "14px 12px",
+        background: C.yellow,
+        border: "none",
+        borderRadius: 6,
+        color: C.bg,
+        fontFamily: FONT_D,
+        fontWeight: 700,
+        fontSize: 19,
+        cursor: "pointer"
       }
-    }, "MARCAR TODO COMPLETADO \u2713"), (() => {
+    }, "Marcar todo como hecho"), (() => {
       const scope = dayScope(res, sd);
       if (!scope) return null;
       const note = notes[scope];
       return /*#__PURE__*/React.createElement("div", {
         style: {
           background: C.card,
-          borderRadius: 12,
+          borderRadius: 8,
           padding: 13,
           marginTop: 14,
           border: `1px solid ${note ? col + "40" : C.border}`
@@ -12543,14 +12551,14 @@ function App() {
         }
       }, /*#__PURE__*/React.createElement("span", {
         style: {
-          fontSize: 8,
+          fontSize: 14,
+    fontFamily: FONT_D,
           color: C.muted,
-          letterSpacing: 3,
-          fontWeight: "bold"
+          fontWeight: 700
         }
-      }, "NOTAS DE LA SESI\xD3N"), note && /*#__PURE__*/React.createElement("span", {
+      }, "Notas de la sesi\xF3n"), note && /*#__PURE__*/React.createElement("span", {
         style: {
-          fontSize: 8,
+          fontSize: 12,
           color: C.dim
         }
       }, note.d)), /*#__PURE__*/React.createElement("textarea", {
@@ -12565,7 +12573,7 @@ function App() {
           borderRadius: 8,
           color: C.text,
           fontFamily: "inherit",
-          fontSize: 12,
+          fontSize: 15,
           lineHeight: 1.6,
           padding: 10,
           resize: "vertical",
@@ -12573,7 +12581,7 @@ function App() {
         }
       }), /*#__PURE__*/React.createElement("div", {
         style: {
-          fontSize: 8,
+          fontSize: 12,
           color: C.dim,
           marginTop: 5
         }
@@ -12582,20 +12590,20 @@ function App() {
   })(), tab === "prs" && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     style: {
       background: C.card,
-      borderRadius: 12,
+      borderRadius: 8,
       padding: 14,
       marginBottom: 14,
       border: `1px solid ${C.border}`
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 16,
+    fontFamily: FONT_D,
       color: C.muted,
-      letterSpacing: 3,
-      fontWeight: "bold",
+      fontWeight: 700,
       marginBottom: 10
     }
-  }, "CONSISTENCIA"), /*#__PURE__*/React.createElement("div", {
+  }, "Consistencia"), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 7,
@@ -12603,17 +12611,17 @@ function App() {
     }
   }, [{
     v: streakNow,
-    l: "RACHA",
+    l: "Racha",
     sub: streakNow === 1 ? "día" : "días",
     c: streakNow > 0 ? C.orange : C.dim
   }, {
     v: bestStreak,
-    l: "MEJOR",
+    l: "Mejor",
     sub: bestStreak === 1 ? "día" : "días",
     c: C.gold
   }, {
     v: sessionStats.done,
-    l: "SESIONES",
+    l: "Sesiones",
     sub: "completadas",
     c: C.teal
   }].map((st, i) => /*#__PURE__*/React.createElement("div", {
@@ -12621,39 +12629,42 @@ function App() {
     style: {
       flex: 1,
       background: C.card2,
-      borderRadius: 9,
+      borderRadius: 6,
       padding: "9px 6px",
       textAlign: "center",
       border: `1px solid ${C.border}`
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 8,
+      fontSize: 14,
+    fontFamily: FONT_D,
+    fontWeight: 600,
       color: C.muted,
-      letterSpacing: 2,
       marginBottom: 3
     }
   }, st.l), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 19,
-      fontWeight: "bold",
+      fontSize: 36,
+    fontFamily: FONT_D,
+      fontWeight: 800,
       color: st.c,
       lineHeight: 1
     }
   }, st.v), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 8,
+      fontSize: 12,
       color: C.muted,
       marginTop: 2
     }
   }, st.sub)))), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 8,
+      fontSize: 14,
+    fontFamily: FONT_D,
+    fontWeight: 600,
       color: C.muted,
-      letterSpacing: 2,
       marginBottom: 6
     }
-  }, "\xDALTIMAS 12 SEMANAS"), /*#__PURE__*/React.createElement("div", {
+  }, "\xDAltimas 12 semanas"), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 4
@@ -12711,7 +12722,7 @@ function App() {
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 8,
+      fontSize: 12,
       color: C.dim
     }
   }, "hace 12 semanas"), /*#__PURE__*/React.createElement("div", {
@@ -12722,7 +12733,7 @@ function App() {
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 8,
+      fontSize: 12,
       color: C.dim
     }
   }, "menos"), [C.card2, C.orange + "35", C.orange + "75", C.orange].map((c, i) => /*#__PURE__*/React.createElement("div", {
@@ -12735,28 +12746,28 @@ function App() {
     }
   })), /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 8,
+      fontSize: 12,
       color: C.dim
     }
   }, "m\xE1s")))), /*#__PURE__*/React.createElement("div", {
     style: {
       background: C.card,
-      borderRadius: 12,
+      borderRadius: 8,
       padding: 14,
       marginBottom: 14,
       border: `1px solid ${C.border}`
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 16,
+    fontFamily: FONT_D,
       color: C.muted,
-      letterSpacing: 3,
-      fontWeight: "bold",
+      fontWeight: 700,
       marginBottom: 10
     }
-  }, "VOLUMEN POR SEMANA"), !volAny ? /*#__PURE__*/React.createElement("div", {
+  }, "Volumen por semana"), !volAny ? /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 11,
+      fontSize: 15,
       color: C.muted,
       lineHeight: 1.6
     }
@@ -12778,14 +12789,13 @@ function App() {
       style: {
         flex: 1,
         padding: "6px 4px",
-        borderRadius: 7,
+        borderRadius: 6,
         border: `1px solid ${on ? C.teal : C.border}`,
         background: on ? C.teal + "18" : "transparent",
         color: on ? C.teal : C.muted,
-        fontFamily: "inherit",
-        fontSize: 9,
-        fontWeight: "bold",
-        letterSpacing: 1,
+        fontFamily: FONT_D,
+        fontSize: 16,
+        fontWeight: 700,
         cursor: "pointer"
       }
     }, m.label);
@@ -12802,15 +12812,16 @@ function App() {
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 8,
+        fontSize: 14,
+    fontFamily: FONT_D,
+    fontWeight: 600,
         color: C.muted,
-        letterSpacing: 2,
         marginBottom: 2
       }
-    }, isLast ? "ESTA SEMANA" : `SEMANA DEL ${d ? d.date.toLocaleDateString("es-MX", {
+    }, isLast ? "Esta semana" : `SEMANA DEL ${d ? d.date.toLocaleDateString("es-MX", {
       day: "numeric",
       month: "short"
-    }).toUpperCase() : ""}`), /*#__PURE__*/React.createElement("div", {
+    }) : ""}`), /*#__PURE__*/React.createElement("div", {
       style: {
         display: "flex",
         alignItems: "baseline",
@@ -12818,19 +12829,20 @@ function App() {
       }
     }, /*#__PURE__*/React.createElement("span", {
       style: {
-        fontSize: 24,
-        fontWeight: "bold",
+        fontSize: 26,
+    fontFamily: FONT_D,
+        fontWeight: 700,
         color: C.text,
         lineHeight: 1
       }
     }, v.toLocaleString("es-MX")), /*#__PURE__*/React.createElement("span", {
       style: {
-        fontSize: 11,
+        fontSize: 15,
         color: C.muted
       }
     }, volMeta.unit), diff !== null && v > 0 && /*#__PURE__*/React.createElement("span", {
       style: {
-        fontSize: 10,
+        fontSize: 14,
         fontWeight: "bold",
         color: diff > 0 ? C.teal : diff < 0 ? C.orange : C.muted
       }
@@ -12849,7 +12861,7 @@ function App() {
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 8,
+      fontSize: 12,
       color: C.dim
     }
   }, volData[0] ? volData[0].date.toLocaleDateString("es-MX", {
@@ -12857,12 +12869,12 @@ function App() {
     month: "short"
   }) : ""), /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 8,
+      fontSize: 12,
       color: C.dim
     }
   }, "l\xEDnea punteada = promedio"), /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 8,
+      fontSize: 12,
       color: C.dim
     }
   }, "esta semana")))), (() => {
@@ -12875,7 +12887,7 @@ function App() {
     return /*#__PURE__*/React.createElement("div", {
       style: {
         background: C.card,
-        borderRadius: 12,
+        borderRadius: 8,
         border: `1px solid ${C.border}`,
         marginBottom: 14,
         overflow: "hidden"
@@ -12895,15 +12907,15 @@ function App() {
       }
     }, /*#__PURE__*/React.createElement("span", {
       style: {
-        fontSize: 9,
+        fontSize: 16,
+    fontFamily: FONT_D,
         color: C.muted,
-        letterSpacing: 3,
-        fontWeight: "bold"
+        fontWeight: 700
       }
-    }, "\uD83D\uDCDD NOTAS (", list.length, ")"), /*#__PURE__*/React.createElement("span", {
+    }, "Notas (", list.length, ")"), /*#__PURE__*/React.createElement("span", {
       style: {
         color: C.dim,
-        fontSize: 12
+        fontSize: 15
       }
     }, showNotes ? "▲" : "▼")), showNotes && /*#__PURE__*/React.createElement("div", {
       style: {
@@ -12934,14 +12946,14 @@ function App() {
       }
     }, /*#__PURE__*/React.createElement("span", {
       style: {
-        fontSize: 9,
+        fontSize: 16,
+    fontFamily: FONT_D,
         color: C.teal,
-        fontWeight: "bold",
-        letterSpacing: 1
+        fontWeight: 700
       }
-    }, "SEM ", x.loc.week, " \xB7 ", WD[x.loc.day]), /*#__PURE__*/React.createElement("span", {
+    }, "Semana ", x.loc.week, " \xB7 ", WD[x.loc.day]), /*#__PURE__*/React.createElement("span", {
       style: {
-        fontSize: 9,
+        fontSize: 13,
         color: C.muted
       }
     }, x.d), /*#__PURE__*/React.createElement("span", {
@@ -12950,26 +12962,26 @@ function App() {
       }
     }), /*#__PURE__*/React.createElement("span", {
       style: {
-        fontSize: 10,
+        fontSize: 14,
         color: C.dim
       }
     }, "\u2192")), /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 11,
-        color: "#CCC",
+        fontSize: 15,
+        color: C.text,
         lineHeight: 1.6,
         whiteSpace: "pre-wrap"
       }
     }, x.t)))));
   })(), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 16,
+    fontFamily: FONT_D,
       color: C.muted,
-      letterSpacing: 3,
-      fontWeight: "bold",
+      fontWeight: 700,
       marginBottom: 10
     }
-  }, "REGISTRO DE R\xC9CORDS PERSONALES"), /*#__PURE__*/React.createElement("div", {
+  }, "R\xE9cords personales"), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 5,
@@ -12991,7 +13003,7 @@ function App() {
       background: selMetric === m.id ? m.color + "20" : "transparent",
       cursor: "pointer",
       fontFamily: "inherit",
-      fontSize: 11,
+      fontSize: 15,
       fontWeight: "bold",
       color: selMetric === m.id ? m.color : C.muted,
       whiteSpace: "nowrap"
@@ -12999,7 +13011,7 @@ function App() {
   }, m.emoji, " ", m.label))), /*#__PURE__*/React.createElement("div", {
     style: {
       background: C.card,
-      borderRadius: 12,
+      borderRadius: 8,
       border: `1px solid ${metric.color}40`,
       overflow: "hidden",
       marginBottom: 12
@@ -13015,12 +13027,12 @@ function App() {
     }
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10,
+      fontSize: 16,
+    fontFamily: FONT_D,
       color: metric.color,
-      letterSpacing: 2,
-      fontWeight: "bold"
+      fontWeight: 700
     }
-  }, metric.emoji, " ", metric.label.toUpperCase()), bestVal !== null ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  }, metric.emoji, " ", metric.label), bestVal !== null ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       alignItems: "baseline",
@@ -13029,30 +13041,31 @@ function App() {
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 22,
-      fontWeight: "bold"
+      fontSize: 24,
+    fontFamily: FONT_D,
+      fontWeight: 700
     }
   }, bestVal), /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 11,
+      fontSize: 15,
       color: C.muted
     }
   }, metric.unit), /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 8,
+      fontSize: 14,
+    fontFamily: FONT_D,
       color: metric.color,
-      letterSpacing: 2,
-      fontWeight: "bold"
+      fontWeight: 700
     }
-  }, "R\xC9CORD")), lastVal !== bestVal && /*#__PURE__*/React.createElement("div", {
+  }, "R\xE9cord")), lastVal !== bestVal && /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10,
+      fontSize: 14,
       color: C.muted,
       marginTop: 1
     }
   }, "\xDAltimo: ", lastVal, " ", metric.unit)) : /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 14,
+      fontSize: 17,
       color: C.dim,
       marginTop: 2
     }
@@ -13065,7 +13078,7 @@ function App() {
       padding: "8px 14px",
       color: C.bg,
       fontFamily: "inherit",
-      fontSize: 12,
+      fontSize: 15,
       fontWeight: "bold",
       cursor: "pointer"
     }
@@ -13090,7 +13103,7 @@ function App() {
       padding: "10px 12px",
       color: C.text,
       fontFamily: "inherit",
-      fontSize: 16,
+      fontSize: 19,
       outline: "none"
     },
     onKeyDown: e => e.key === "Enter" && addPr(metric.id, prInput),
@@ -13098,7 +13111,7 @@ function App() {
   }), /*#__PURE__*/React.createElement("span", {
     style: {
       color: C.muted,
-      fontSize: 12,
+      fontSize: 15,
       flexShrink: 0
     }
   }, metric.unit), /*#__PURE__*/React.createElement("button", {
@@ -13110,7 +13123,7 @@ function App() {
       padding: "10px 16px",
       color: C.bg,
       fontFamily: "inherit",
-      fontSize: 13,
+      fontSize: 16,
       fontWeight: "bold",
       cursor: "pointer"
     }
@@ -13121,13 +13134,13 @@ function App() {
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 16,
+    fontFamily: FONT_D,
       color: C.muted,
-      letterSpacing: 2,
-      fontWeight: "bold",
+      fontWeight: 700,
       marginBottom: 7
     }
-  }, "MILESTONES"), /*#__PURE__*/React.createElement("div", {
+  }, "Metas"), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 6
@@ -13146,13 +13159,14 @@ function App() {
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 14,
-        fontWeight: "bold",
+        fontSize: 17,
+    fontFamily: FONT_D,
+        fontWeight: 700,
         color: reached ? metric.color : C.dim
       }
     }, reached ? "✓" : "", ms), /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 9,
+        fontSize: 13,
         color: C.muted
       }
     }, metric.unit));
@@ -13163,13 +13177,13 @@ function App() {
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 16,
+    fontFamily: FONT_D,
       color: C.muted,
-      letterSpacing: 2,
-      fontWeight: "bold",
+      fontWeight: 700,
       marginBottom: 8
     }
-  }, "GR\xC1FICA DE PROGRESO"), /*#__PURE__*/React.createElement(Sparkline, {
+  }, "Progreso"), /*#__PURE__*/React.createElement(Sparkline, {
     data: metricData,
     color: metric.color,
     lower: metric.lower
@@ -13181,16 +13195,16 @@ function App() {
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 16,
+    fontFamily: FONT_D,
       color: metric.color,
-      letterSpacing: 2,
-      fontWeight: "bold",
+      fontWeight: 700,
       marginBottom: 6
     }
-  }, "\uD83E\uDDEE CALCULADORA DE PROGRESI\xD3N"), /*#__PURE__*/React.createElement("div", {
+  }, "Calculadora de progresi\xF3n"), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 13,
-      color: "#CCC",
+      fontSize: 16,
+      color: C.text,
       lineHeight: 1.6
     }
   }, bestVal !== null ? metric.calc(bestVal) : /*#__PURE__*/React.createElement("span", {
@@ -13203,16 +13217,16 @@ function App() {
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 16,
+    fontFamily: FONT_D,
       color: C.muted,
-      letterSpacing: 2,
-      fontWeight: "bold",
+      fontWeight: 700,
       marginBottom: 7
     }
-  }, "HISTORIAL"), metricData.length === 0 ? /*#__PURE__*/React.createElement("div", {
+  }, "Historial"), metricData.length === 0 ? /*#__PURE__*/React.createElement("div", {
     style: {
       color: C.muted,
-      fontSize: 12,
+      fontSize: 15,
       textAlign: "center",
       padding: "10px 0"
     }
@@ -13238,7 +13252,7 @@ function App() {
         }
       }, /*#__PURE__*/React.createElement("span", {
         style: {
-          fontSize: 11,
+          fontSize: 15,
           color: C.muted,
           flexShrink: 0
         }
@@ -13252,23 +13266,24 @@ function App() {
         }
       }, isRecord[j] && /*#__PURE__*/React.createElement("span", {
         style: {
-          fontSize: 7,
+          fontSize: 13,
+    fontFamily: FONT_D,
           background: metric.color + "25",
           color: metric.color,
           padding: "2px 5px",
           borderRadius: 3,
-          fontWeight: "bold",
-          letterSpacing: 1
+          fontWeight: 700
         }
       }, "PR"), /*#__PURE__*/React.createElement("span", {
         style: {
-          fontSize: 14,
-          fontWeight: "bold",
+          fontSize: 17,
+    fontFamily: FONT_D,
+          fontWeight: 700,
           color: isRecord[j] ? metric.color : C.text
         }
       }, entry.value, " ", /*#__PURE__*/React.createElement("span", {
         style: {
-          fontSize: 10,
+          fontSize: 14,
           color: C.muted
         }
       }, metric.unit))), /*#__PURE__*/React.createElement("button", {
@@ -13278,7 +13293,7 @@ function App() {
           border: "none",
           color: C.dim,
           cursor: "pointer",
-          fontSize: 14,
+          fontSize: 17,
           fontFamily: "inherit",
           flexShrink: 0
         }
@@ -13286,13 +13301,13 @@ function App() {
     });
   })())), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 16,
+    fontFamily: FONT_D,
       color: C.muted,
-      letterSpacing: 2,
-      fontWeight: "bold",
+      fontWeight: 700,
       marginBottom: 8
     }
-  }, "RESUMEN GENERAL"), /*#__PURE__*/React.createElement("div", {
+  }, "Resumen general"), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "grid",
       gridTemplateColumns: "1fr 1fr",
@@ -13306,59 +13321,61 @@ function App() {
       onClick: () => setSelMetric(m.id),
       style: {
         background: C.card,
-        borderRadius: 10,
+        borderRadius: 8,
         padding: "10px 12px",
         border: `1px solid ${selMetric === m.id ? m.color : C.border}`,
         cursor: "pointer"
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 11,
+        fontSize: 15,
         color: m.color,
         fontWeight: "bold",
         marginBottom: 3
       }
     }, m.emoji, " ", m.label), /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 18,
-        fontWeight: "bold",
+        fontSize: 21,
+    fontFamily: FONT_D,
+        fontWeight: 700,
         color: v !== null ? m.color : C.dim
       }
     }, v !== null ? `${v}` : "--"), /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 9,
+        fontSize: 13,
         color: C.muted
       }
     }, m.unit));
   }))), tab === "arbol" && !tn && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     style: {
-      textAlign: "center",
-      marginBottom: 16
+      marginBottom: 22
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 8,
+      fontSize: 14,
       color: C.muted,
-      letterSpacing: 4,
       marginBottom: 4
     }
-  }, "DESPU\xC9S DE LAS 12 SEMANAS BASE"), /*#__PURE__*/React.createElement("h2", {
+  }, "Despu\xE9s de las 12 semanas base"), /*#__PURE__*/React.createElement("h2", {
     style: {
-      fontSize: 20,
-      margin: "0 0 4px",
-      color: C.yellow
+      fontFamily: FONT_D,
+      fontSize: 38,
+      fontWeight: 800,
+      lineHeight: 1,
+      letterSpacing: -0.5,
+      margin: "2px 0 6px"
     }
-  }, "\uD83C\uDF33 \xC1RBOL DE SKILLS"), /*#__PURE__*/React.createElement("p", {
+  }, "\xC1rbol de skills"), /*#__PURE__*/React.createElement("p", {
     style: {
       color: C.muted,
-      fontSize: 11,
+      fontSize: 15,
       margin: 0,
       lineHeight: 1.6
     }
-  }, "Elige tu especializaci\xF3n. Cada path es 8 semanas (13-20).")), /*#__PURE__*/React.createElement("div", {
+  }, "Elige tu especializaci\xF3n. Cada path son 8 semanas, de la 13 a la 20.")), /*#__PURE__*/React.createElement("div", {
     style: {
       background: C.card,
-      borderRadius: 12,
+      borderRadius: 8,
       padding: 13,
       marginBottom: 14,
       border: `1px solid ${C.border}`
@@ -13372,14 +13389,14 @@ function App() {
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 9,
+      fontSize: 16,
+    fontFamily: FONT_D,
       color: C.orange,
-      letterSpacing: 2,
-      fontWeight: "bold"
+      fontWeight: 700
     }
-  }, "\u26A1 REQUISITOS BASE"), /*#__PURE__*/React.createElement("span", {
+  }, "Requisitos base"), /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 11,
+      fontSize: 15,
       fontWeight: "bold",
       color: reqsMet >= 4 ? C.teal : C.orange
     }
@@ -13423,13 +13440,13 @@ function App() {
     }, r.met && /*#__PURE__*/React.createElement("span", {
       style: {
         color: C.bg,
-        fontSize: 9,
+        fontSize: 13,
         fontWeight: "bold"
       }
     }, "\u2713")), /*#__PURE__*/React.createElement("span", {
       style: {
-        fontSize: 11,
-        color: r.met ? C.yellow : "#CCC",
+        fontSize: 15,
+        color: r.met ? C.yellow : C.text,
         lineHeight: 1.3
       }
     }, r.label)), r.best !== null ? /*#__PURE__*/React.createElement("div", {
@@ -13439,7 +13456,7 @@ function App() {
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 9,
+        fontSize: 13,
         color: r.auto ? C.teal : C.muted
       }
     }, r.auto ? `✓ tu récord: ${r.best} ${r.unit}` : `vas en ${r.best} de ${r.target} ${r.unit}`), !r.auto && /*#__PURE__*/React.createElement("div", {
@@ -13460,13 +13477,13 @@ function App() {
       style: {
         marginTop: 3,
         paddingLeft: 22,
-        fontSize: 9,
+        fontSize: 13,
         color: C.dim
       }
     }, r.manual ? "marcado a mano" : "sin registro en PRs"));
   })), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 9,
+      fontSize: 13,
       color: C.muted,
       marginTop: 9,
       lineHeight: 1.5
@@ -13511,23 +13528,24 @@ function App() {
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 14,
-      fontWeight: "bold",
+      fontSize: 17,
+    fontFamily: FONT_D,
+      fontWeight: 700,
       color: path.color
     }
   }, path.label), cPath === path.id && /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 8,
+      fontSize: 12,
       background: path.color,
       color: C.bg,
       padding: "2px 7px",
       borderRadius: 4,
       fontWeight: "bold"
     }
-  }, "ACTIVO")), /*#__PURE__*/React.createElement("div", {
+  }, "Activo")), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 11,
-      color: "#BBB",
+      fontSize: 15,
+      color: C.muted,
       lineHeight: 1.5,
       marginBottom: 6
     }
@@ -13540,7 +13558,7 @@ function App() {
   }, path.reqs.map((r, ri) => /*#__PURE__*/React.createElement("span", {
     key: ri,
     style: {
-      fontSize: 9,
+      fontSize: 13,
       color: C.muted,
       background: C.card2,
       padding: "2px 6px",
@@ -13549,7 +13567,7 @@ function App() {
   }, r)))), /*#__PURE__*/React.createElement("span", {
     style: {
       color: path.color,
-      fontSize: 16
+      fontSize: 19
     }
   }, "\u2192")), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -13589,13 +13607,13 @@ function App() {
         background: "none",
         border: "none",
         color: C.muted,
-        fontFamily: "inherit",
-        fontSize: 11,
+        fontFamily: FONT_D,
+        fontSize: 17,
+    fontWeight: 600,
         cursor: "pointer",
-        padding: "0 0 14px",
-        letterSpacing: 1
+        padding: "0 0 14px"
       }
-    }, "\u2190 \xC1RBOL"), pathDayArbol !== null && selPathWeek ? (() => {
+    }, "\u2190 \xC1rbol"), pathDayArbol !== null && selPathWeek ? (() => {
       const day = selPathWeek.days[pathDayArbol];
       const col = TC[day.type] || C.dim;
       const totalI = day.blocks.reduce((a, b) => a + b.i.length, 0);
@@ -13614,11 +13632,11 @@ function App() {
           border: "none",
           color: C.muted,
           fontFamily: "inherit",
-          fontSize: 11,
+          fontSize: 15,
           cursor: "pointer",
           padding: 0
         }
-      }, "\u2190 SEM ", selPathWeek.week), /*#__PURE__*/React.createElement("div", {
+      }, "\u2190 Semana ", selPathWeek.week), /*#__PURE__*/React.createElement("div", {
         style: {
           display: "flex",
           gap: 5
@@ -13643,7 +13661,7 @@ function App() {
           padding: "5px 12px",
           color: C.yellow,
           fontFamily: "inherit",
-          fontSize: 11,
+          fontSize: 15,
           cursor: "pointer",
           fontWeight: "bold"
         }
@@ -13662,7 +13680,7 @@ function App() {
         style: {
           background: col + "12",
           border: `1px solid ${col}40`,
-          borderRadius: 12,
+          borderRadius: 8,
           padding: 14,
           marginBottom: 14
         }
@@ -13682,15 +13700,16 @@ function App() {
         }
       }, /*#__PURE__*/React.createElement("div", {
         style: {
-          fontSize: 9,
+          fontSize: 16,
+    fontFamily: FONT_D,
           color: col,
-          letterSpacing: 3,
-          fontWeight: "bold"
+          fontWeight: 700
         }
-      }, WD[pathDayArbol], " \xB7 ", day.type.toUpperCase(), day.dur ? ` · ${day.dur}` : ""), /*#__PURE__*/React.createElement("div", {
+      }, WD_FULL[pathDayArbol], ", ", shortType(day.type), day.dur ? `, ${day.dur}` : ""), /*#__PURE__*/React.createElement("div", {
         style: {
-          fontSize: 15,
-          fontWeight: "bold",
+          fontSize: 18,
+    fontFamily: FONT_D,
+          fontWeight: 700,
           marginTop: 2
         }
       }, selPathWeek.label)), /*#__PURE__*/React.createElement("div", {
@@ -13699,8 +13718,9 @@ function App() {
         }
       }, /*#__PURE__*/React.createElement("div", {
         style: {
-          fontSize: 16,
-          fontWeight: "bold",
+          fontSize: 19,
+    fontFamily: FONT_D,
+          fontWeight: 700,
           color: doneI > 0 ? col : C.dim
         }
       }, doneI, "/", totalI))), /*#__PURE__*/React.createElement("div", {
@@ -13725,7 +13745,7 @@ function App() {
           key: bi,
           style: {
             background: C.card,
-            borderRadius: 10,
+            borderRadius: 8,
             overflow: "hidden",
             marginBottom: 6,
             border: `1px solid ${bDone === block.i.length ? col + "60" : C.border}`
@@ -13753,7 +13773,7 @@ function App() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: 11,
+            fontSize: 15,
             color: bDone === block.i.length ? C.bg : C.muted,
             fontWeight: "bold",
             flexShrink: 0
@@ -13764,21 +13784,21 @@ function App() {
           }
         }, /*#__PURE__*/React.createElement("div", {
           style: {
-            fontSize: 12,
+            fontSize: 15,
             fontWeight: "bold",
             color: C.text,
             fontFamily: "inherit"
           }
         }, block.t), /*#__PURE__*/React.createElement("div", {
           style: {
-            fontSize: 9,
+            fontSize: 13,
             color: C.muted,
             marginTop: 2
           }
         }, bDone, "/", block.i.length)), /*#__PURE__*/React.createElement("span", {
           style: {
             color: isO ? col : C.dim,
-            fontSize: 13
+            fontSize: 16
           }
         }, isO ? "▲" : "▼")), isO && /*#__PURE__*/React.createElement("div", {
           style: {
@@ -13819,14 +13839,14 @@ function App() {
           }, done && /*#__PURE__*/React.createElement("span", {
             style: {
               color: C.bg,
-              fontSize: 10,
+              fontSize: 14,
               fontWeight: "bold"
             }
           }, "\u2713")), /*#__PURE__*/React.createElement("span", {
             style: {
               flex: 1,
-              fontSize: 12,
-              color: done ? col : "#D0D0D0",
+              fontSize: 15,
+              color: done ? col : C.text,
               lineHeight: 1.5,
               textDecoration: done ? "line-through" : "none"
             }
@@ -13846,31 +13866,31 @@ function App() {
           textAlign: "center",
           padding: "14px 0",
           color: col,
-          fontSize: 14,
-          fontWeight: "bold"
+          fontSize: 17,
+    fontFamily: FONT_D,
+          fontWeight: 700
         }
-      }, "\uD83C\uDF89 \xA1D\xCDA COMPLETADO!") : /*#__PURE__*/React.createElement("button", {
+      }, "\xA1D\xEDa completado!") : /*#__PURE__*/React.createElement("button", {
         onClick: () => day.blocks.forEach((b, bi) => b.i.forEach((_, ii) => tick(pk(path.id, pw, pathDayArbol, bi, ii)))),
         style: {
           width: "100%",
-          marginTop: 9,
-          padding: "11px",
-          background: col + "15",
-          border: `1px solid ${col}40`,
-          borderRadius: 10,
-          color: col,
-          fontFamily: "inherit",
-          fontWeight: "bold",
-          fontSize: 11,
-          cursor: "pointer",
-          letterSpacing: 1
+          marginTop: 12,
+          padding: "14px 12px",
+          background: C.yellow,
+          border: "none",
+          borderRadius: 6,
+          color: C.bg,
+          fontFamily: FONT_D,
+          fontWeight: 700,
+          fontSize: 19,
+          cursor: "pointer"
         }
-      }, "MARCAR TODO \u2713"));
+      }, "Marcar todo"));
     })() : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
       style: {
         background: path.color + "12",
         border: `1px solid ${path.color}40`,
-        borderRadius: 12,
+        borderRadius: 8,
         padding: 14,
         marginBottom: 14
       }
@@ -13887,21 +13907,22 @@ function App() {
       }
     }, path.emoji), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 9,
+        fontSize: 16,
+    fontFamily: FONT_D,
         color: path.color,
-        letterSpacing: 2,
-        fontWeight: "bold"
+        fontWeight: 700
       }
-    }, "ESPECIALIZACION SEM 13-20"), /*#__PURE__*/React.createElement("div", {
+    }, "Especializaci\xF3n, semanas 13–20"), /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 17,
-        fontWeight: "bold",
+        fontSize: 20,
+    fontFamily: FONT_D,
+        fontWeight: 700,
         color: path.color
       }
     }, path.label), /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 11,
-        color: "#AAA",
+        fontSize: 15,
+        color: C.muted,
         marginTop: 2
       }
     }, path.tagline))), /*#__PURE__*/React.createElement("button", {
@@ -13913,16 +13934,15 @@ function App() {
         border: `1px solid ${path.color}`,
         borderRadius: 8,
         color: cPath === path.id ? C.bg : path.color,
-        fontFamily: "inherit",
-        fontWeight: "bold",
-        fontSize: 11,
-        cursor: "pointer",
-        letterSpacing: 1
+        fontFamily: FONT_D,
+        fontWeight: 700,
+        fontSize: 17,
+        cursor: "pointer"
       }
-    }, cPath === path.id ? "✓ PATH ACTIVO" : "ELEGIR ESTE PATH")), !isUnlocked && /*#__PURE__*/React.createElement("div", {
+    }, cPath === path.id ? "✓ Path activo" : "Elegir este path")), !isUnlocked && /*#__PURE__*/React.createElement("div", {
       style: {
         background: C.card,
-        borderRadius: 12,
+        borderRadius: 8,
         padding: 16,
         marginBottom: 14,
         border: `1px solid ${C.orange}40`,
@@ -13935,14 +13955,14 @@ function App() {
       }
     }, "\uD83D\uDD12"), /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 13,
+        fontSize: 16,
         fontWeight: "bold",
         color: C.orange,
         marginBottom: 6
       }
-    }, "PLAN BLOQUEADO"), /*#__PURE__*/React.createElement("div", {
+    }, "Plan bloqueado"), /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 11,
+        fontSize: 15,
         color: C.muted,
         lineHeight: 1.7,
         marginBottom: 12
@@ -13951,7 +13971,7 @@ function App() {
       style: {
         display: "flex",
         justifyContent: "space-around",
-        fontSize: 11
+        fontSize: 15
       }
     }, /*#__PURE__*/React.createElement("span", null, "Requisitos: ", /*#__PURE__*/React.createElement("span", {
       style: {
@@ -13965,13 +13985,13 @@ function App() {
       }
     }, week12Done, "/", w12n, " d\xEDas")))), isUnlocked && selPathWeek && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 9,
+        fontSize: 16,
+    fontFamily: FONT_D,
         color: C.muted,
-        letterSpacing: 2,
-        fontWeight: "bold",
+        fontWeight: 700,
         marginBottom: 8
       }
-    }, "PLAN SEMANA A SEMANA"), /*#__PURE__*/React.createElement("div", {
+    }, "Plan semana a semana"), /*#__PURE__*/React.createElement("div", {
       style: {
         display: "flex",
         gap: 4,
@@ -13985,36 +14005,36 @@ function App() {
       style: {
         flexShrink: 0,
         padding: "5px 10px",
-        borderRadius: 7,
+        borderRadius: 6,
         border: `1px solid ${pw === i ? path.color : C.border}`,
         background: pw === i ? path.color + "20" : "transparent",
         cursor: "pointer",
         fontFamily: "inherit",
-        fontSize: 10,
+        fontSize: 14,
         fontWeight: "bold",
         color: pw === i ? path.color : C.muted,
         whiteSpace: "nowrap"
       }
-    }, "SEM ", w.week))), /*#__PURE__*/React.createElement("div", {
+    }, "Semana ", w.week))), /*#__PURE__*/React.createElement("div", {
       style: {
         background: path.color + "08",
         border: `1px solid ${path.color}30`,
-        borderRadius: 10,
+        borderRadius: 8,
         padding: "10px 13px",
         marginBottom: 12
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 9,
+        fontSize: 16,
+    fontFamily: FONT_D,
         color: path.color,
-        letterSpacing: 2,
-        fontWeight: "bold",
+        fontWeight: 700,
         marginBottom: 5
       }
-    }, "ENFOQUE"), /*#__PURE__*/React.createElement("div", {
+    }, "Enfoque"), /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 12,
-        color: "#CCC",
+        fontSize: 15,
+        color: C.text,
         lineHeight: 1.6
       }
     }, selPathWeek.focus)), /*#__PURE__*/React.createElement("div", {
@@ -14036,7 +14056,7 @@ function App() {
         style: {
           background: C.card,
           border: `1px solid ${pct === 1 ? col : pct > 0 ? col + "60" : C.border}`,
-          borderRadius: 10,
+          borderRadius: 8,
           padding: "7px 3px",
           cursor: "pointer",
           textAlign: "center",
@@ -14047,21 +14067,21 @@ function App() {
         }
       }, /*#__PURE__*/React.createElement("div", {
         style: {
-          fontSize: 8,
+          fontSize: 12,
           color: pct === 1 ? col : C.muted,
           fontWeight: "bold"
         }
       }, d), /*#__PURE__*/React.createElement("div", {
         style: {
-          fontSize: 17
+          fontSize: 20
         }
       }, pct === 1 ? "✅" : day.emoji), /*#__PURE__*/React.createElement("div", {
         style: {
-          fontSize: 8,
+          fontSize: 12,
           color: col,
           fontWeight: "bold"
         }
-      }, day.type === "Long Run" ? "LONG" : day.type === "HS Practice" ? "HS" : day.type === "Recovery" ? "REST" : day.type === "Track" ? "TRACK" : day.type.slice(0, 4).toUpperCase()), /*#__PURE__*/React.createElement("div", {
+      }, day.type === "Long Run" ? "Long" : day.type === "HS Practice" ? "HS" : day.type === "Recovery" ? "Desc." : day.type === "Track" ? "Track" : day.type.slice(0, 4)), /*#__PURE__*/React.createElement("div", {
         style: {
           width: "80%",
           height: 3,
@@ -14077,7 +14097,7 @@ function App() {
         }
       })), /*#__PURE__*/React.createElement("div", {
         style: {
-          fontSize: 7,
+          fontSize: 11,
           color: C.muted
         }
       }, doneI, "/", totalI));
@@ -14090,7 +14110,7 @@ function App() {
         onClick: () => setPathDayArbol(di),
         style: {
           background: C.card,
-          borderRadius: 10,
+          borderRadius: 8,
           padding: "11px 13px",
           marginBottom: 5,
           border: `1px solid ${doneI === totalI && totalI > 0 ? col + "60" : C.border}`,
@@ -14101,7 +14121,7 @@ function App() {
         }
       }, /*#__PURE__*/React.createElement("div", {
         style: {
-          fontSize: 19
+          fontSize: 22
         }
       }, doneI === totalI && totalI > 0 ? "✅" : day.emoji), /*#__PURE__*/React.createElement("div", {
         style: {
@@ -14115,18 +14135,18 @@ function App() {
         }
       }, /*#__PURE__*/React.createElement("span", {
         style: {
-          fontSize: 13,
+          fontSize: 16,
           fontWeight: "bold"
         }
       }, WD[di]), /*#__PURE__*/React.createElement("span", {
         style: {
-          fontSize: 9,
+          fontSize: 13,
           color: col,
           fontWeight: "bold"
         }
-      }, day.type.toUpperCase())), /*#__PURE__*/React.createElement("div", {
+      }, shortType(day.type))), /*#__PURE__*/React.createElement("div", {
         style: {
-          fontSize: 10,
+          fontSize: 14,
           color: C.muted,
           marginTop: 1
         }
@@ -14136,7 +14156,7 @@ function App() {
         }
       }, /*#__PURE__*/React.createElement("div", {
         style: {
-          fontSize: 13,
+          fontSize: 16,
           fontWeight: "bold",
           color: doneI > 0 ? col : C.dim
         }
@@ -14158,16 +14178,16 @@ function App() {
       }))));
     })), /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 9,
+        fontSize: 16,
+    fontFamily: FONT_D,
         color: C.muted,
-        letterSpacing: 2,
-        fontWeight: "bold",
+        fontWeight: 700,
         marginBottom: 3,
         marginTop: 16
       }
-    }, "SUB-PATHS -- SEMANAS 21-28"), /*#__PURE__*/React.createElement("div", {
+    }, "Sub-paths, semanas 21–28"), /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 10,
+        fontSize: 14,
         color: C.muted,
         lineHeight: 1.5,
         marginBottom: 8
@@ -14179,7 +14199,7 @@ function App() {
         key: i,
         style: {
           background: C.card,
-          borderRadius: 10,
+          borderRadius: 8,
           padding: 13,
           marginBottom: 7,
           border: `1px solid ${active ? sp.color : sp.color + "40"}`
@@ -14193,29 +14213,29 @@ function App() {
         }
       }, /*#__PURE__*/React.createElement("span", {
         style: {
-          fontSize: 13,
+          fontSize: 16,
           fontWeight: "bold",
           color: sp.color
         }
       }, sp.label), active && /*#__PURE__*/React.createElement("span", {
         style: {
-          fontSize: 8,
+          fontSize: 12,
           background: sp.color,
           color: C.bg,
           padding: "2px 7px",
           borderRadius: 4,
           fontWeight: "bold"
         }
-      }, "ACTIVO")), /*#__PURE__*/React.createElement("div", {
+      }, "Activo")), /*#__PURE__*/React.createElement("div", {
         style: {
-          fontSize: 11,
-          color: "#AAA",
+          fontSize: 15,
+          color: C.muted,
           lineHeight: 1.5,
           marginBottom: 9
         }
       }, sp.desc), weeks.length > 0 && /*#__PURE__*/React.createElement("div", {
         style: {
-          fontSize: 9,
+          fontSize: 13,
           color: C.muted,
           lineHeight: 1.5,
           marginBottom: 9,
@@ -14237,13 +14257,12 @@ function App() {
           borderRadius: 8,
           padding: "9px 8px",
           color: sp.color,
-          fontFamily: "inherit",
-          fontSize: 11,
-          fontWeight: "bold",
-          cursor: "pointer",
-          letterSpacing: 1
+          fontFamily: FONT_D,
+          fontSize: 17,
+          fontWeight: 700,
+          cursor: "pointer"
         }
-      }, active ? "✕ SOLTAR ESTE SUB-PATH" : "ELEGIR ESTE SUB-PATH"));
+      }, active ? "Soltar este sub-path" : "Elegir este sub-path"));
     })));
   })(), tab === "tecnica" && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -14264,7 +14283,7 @@ function App() {
       border: "none",
       cursor: "pointer",
       fontFamily: "inherit",
-      fontSize: 10,
+      fontSize: 14,
       fontWeight: "bold",
       transition: "all .15s",
       background: exF === f.id ? C.yellow : C.card,
@@ -14284,7 +14303,7 @@ function App() {
       style: {
         scrollMarginTop: 110,
         background: C.card,
-        borderRadius: 10,
+        borderRadius: 8,
         overflow: "hidden",
         border: `1px solid ${isO ? "#E8FF3A40" : C.border}`,
         marginBottom: 6
@@ -14320,7 +14339,7 @@ function App() {
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 13,
+        fontSize: 16,
         fontWeight: "bold"
       }
     }, ex.name), /*#__PURE__*/React.createElement("div", {
@@ -14332,7 +14351,7 @@ function App() {
       }
     }, /*#__PURE__*/React.createElement("span", {
       style: {
-        fontSize: 9,
+        fontSize: 13,
         padding: "2px 6px",
         borderRadius: 4,
         fontWeight: "bold",
@@ -14342,7 +14361,7 @@ function App() {
     }, ex.src), ex.muscles.slice(0, 2).map(m => /*#__PURE__*/React.createElement("span", {
       key: m,
       style: {
-        fontSize: 9,
+        fontSize: 13,
         padding: "2px 6px",
         borderRadius: 4,
         background: C.card2,
@@ -14351,7 +14370,7 @@ function App() {
     }, m)))), /*#__PURE__*/React.createElement("span", {
       style: {
         color: isO ? C.yellow : C.dim,
-        fontSize: 13
+        fontSize: 16
       }
     }, isO ? "▲" : "▼")), isO && /*#__PURE__*/React.createElement("div", {
       style: {
@@ -14360,7 +14379,7 @@ function App() {
     }, ANIM[ex.id] && /*#__PURE__*/React.createElement("div", {
       style: {
         background: C.card2,
-        borderRadius: 9,
+        borderRadius: 6,
         border: `1px solid ${C.border}`,
         marginBottom: 10,
         padding: "8px 6px 4px"
@@ -14370,25 +14389,26 @@ function App() {
       height: 168
     }), /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 8,
+        fontSize: 14,
+    fontFamily: FONT_D,
+    fontWeight: 600,
         color: C.dim,
         textAlign: "center",
-        letterSpacing: 1,
         padding: "2px 0 3px"
       }
-    }, "TOCA LA FOTO O LA FIGURA PARA PAUSAR")), /*#__PURE__*/React.createElement("div", {
+    }, "Toca la foto o la figura para pausar")), /*#__PURE__*/React.createElement("div", {
       style: {
         marginBottom: 9
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 9,
+        fontSize: 16,
+    fontFamily: FONT_D,
         color: C.yellow,
-        fontWeight: "bold",
-        letterSpacing: 2,
+        fontWeight: 700,
         marginBottom: 6
       }
-    }, "\u2705 CUES"), ex.cues.map((c, ci) => /*#__PURE__*/React.createElement("div", {
+    }, "Cues"), ex.cues.map((c, ci) => /*#__PURE__*/React.createElement("div", {
       key: ci,
       style: {
         display: "flex",
@@ -14399,14 +14419,14 @@ function App() {
     }, /*#__PURE__*/React.createElement("span", {
       style: {
         color: C.yellow,
-        fontSize: 11,
+        fontSize: 15,
         flexShrink: 0,
         marginTop: 1
       }
     }, "\u2192"), /*#__PURE__*/React.createElement("span", {
       style: {
-        fontSize: 12,
-        color: "#D0D0D0",
+        fontSize: 15,
+        color: C.text,
         lineHeight: 1.5
       }
     }, c)))), /*#__PURE__*/React.createElement("div", {
@@ -14415,13 +14435,13 @@ function App() {
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 9,
+        fontSize: 16,
+    fontFamily: FONT_D,
         color: C.pink,
-        fontWeight: "bold",
-        letterSpacing: 2,
+        fontWeight: 700,
         marginBottom: 6
       }
-    }, "\u274C ERRORES"), ex.mistakes.map((m, mi) => /*#__PURE__*/React.createElement("div", {
+    }, "Errores comunes"), ex.mistakes.map((m, mi) => /*#__PURE__*/React.createElement("div", {
       key: mi,
       style: {
         display: "flex",
@@ -14432,14 +14452,14 @@ function App() {
     }, /*#__PURE__*/React.createElement("span", {
       style: {
         color: C.pink,
-        fontSize: 11,
+        fontSize: 15,
         flexShrink: 0,
         marginTop: 1
       }
     }, "\u2717"), /*#__PURE__*/React.createElement("span", {
       style: {
-        fontSize: 12,
-        color: "#AAA",
+        fontSize: 15,
+        color: C.muted,
         lineHeight: 1.5
       }
     }, m)))), /*#__PURE__*/React.createElement("div", {
@@ -14453,13 +14473,13 @@ function App() {
       }
     }, /*#__PURE__*/React.createElement("span", {
       style: {
-        fontSize: 13,
+        fontSize: 16,
         flexShrink: 0
       }
     }, "\uD83D\uDCA1"), /*#__PURE__*/React.createElement("span", {
       style: {
-        fontSize: 12,
-        color: "#AAA",
+        fontSize: 15,
+        color: C.muted,
         lineHeight: 1.6,
         fontStyle: "italic"
       }
@@ -14489,11 +14509,11 @@ function App() {
       flex: 1,
       background: color + "15",
       border: `1px solid ${color}40`,
-      borderRadius: 9,
+      borderRadius: 6,
       padding: "10px 8px",
       color,
       fontFamily: "inherit",
-      fontSize: 11,
+      fontSize: 15,
       fontWeight: "bold",
       cursor: "pointer",
       letterSpacing: .5
@@ -14501,22 +14521,23 @@ function App() {
     return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
       style: {
         background: C.card,
-        borderRadius: 12,
+        borderRadius: 8,
         padding: 14,
         marginBottom: 14,
         border: `1px solid ${C.border}`
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 8,
+        fontSize: 14,
+    fontFamily: FONT_D,
+    fontWeight: 600,
         color: C.muted,
-        letterSpacing: 3,
         marginBottom: 3
       }
-    }, "QU\xC9 TIENES A LA MANO"), /*#__PURE__*/React.createElement("div", {
+    }, "Qu\xE9 tienes a la mano"), /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 11,
-        color: "#AAA",
+        fontSize: 15,
+        color: C.muted,
         lineHeight: 1.5,
         marginBottom: 11
       }
@@ -14540,7 +14561,7 @@ function App() {
           gap: 8,
           alignItems: "center",
           padding: "10px 10px",
-          borderRadius: 9,
+          borderRadius: 6,
           cursor: "pointer",
           fontFamily: "inherit",
           textAlign: "left",
@@ -14562,16 +14583,16 @@ function App() {
       }, on && /*#__PURE__*/React.createElement("span", {
         style: {
           color: C.bg,
-          fontSize: 10,
+          fontSize: 14,
           fontWeight: "bold"
         }
       }, "\u2713")), /*#__PURE__*/React.createElement("span", {
         style: {
-          fontSize: 14
+          fontSize: 17
         }
       }, it.emoji), /*#__PURE__*/React.createElement("span", {
         style: {
-          fontSize: 11,
+          fontSize: 15,
           color: on ? C.teal : C.muted,
           lineHeight: 1.3
         }
@@ -14590,7 +14611,7 @@ function App() {
       if (sub + blk === 0) return /*#__PURE__*/React.createElement("div", {
         style: {
           marginTop: 10,
-          fontSize: 10,
+          fontSize: 14,
           color: C.teal,
           lineHeight: 1.5
         }
@@ -14601,8 +14622,8 @@ function App() {
           background: C.card2,
           borderRadius: 8,
           padding: "9px 11px",
-          fontSize: 10,
-          color: "#AAA",
+          fontSize: 14,
+          color: C.muted,
           lineHeight: 1.6
         }
       }, "En la semana ", cw + 1, ": ", /*#__PURE__*/React.createElement("b", {
@@ -14622,22 +14643,23 @@ function App() {
     })()), /*#__PURE__*/React.createElement("div", {
       style: {
         background: C.card,
-        borderRadius: 12,
+        borderRadius: 8,
         padding: 14,
         marginBottom: 14,
         border: `1px solid ${C.border}`
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 8,
+        fontSize: 14,
+    fontFamily: FONT_D,
+    fontWeight: 600,
         color: C.muted,
-        letterSpacing: 3,
         marginBottom: 3
       }
-    }, "RESPALDO"), /*#__PURE__*/React.createElement("div", {
+    }, "Respaldo"), /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 11,
-        color: "#AAA",
+        fontSize: 15,
+        color: C.muted,
         lineHeight: 1.5,
         marginBottom: 11
       }
@@ -14657,10 +14679,10 @@ function App() {
         flash("ok", "Archivo descargado.");
       },
       style: btn(C.yellow)
-    }, "\u2B07 ARCHIVO"), /*#__PURE__*/React.createElement("button", {
+    }, "Descargar archivo"), /*#__PURE__*/React.createElement("button", {
       onClick: doCopy,
       style: btn(C.teal)
-    }, "\uD83D\uDCCB COPIAR")), /*#__PURE__*/React.createElement("button", {
+    }, "Copiar")), /*#__PURE__*/React.createElement("button", {
       onClick: () => {
         setShowRestore(v => !v);
         setRestoreText("");
@@ -14669,7 +14691,7 @@ function App() {
         ...btn(C.purple),
         width: "100%"
       }
-    }, showRestore ? "✕ CANCELAR" : "⬆ RESTAURAR RESPALDO"), showRestore && /*#__PURE__*/React.createElement("div", {
+    }, showRestore ? "Cancelar" : "Restaurar respaldo"), showRestore && /*#__PURE__*/React.createElement("div", {
       style: {
         marginTop: 10,
         paddingTop: 11,
@@ -14677,7 +14699,7 @@ function App() {
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 10,
+        fontSize: 14,
         color: C.red,
         lineHeight: 1.5,
         marginBottom: 9
@@ -14701,14 +14723,15 @@ function App() {
         width: "100%",
         marginBottom: 8
       }
-    }, "\uD83D\uDCC2 ELEGIR ARCHIVO .JSON"), /*#__PURE__*/React.createElement("div", {
+    }, "Elegir archivo .json"), /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 9,
+        fontSize: 16,
+    fontFamily: FONT_D,
+    fontWeight: 600,
         color: C.muted,
-        letterSpacing: 2,
         marginBottom: 5
       }
-    }, "O PEGA EL TEXTO"), /*#__PURE__*/React.createElement("textarea", {
+    }, "O pega el texto"), /*#__PURE__*/React.createElement("textarea", {
       value: restoreText,
       onChange: e => setRestoreText(e.target.value),
       placeholder: "{\"app\":\"danvanfit\",...}",
@@ -14721,7 +14744,7 @@ function App() {
         borderRadius: 8,
         color: C.text,
         fontFamily: "inherit",
-        fontSize: 10,
+        fontSize: 14,
         padding: 9,
         resize: "vertical",
         outline: "none"
@@ -14742,21 +14765,21 @@ function App() {
         color: C.dim,
         cursor: "default"
       }
-    }, "\u21BA RESTAURAR DESDE TEXTO")), bkMsg && /*#__PURE__*/React.createElement("div", {
+    }, "Restaurar desde texto")), bkMsg && /*#__PURE__*/React.createElement("div", {
       style: {
         marginTop: 10,
         background: mc + "15",
         border: `1px solid ${mc}40`,
         borderRadius: 8,
         padding: "8px 10px",
-        fontSize: 10,
+        fontSize: 14,
         color: mc,
         lineHeight: 1.5
       }
     }, bkMsg.text)), /*#__PURE__*/React.createElement("div", {
       style: {
         background: C.card,
-        borderRadius: 12,
+        borderRadius: 8,
         padding: 14,
         marginBottom: 14,
         border: `1px solid ${C.border}`
@@ -14770,15 +14793,17 @@ function App() {
       }
     }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 8,
+        fontSize: 14,
+    fontFamily: FONT_D,
+    fontWeight: 600,
         color: C.muted,
-        letterSpacing: 3,
         marginBottom: 2
       }
-    }, "PROGRESO"), /*#__PURE__*/React.createElement("div", {
+    }, "Progreso"), /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 22,
-        fontWeight: "bold",
+        fontSize: 24,
+    fontFamily: FONT_D,
+        fontWeight: 700,
         color: C.yellow
       }
     }, done, "/", allItems.length)), urgent > 0 ? /*#__PURE__*/React.createElement("div", {
@@ -14791,14 +14816,15 @@ function App() {
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 9,
+        fontSize: 13,
         color: C.red,
         fontWeight: "bold"
       }
-    }, "URGENTE"), /*#__PURE__*/React.createElement("div", {
+    }, "Urgente"), /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 16,
-        fontWeight: "bold",
+        fontSize: 19,
+    fontFamily: FONT_D,
+        fontWeight: 700,
         color: C.red
       }
     }, urgent)) : /*#__PURE__*/React.createElement("div", {
@@ -14810,13 +14836,13 @@ function App() {
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 9,
+        fontSize: 13,
         color: C.teal,
         fontWeight: "bold"
       }
-    }, "TODO OK"), /*#__PURE__*/React.createElement("div", {
+    }, "Todo bien"), /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 16,
+        fontSize: 19,
         color: C.teal
       }
     }, "\u2713"))), /*#__PURE__*/React.createElement("div", {
@@ -14844,7 +14870,7 @@ function App() {
         style: {
           background: ph.color + "10",
           border: `1px solid ${ph.color}30`,
-          borderRadius: 12,
+          borderRadius: 8,
           padding: "10px 14px",
           marginBottom: 7,
           display: "flex",
@@ -14853,7 +14879,7 @@ function App() {
         }
       }, /*#__PURE__*/React.createElement("span", {
         style: {
-          fontSize: 20
+          fontSize: 24
         }
       }, ph.icon), /*#__PURE__*/React.createElement("div", {
         style: {
@@ -14867,13 +14893,13 @@ function App() {
         }
       }, /*#__PURE__*/React.createElement("span", {
         style: {
-          fontSize: 13,
+          fontSize: 16,
           fontWeight: "bold",
           color: ph.color
         }
       }, ph.label), /*#__PURE__*/React.createElement("span", {
         style: {
-          fontSize: 9,
+          fontSize: 13,
           color: C.muted,
           background: C.card2,
           padding: "2px 6px",
@@ -14881,8 +14907,8 @@ function App() {
         }
       }, ph.time)), /*#__PURE__*/React.createElement("div", {
         style: {
-          fontSize: 11,
-          color: "#AAA",
+          fontSize: 15,
+          color: C.muted,
           marginTop: 1
         }
       }, ph.subtitle)), /*#__PURE__*/React.createElement("div", {
@@ -14892,8 +14918,9 @@ function App() {
         }
       }, /*#__PURE__*/React.createElement("div", {
         style: {
-          fontSize: 14,
-          fontWeight: "bold",
+          fontSize: 17,
+    fontFamily: FONT_D,
+          fontWeight: 700,
           color: phDone === ph.items.length ? ph.color : C.dim
         }
       }, phDone, "/", ph.items.length))), ph.items.map(item => {
@@ -14903,7 +14930,7 @@ function App() {
           onClick: () => tick(item.id),
           style: {
             background: C.card,
-            borderRadius: 10,
+            borderRadius: 8,
             marginBottom: 5,
             padding: "11px 13px",
             border: `1px solid ${isDone ? ph.color + "60" : item.urgent && !isDone ? C.red + "40" : C.border}`,
@@ -14928,7 +14955,7 @@ function App() {
         }, isDone && /*#__PURE__*/React.createElement("span", {
           style: {
             color: C.bg,
-            fontSize: 12,
+            fontSize: 15,
             fontWeight: "bold"
           }
         }, "\u2713")), /*#__PURE__*/React.createElement("div", {
@@ -14945,25 +14972,25 @@ function App() {
           }
         }, /*#__PURE__*/React.createElement("span", {
           style: {
-            fontSize: 14
+            fontSize: 17
           }
         }, item.emoji), /*#__PURE__*/React.createElement("span", {
           style: {
-            fontSize: 13,
+            fontSize: 16,
             fontWeight: "bold",
             color: isDone ? ph.color : C.text,
             textDecoration: isDone ? "line-through" : "none"
           }
         }, item.name), item.urgent && !isDone && /*#__PURE__*/React.createElement("span", {
           style: {
-            fontSize: 8,
+            fontSize: 12,
             background: C.red + "25",
             color: C.red,
             padding: "2px 6px",
             borderRadius: 4,
             fontWeight: "bold"
           }
-        }, "URGENTE")), /*#__PURE__*/React.createElement("div", {
+        }, "Urgente")), /*#__PURE__*/React.createElement("div", {
           style: {
             display: "flex",
             gap: 5,
@@ -14972,7 +14999,7 @@ function App() {
           }
         }, /*#__PURE__*/React.createElement("span", {
           style: {
-            fontSize: 9,
+            fontSize: 13,
             background: C.yellow + "20",
             color: C.yellow,
             padding: "2px 7px",
@@ -14981,7 +15008,7 @@ function App() {
           }
         }, item.price), /*#__PURE__*/React.createElement("span", {
           style: {
-            fontSize: 9,
+            fontSize: 13,
             background: C.card2,
             color: C.muted,
             padding: "2px 7px",
@@ -14989,7 +15016,7 @@ function App() {
           }
         }, item.when)), /*#__PURE__*/React.createElement("div", {
           style: {
-            fontSize: 11,
+            fontSize: 15,
             color: C.muted,
             lineHeight: 1.5
           }
@@ -15561,12 +15588,12 @@ Object.keys(SUB_FOCUS).forEach(sid => {
 // pct es fracción de tu MÁXIMO DE REPETICIONES, no de un 1RM: con un máximo de
 // 30 dips, 5 series de 15 es trabajo real y 5 series de 28 es imposible.
 const CYCLE_PHASES = [{
-  tag: "ACUMULACIÓN",
+  tag: "Acumulación",
   sets: 5,
   pct: 0.50,
   note: "Volumen alto y técnica impecable. Ninguna serie al fallo."
 }, {
-  tag: "INTENSIFICACIÓN",
+  tag: "Intensificación",
   sets: 5,
   pct: 0.60,
   note: "Sube el trabajo por serie. Descansa completo entre series."
@@ -15576,7 +15603,7 @@ const CYCLE_PHASES = [{
   pct: 0.70,
   note: "La semana pesada del ciclo. Cierra yendo a por el récord."
 }, {
-  tag: "DELOAD + TEST",
+  tag: "Deload + test",
   sets: 3,
   pct: 0.40,
   note: "Volumen bajo a propósito. Cierra con el test y registra en PRs."
