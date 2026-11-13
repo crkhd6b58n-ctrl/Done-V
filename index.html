@@ -471,29 +471,41 @@ const addDays = (d, n) => {
   t.setDate(t.getDate() + n);
   return t;
 };
-const streakFrom = log => {
-  if (!log) return 0;
+// Racha CONTRA EL PLAN: días de entrenamiento planeados seguidos que cumpliste.
+// Los días de descanso ni suman ni la rompen; faltar a un día planeado, sí.
+// Hoy, si toca y aún no entrenas, no la rompe (todavía puedes cumplir).
+// Antes de anclar el plan no cuenta nada. Usa el split actual para todo el historial.
+const planStreaks = (act, split, startD) => {
   const today = new Date();
-  let cur = log[dateStr(today)] ? today : log[dateStr(addDays(today, -1))] ? addDays(today, -1) : null;
-  if (!cur) return 0;
-  let n = 0;
-  while (log[dateStr(cur)]) {
-    n++;
-    cur = addDays(cur, -1);
+  const todayK = dateStr(today);
+  const startK = startD ? dateStr(parseDay(startD)) : null;
+  const planned = d => split.includes((d.getDay() + 6) % 7);
+  // racha actual: hacia atrás desde hoy
+  let now = 0;
+  for (let i = 0, d = today; i < 800; i++, d = addDays(today, -i)) {
+    const k = dateStr(d);
+    if (startK && k < startK) break;
+    if (!planned(d)) continue;
+    if (act.has(k)) now++;else if (k === todayK) continue;else break;
   }
-  return n;
-};
-const bestStreakFrom = log => {
-  const days = Object.keys(log || {}).filter(k => log[k] > 0).sort();
+  // mejor racha: hacia adelante desde el inicio del plan (o la primera actividad)
+  const first = startK || [...act].sort()[0];
   let best = 0,
-    run = 0,
-    prev = null;
-  days.forEach(d => {
-    run = prev && dateStr(addDays(parseDay(prev), 1)) === d ? run + 1 : 1;
-    if (run > best) best = run;
-    prev = d;
-  });
-  return best;
+    run = 0;
+  if (first) {
+    for (let d = parseDay(first), i = 0; dateStr(d) <= todayK && i < 3000; d = addDays(d, 1), i++) {
+      if (!planned(d)) continue;
+      const k = dateStr(d);
+      if (act.has(k)) {
+        run++;
+        if (run > best) best = run;
+      } else if (k !== todayK) run = 0;
+    }
+  }
+  return {
+    now,
+    best: Math.max(best, now)
+  };
 };
 
 // Los usuarios que ya traian racha guardada no la pierden: se siembra el log
@@ -10223,7 +10235,7 @@ const coachContext = ({
     if (w.current && w.pending.length) parts.push(`pendientes ${w.pending.map(d => WD[d]).join(", ")}`);
     L.push(parts.join("; "));
   });
-  L.push(`Racha actual: ${streakNow} días. Mejor racha: ${bestStreak} días.`);
+  L.push(`Racha actual: ${streakNow} días de entrenamiento planeados seguidos (los descansos no la rompen). Mejor racha: ${bestStreak}.`);
   L.push("");
   L.push("VOLUMEN SEMANAL REGISTRADO (reps / segundos bajo tensión / kg de tonelaje):");
   const startMon = startD ? dateStr(mondayOf(parseDay(startD))) : "";
@@ -11609,8 +11621,9 @@ function App() {
   }, [autoWeek]);
 
   //  Consistencia 
-  const streakNow = useMemo(() => streakFrom(alog), [alog, clockTick]);
-  const bestStreak = useMemo(() => bestStreakFrom(alog), [alog]);
+  const streaks = useMemo(() => planStreaks(activeDaySet(alog, exSets), split, startD), [alog, exSets, split, startD, clockTick]);
+  const streakNow = streaks.now;
+  const bestStreak = streaks.best;
 
   // Calendario: 12 semanas hacia atras, una columna por semana
   const heat = useMemo(() => {
@@ -11982,16 +11995,16 @@ function App() {
     }
   }, ce("button", {
     onClick: () => changeTab("prs"),
-    "aria-label": `Racha: ${streakNow} ${streakNow === 1 ? "día" : "días"}. Ver PRs`,
+    "aria-label": `Racha: ${streakNow} ${streakNow === 1 ? "día" : "días"} de tu plan seguidos. Ver PRs`,
     style: {
       display: "flex",
       alignItems: "center",
       gap: 5,
       background: "transparent",
-      border: `1.5px solid ${streakNow > 0 ? C.orange + "70" : C.border}`,
+      border: `1.5px solid ${C.border}`,
       borderRadius: 6,
       padding: "6px 10px",
-      color: streakNow > 0 ? C.orange : C.muted,
+      color: streakNow > 0 ? C.text : C.muted,
       fontFamily: FONT_D,
       fontSize: 18,
       fontWeight: 700,
@@ -13951,27 +13964,131 @@ function App() {
       style: H2
     }, "Constancia"), ce("div", {
       style: {
-        display: "flex",
-        gap: 26,
-        margin: "8px 0 18px"
+        margin: "8px 0 26px"
       }
-    }, [[streakNow, streakNow === 1 ? "día de racha" : "días de racha", streakNow > 0 ? C.orange : C.muted], [bestStreak, "tu mejor racha", C.text], [sessionStats.done, sessionStats.done === 1 ? "sesión completa" : "sesiones completas", C.text]].map(([v, l, c], i) => ce("div", {
-      key: i
     }, ce("div", {
       style: {
-        fontFamily: FONT_D,
-        fontSize: 44,
-        fontWeight: 800,
-        lineHeight: 1,
-        color: c
+        display: "flex",
+        alignItems: "baseline",
+        gap: 10,
+        flexWrap: "wrap"
       }
-    }, v), ce("div", {
+    }, ce("span", {
+      style: {
+        fontFamily: FONT_D,
+        fontWeight: 800,
+        lineHeight: 1
+      }
+    }, ce("span", {
+      style: {
+        fontSize: 52,
+        color: streakNow > 0 ? C.teal : C.text
+      }
+    }, streakNow), ce("span", {
+      style: {
+        fontSize: 22,
+        color: C.muted
+      }
+    }, streakNow === 1 ? " d\xEDa de racha" : " d\xEDas de racha")), streakNow > 0 && streakNow >= bestStreak && ce("span", {
+      style: {
+        fontSize: 15,
+        fontWeight: 600,
+        color: C.yellow
+      }
+    }, "Es tu mejor racha")), ce("p", {
       style: {
         fontSize: 14,
         color: C.muted,
-        marginTop: 2
+        lineHeight: 1.45,
+        margin: "4px 0 12px",
+        maxWidth: "60ch"
       }
-    }, l)))), (() => {
+    }, "D\xEDas de tu plan cumplidos seguidos. Los descansos no la rompen; faltar a un d\xEDa del plan, s\xED."), bestStreak > 0 && ce("div", {
+      role: "img",
+      "aria-label": `Racha actual ${streakNow}, tu mejor racha ${bestStreak}.`,
+      style: {
+        position: "relative",
+        height: 50,
+        margin: "0 14px 6px 4px"
+      }
+    }, ce("div", {
+      style: {
+        position: "absolute",
+        left: 0,
+        right: 0,
+        top: 24,
+        height: 2,
+        background: C.border
+      }
+    }), ce("div", {
+      style: {
+        position: "absolute",
+        left: 0,
+        top: 23,
+        height: 4,
+        borderRadius: 2,
+        width: `${Math.min(1, streakNow / bestStreak) * 100}%`,
+        background: C.teal
+      }
+    }), ce("span", {
+      style: {
+        position: "absolute",
+        left: 0,
+        top: 19,
+        width: 2,
+        height: 12,
+        background: C.muted
+      }
+    }), ce("span", {
+      style: {
+        position: "absolute",
+        right: -7,
+        top: 18,
+        width: 14,
+        height: 14,
+        borderRadius: "50%",
+        background: streakNow >= bestStreak ? C.yellow : C.bg,
+        border: streakNow >= bestStreak ? "none" : `2.5px solid ${C.yellow}`
+      }
+    }), ce("span", {
+      style: {
+        position: "absolute",
+        right: -7,
+        top: 36,
+        fontSize: 13,
+        color: C.yellow,
+        whiteSpace: "nowrap"
+      }
+    }, "Mejor: ", bestStreak), streakNow < bestStreak && ce("span", {
+      "aria-hidden": true,
+      style: {
+        position: "absolute",
+        top: 13,
+        left: `calc(${streakNow / bestStreak * 100}% - 11px)`
+      }
+    }, ce(Waymark, {
+      size: 22
+    })), streakNow < bestStreak && ce("span", {
+      style: {
+        position: "absolute",
+        left: 0,
+        top: 36,
+        fontSize: 13,
+        color: C.muted
+      }
+    }, "Te faltan ", bestStreak - streakNow, " para igualarla")), ce("p", {
+      style: {
+        fontSize: 15,
+        color: C.muted,
+        marginTop: 10
+      }
+    }, ce("b", {
+      style: {
+        fontFamily: FONT_D,
+        fontSize: 20,
+        color: C.text
+      }
+    }, sessionStats.done), sessionStats.done === 1 ? " sesi\xF3n completa en total" : " sesiones completas en total")), (() => {
       // Mismo criterio que la pestaña Coach: un día cuenta si marcaste algo o anotaste series
       const act = activeDaySet(alog, exSets);
       const today = dateStr();
