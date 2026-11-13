@@ -8722,6 +8722,15 @@ const LOCK_TXT = {
 
 //  Panel de direccion de codos (vista de arriba o de frente), sincronizado
 // con la flexion real del codo en la animacion principal.
+// Las indicaciones vienen en MAYUSCULAS en los datos; se pintan en oracion,
+// respetando lo que va entre parentesis (W, Y) y siglas.
+const _ACR = /^(HS|HSPU|RTO|PR|PRS|L-SIT)$/;
+const cueCase = str => {
+  const s0 = String(str);
+  if (/[a-záéíóúñ]/.test(s0)) return s0;
+  const low = s0.split(/(\([^)]*\)|\s+)/).map(w => w.startsWith("(") || _ACR.test(w) ? w : w.toLowerCase()).join("");
+  return low.charAt(0).toUpperCase() + low.slice(1);
+};
 function ElbowView({
   el,
   k,
@@ -8785,11 +8794,11 @@ function ElbowView({
   }), /*#__PURE__*/React.createElement("text", {
     x: "6",
     y: "90",
-    fill: C.dim,
-    fontSize: "7",
-    fontFamily: "monospace",
-    letterSpacing: "0.5"
-  }, top ? "VISTA DE ARRIBA" : "VISTA DE FRENTE"), el.v === "pull" && line([12, 12], [108, 12], 2.5, "bar", C.dim), /*#__PURE__*/React.createElement("rect", {
+    fill: C.muted,
+    fontSize: "9",
+    fontFamily: FONT_D,
+    fontWeight: 600
+  }, top ? "Vista de arriba" : "Vista de frente"), el.v === "pull" && line([12, 12], [108, 12], 2.5, "bar", C.dim), /*#__PURE__*/React.createElement("rect", {
     x: sL[0] - 2,
     y: sy - 3,
     width: sR[0] - sL[0] + 4,
@@ -8808,9 +8817,9 @@ function ElbowView({
     x: ghostR[0] + 1,
     y: ghostR[1] + 3,
     fill: C.red,
-    fontSize: "8",
+    fontSize: "9",
     fontWeight: "bold",
-    fontFamily: "monospace"
+    fontFamily: FONT_D
   }, "✗"), line(sL, eL, 5, "ul"), line(eL, hL, 4, "fl"), line(sR, eR, 5, "ur"), line(eR, hR, 4, "fr"), [eL, eR].map((e, i) => /*#__PURE__*/React.createElement("circle", {
     key: i,
     cx: e[0],
@@ -8822,15 +8831,15 @@ function ElbowView({
   })), k > 0.25 && /*#__PURE__*/React.createElement("path", {
     d: `M ${P(arcP(a0))} A ${R} ${R} 0 ${A > Math.PI ? 1 : 0} 1 ${P(arcP(a1))}`,
     fill: "none",
-    stroke: bad ? C.red : C.teal,
+    stroke: bad ? C.red : C.yellow,
     strokeWidth: "1.6"
   }), k > 0.25 && /*#__PURE__*/React.createElement("text", {
     x: sL[0] - 26,
     y: sL[1] + 16,
-    fill: bad ? C.red : C.teal,
-    fontSize: "9",
+    fill: bad ? C.red : C.yellow,
+    fontSize: "11",
     fontWeight: "bold",
-    fontFamily: "monospace"
+    fontFamily: FONT_D
   }, bad ? el.bad : el.a, "\xB0"));
 }
 // Fase dentro del ciclo, con la misma pausa en los extremos que poseAt:
@@ -8899,7 +8908,9 @@ function ExAnim({
     return () => cancelAnimationFrame(raf);
   }, [spec, still, paused, spd]);
   if (!spec) return null;
-  const col = color || C.yellow;
+  // Figura en tiza; lo que indica hacia dónde moverse va en amarillo de flecha.
+  const col = color === C.muted ? C.muted : C.text;
+  const accent = C.yellow;
   const bad = showBad && spec.bad ? spec.bad : null;
   const detail = height >= 90;
   const s = buildFig(poseAt(bad ? {
@@ -8934,8 +8945,8 @@ function ExAnim({
   const figure = (f, mode, pre) => {
     const g = mode === "ghost";
     const c = g ? col : mode === "bad" ? C.red : col;
-    const op = g ? 0.16 : 1,
-      far = g ? 0.1 : spec.front ? 1 : 0.32,
+    const op = g ? 0.4 : 1,
+      far = g ? 0.22 : spec.front ? 1 : 0.32,
       dash = g ? "2 2.5" : undefined,
       k = g ? 0.55 : 1;
     const front = (f.torsoA + (f.headT || 0) - 90 * fc) * Math.PI / 180;
@@ -9146,14 +9157,15 @@ function ExAnim({
   };
 
   //  Guias de tecnica (en color teal, encima de la figura)
-  const GC = C.teal;
+  const GC = accent;
   const VB = animBox(id).split(" ").map(Number);
   // Texto y trazos de las guias en proporcion al encuadre: en un encuadre
   // chico (tuck front lever) la letra ya no sale gigante.
   const K = Math.max(VB[2], VB[3]) / 112;
   // Las etiquetas se acomodan dentro del cuadro (antes se cortaban en la orilla)
-  const txt = (x, y, str, k, anchor = "middle") => {
-    const w = String(str).length * 2.75 * K,
+  const txt = (x, y, str0, k, anchor = "middle") => {
+    const str = cueCase(str0);
+    const w = String(str).length * 2.45 * K,
       lo = VB[0] + 1.5,
       hi = VB[0] + VB[2] - 1.5;
     let x0 = anchor === "middle" ? x - w / 2 : anchor === "end" ? x - w : x;
@@ -9165,14 +9177,14 @@ function ExAnim({
     x: x,
     y: y,
     fill: GC,
-    fontSize: (4.3 * K).toFixed(2),
-    fontWeight: "bold",
-    fontFamily: "monospace",
+    fontSize: (5.2 * K).toFixed(2),
+    fontWeight: "700",
+    fontFamily: FONT_D,
     textAnchor: "start",
-    stroke: C.bg,
-    strokeWidth: (1.6 * K).toFixed(2),
-    paintOrder: "stroke",
-    letterSpacing: "0.2"
+    stroke: C.card,
+    strokeWidth: (1.8 * K).toFixed(2),
+    strokeLinejoin: "round",
+    paintOrder: "stroke"
   }, str);
   const guide = (g, i) => {
     if (!_guideOn(g.on, ph, spec.m === "hold")) return null;
@@ -9308,8 +9320,8 @@ function ExAnim({
   const lockEl = detail && controls && lockOn && locked ? (() => {
     const cc = C.teal;
     const str = "\uD83D\uDD12 Bloqueado";
-    const fs = 4.6 * K,
-      w = str.length * 2.9 * K;
+    const fs = 5.2 * K,
+      w = str.length * 2.6 * K;
     const x = Math.max(VB[0] + 1, Math.min(VB[0] + VB[2] - w - 1, s.elbow[0] + 4 * K)),
       y = Math.max(VB[1] + fs + 1, s.elbow[1] - 5 * K);
     return /*#__PURE__*/React.createElement("g", {
@@ -9337,7 +9349,7 @@ function ExAnim({
       fill: cc,
       fontSize: fs.toFixed(2),
       fontWeight: "bold",
-      fontFamily: "monospace"
+      fontFamily: FONT_D
     }, str));
   })() : null;
   const svg = /*#__PURE__*/React.createElement("svg", {
@@ -9364,13 +9376,13 @@ function ExAnim({
     cy: floorY + 1,
     rx: "20",
     ry: "2.2",
-    fill: figCol,
-    fillOpacity: "0.07"
+    fill: C.text,
+    fillOpacity: "0.06"
   }), spec.p.filter(pr => pr.t !== "kb").map(prop), trail && /*#__PURE__*/React.createElement("polyline", {
     points: trail.map(P).join(" "),
     fill: "none",
-    stroke: col,
-    strokeOpacity: "0.3",
+    stroke: accent,
+    strokeOpacity: "0.55",
     strokeWidth: "1.3",
     strokeDasharray: "1.5 2.5",
     strokeLinecap: "round"
@@ -9378,18 +9390,19 @@ function ExAnim({
   if (!controls) return svg;
 
   //  Barra de control: fase, contador, pausa, velocidad y "error comun"
-  const phase = spec.m === "hold" ? "MANTÉN · RESPIRA" : spec.ph ? spec.ph[ph.half] : ph.half ? "REGRESO" : "IDA";
-  const count = spec.m === "hold" ? `${Math.floor(Math.max(0, t - at) * spec.s)}s` : `REP ${Math.floor(Math.max(0, t - Math.floor(at))) + 1}`;
+  const phase = spec.m === "hold" ? "Mantén y respira" : spec.ph ? cueCase(spec.ph[ph.half]) : ph.half ? "Regreso" : "Ida";
+  const count = spec.m === "hold" ? `${Math.floor(Math.max(0, t - at) * spec.s)}s` : `Rep ${Math.floor(Math.max(0, t - Math.floor(at))) + 1}`;
   const stepIdx = spec.st ? spec.m === "hold" ? Math.floor(Math.max(0, t)) % spec.st.length : Math.min(ph.half, spec.st.length - 1) : 0;
-  const btn = (on, c = col) => ({
-    background: on ? c + "22" : "transparent",
-    border: `1px solid ${on ? c + "60" : C.border}`,
+  const btn = (on, c = accent) => ({
+    background: on ? c : "transparent",
+    border: `1.5px solid ${on ? c : C.border}`,
     borderRadius: 6,
-    color: on ? c : C.muted,
-    fontFamily: "inherit",
-    fontSize: 13,
-    fontWeight: "bold",
-    padding: "3px 7px",
+    color: on ? C.bg : C.text,
+    fontFamily: FONT_D,
+    fontSize: 16,
+    fontWeight: 700,
+    minHeight: 34,
+    padding: "4px 10px",
     cursor: "pointer"
   });
   return /*#__PURE__*/React.createElement("div", null, svg, /*#__PURE__*/React.createElement("div", {
@@ -9404,7 +9417,7 @@ function ExAnim({
     style: {
       height: "100%",
       width: `${(spec.m === "hold" ? ph.c : ph.c < 0.5 ? ph.c * 2 : (1 - ph.c) * 2) * 100}%`,
-      background: bad ? C.red : col
+      background: bad ? C.red : accent
     }
   })), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -9425,21 +9438,21 @@ function ExAnim({
   }, v, "x")), spec.bad && /*#__PURE__*/React.createElement("button", {
     onClick: () => setShowBad(v => !v),
     style: btn(showBad, C.red)
-  }, showBad ? "✓ VER BIEN" : "✗ ERROR COMÚN"), /*#__PURE__*/React.createElement("div", {
+  }, showBad ? "Ver forma correcta" : "Ver error común"), /*#__PURE__*/React.createElement("div", {
     style: {
       flex: 1,
       textAlign: "right",
-      fontSize: 16,
-    fontFamily: FONT_D,
-      fontWeight: 700,
-      color: bad ? C.red : col,
+      fontSize: 22,
+      fontFamily: FONT_D,
+      fontWeight: 800,
+      color: bad ? C.red : accent,
       whiteSpace: "nowrap"
     }
   }, still ? "" : phase), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 13,
+      fontSize: 15,
       color: C.muted,
-      minWidth: 36,
+      minWidth: 40,
       textAlign: "right"
     }
   }, still ? "" : count)), bad ? /*#__PURE__*/React.createElement("div", {
@@ -9459,9 +9472,9 @@ function ExAnim({
     }
   }, "✓ ", bad.fix, /*#__PURE__*/React.createElement("span", {
     style: {
-      color: C.dim
+      color: C.muted
     }
-  }, " (la silueta punteada es la forma correcta)"))) : spec.st && /*#__PURE__*/React.createElement("div", {
+  }, " La silueta punteada es la forma correcta."))) : spec.st && /*#__PURE__*/React.createElement("div", {
     style: {
       padding: "6px 6px 2px",
       display: "flex",
@@ -9471,12 +9484,13 @@ function ExAnim({
   }, /*#__PURE__*/React.createElement("span", {
     style: {
       flexShrink: 0,
-      width: 16,
-      height: 16,
-      borderRadius: 8,
-      background: col,
+      width: 22,
+      height: 22,
+      borderRadius: 11,
+      background: accent,
       color: C.bg,
-      fontSize: 13,
+      fontFamily: FONT_D,
+      fontSize: 15,
       fontWeight: "bold",
       display: "flex",
       alignItems: "center",
@@ -9485,20 +9499,19 @@ function ExAnim({
     }
   }, stepIdx + 1), /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 11.5,
+      fontSize: 16,
       color: C.text,
-      lineHeight: 1.5
+      lineHeight: 1.45
     }
   }, spec.st[stepIdx])), spec.g && spec.g.length > 0 && !bad && /*#__PURE__*/React.createElement("div", {
     style: {
-      padding: "3px 6px 0",
-      fontSize: 8.5,
-      color: C.dim,
-      letterSpacing: 0.5
+      padding: "6px 6px 0",
+      fontSize: 14,
+      color: C.muted
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
-      color: C.teal
+      color: C.yellow
     }
   }, "┄"), " gu\xEDas de t\xE9cnica", spec.mu && !bad && /*#__PURE__*/React.createElement("span", null, "  ", /*#__PURE__*/React.createElement("span", {
     style: {
@@ -9514,20 +9527,20 @@ function ExAnim({
   }, spec.el && /*#__PURE__*/React.createElement(ElbowView, {
     el: spec.el,
     k: bendK,
-    col: col,
+    col: C.text,
     bad: false
   }), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10.5,
-      lineHeight: 1.5,
+      fontSize: 15,
+      lineHeight: 1.45,
       color: C.text
     }
   }, spec.el && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 8.5,
-      letterSpacing: 1.5,
-      color: C.teal,
-      fontWeight: "bold",
+      fontFamily: FONT_D,
+      fontSize: 18,
+      color: C.text,
+      fontWeight: 700,
       marginBottom: 2
     }
   }, "Direcci\xF3n de codos"), spec.el.n), spec.lk && /*#__PURE__*/React.createElement("div", {
@@ -9548,10 +9561,10 @@ const photoSrc = (id, i) => `img/ex/${id}-${i}.jpg`;
 // Skills de calistenia (no vienen en free-exercise-db): fotos de Wikimedia
 // Commons con licencia CC. La licencia exige el credito al autor y el enlace,
 // por eso cada foto lleva los suyos.
-const PHOTOS_WM = {"planche": [{"f": "img/ex/planche-w0.jpg", "l": "EN EL PISO", "c": "Jonathanfv · CC BY 3.0", "u": "https://commons.wikimedia.org/wiki/File:Planche.jpg"}, {"f": "img/ex/planche-w1.jpg", "l": "EN ANILLAS", "c": "Pierre-Yves Beaudouin · CC BY-SA 4.0", "u": "https://commons.wikimedia.org/wiki/File:2015_European_Artistic_Gymnastics_Championships_-_Rings_-_Denis_Ablyazin_10.jpg"}], "front-lever": [{"f": "img/ex/front-lever-w0.jpg", "l": "FRONT LEVER COMPLETO", "c": "Silentrunner at English Wikipedia · CC BY-SA 3.0", "u": "https://commons.wikimedia.org/wiki/File:John_Gill_-_Front_Lever_-_1962.JPG"}], "lsit": [{"f": "img/ex/lsit-w0.jpg", "l": "EN PARALETAS", "c": "Anthony Topper · CC BY 2.0", "u": "https://commons.wikimedia.org/wiki/File:Annie_Thorisdottir_does_an_l-sit.jpg"}], "back-lever": [{"f": "img/ex/back-lever-w0.jpg", "l": "EN ANILLAS", "c": "Ondra7575 · CC BY-SA 4.0", "u": "https://commons.wikimedia.org/wiki/File:Back_lever_on_gymnastics_rings.jpg"}]};
+const PHOTOS_WM = {"planche": [{"f": "img/ex/planche-w0.jpg", "l": "En el piso", "c": "Jonathanfv · CC BY 3.0", "u": "https://commons.wikimedia.org/wiki/File:Planche.jpg"}, {"f": "img/ex/planche-w1.jpg", "l": "En anillas", "c": "Pierre-Yves Beaudouin · CC BY-SA 4.0", "u": "https://commons.wikimedia.org/wiki/File:2015_European_Artistic_Gymnastics_Championships_-_Rings_-_Denis_Ablyazin_10.jpg"}], "front-lever": [{"f": "img/ex/front-lever-w0.jpg", "l": "Front lever completo", "c": "Silentrunner at English Wikipedia · CC BY-SA 3.0", "u": "https://commons.wikimedia.org/wiki/File:John_Gill_-_Front_Lever_-_1962.JPG"}], "lsit": [{"f": "img/ex/lsit-w0.jpg", "l": "En paraletas", "c": "Anthony Topper · CC BY 2.0", "u": "https://commons.wikimedia.org/wiki/File:Annie_Thorisdottir_does_an_l-sit.jpg"}], "back-lever": [{"f": "img/ex/back-lever-w0.jpg", "l": "En anillas", "c": "Ondra7575 · CC BY-SA 4.0", "u": "https://commons.wikimedia.org/wiki/File:Back_lever_on_gymnastics_rings.jpg"}]};
 const photoFrames = id => PHOTOS_WM[id] ? PHOTOS_WM[id] : PHOTOS[id] ? [0, 1].map(i => ({
   f: photoSrc(id, i),
-  l: i ? "2 \xB7 FINAL" : "1 \xB7 INICIO",
+  l: i ? "Final" : "Inicio",
   c: "free-exercise-db (dominio p\xFAblico)"
 })) : null;
 const videoUrl = name => `https://www.youtube.com/results?search_query=${encodeURIComponent(name + " tutorial técnica calistenia")}`;
