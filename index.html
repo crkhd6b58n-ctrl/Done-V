@@ -13528,7 +13528,6 @@ function App() {
         size: 22
       })));
     };
-    const heatBg = cell => cell.future ? "transparent" : cell.n === 0 ? C.card2 : cell.n < 3 ? C.orange + "40" : cell.n < 7 ? C.orange + "88" : C.orange;
     const notesList = Object.keys(notes).map(k => ({
       scope: k,
       ...notes[k],
@@ -13972,90 +13971,136 @@ function App() {
         color: C.muted,
         marginTop: 2
       }
-    }, l)))), ce("div", {
-      style: sub
-    }, "\xDAltimas 12 semanas"), ce("div", {
-      style: {
-        display: "flex",
-        gap: 6
-      }
-    }, ce("div", {
-      "aria-hidden": true,
-      style: {
-        display: "flex",
-        flexDirection: "column",
-        gap: 3,
-        flexShrink: 0
-      }
-    }, WD.map((d, i) => ce("div", {
-      key: i,
-      style: {
-        fontSize: 11,
-        color: C.muted,
-        flex: 1,
-        display: "flex",
-        alignItems: "center"
-      }
-    }, i % 2 === 0 ? d : ""))), ce("div", {
-      style: {
-        display: "flex",
-        gap: 3,
-        flex: 1
-      }
-    }, heat.map((week, wi) => ce("div", {
-      key: wi,
-      style: {
-        display: "flex",
-        flexDirection: "column",
-        gap: 3,
-        flex: 1
-      }
-    }, week.map(cell => {
-      const isToday = cell.key === dateStr();
-      return ce("div", {
-        key: cell.key,
-        title: `${cell.key}: ${cell.n}`,
-        style: {
-          width: "100%",
-          aspectRatio: "1",
-          borderRadius: 3,
-          background: heatBg(cell),
-          boxShadow: isToday ? `0 0 0 2px ${C.yellow}` : "none",
-          border: cell.future ? `1px dashed ${C.border}` : "none"
-        }
+    }, l)))), (() => {
+      // Mismo criterio que la pestaña Coach: un día cuenta si marcaste algo o anotaste series
+      const act = activeDaySet(alog, exSets);
+      const today = dateStr();
+      const planStart = startD ? dateStr(mondayOf(parseDay(startD))) : null;
+      const stOf = (cell, d) => {
+        if (cell.future) return "future";
+        if (planStart && cell.key < planStart) return act.has(cell.key) ? "extra" : "before";
+        const planned = split.includes(d);
+        if (act.has(cell.key)) return planned ? "done" : "extra";
+        if (!planned) return "rest";
+        return cell.key === today ? "todo" : "miss";
+      };
+      const grid = heat.map(week => week.map((cell, d) => ({
+        ...cell,
+        st: stOf(cell, d)
+      })));
+      const flat = grid.flat();
+      const plannedPast = flat.filter(c => c.st === "done" || c.st === "miss").length;
+      const doneN = flat.filter(c => c.st === "done").length;
+      const extraN = flat.filter(c => c.st === "extra").length;
+      const look = {
+        done: [C.teal, "none"],
+        extra: [C.purple, "none"],
+        miss: ["transparent", `1.5px solid ${C.red}`],
+        todo: ["transparent", `2px solid ${C.text}`],
+        rest: [C.card2, "none"],
+        before: [C.card, "none"],
+        future: ["transparent", `1px dashed ${C.border}`]
+      };
+      const mon = d => d.toLocaleDateString("es-MX", {
+        month: "short"
+      }).replace(".", "");
+      const monthLbl = grid.map((week, wi) => {
+        const m0 = mon(parseDay(week[0].key));
+        return wi === 0 || m0 !== mon(parseDay(grid[wi - 1][0].key)) ? m0 : "";
       });
-    }))))), ce("div", {
-      style: {
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginTop: 8,
-        fontSize: 13,
-        color: C.muted
-      }
-    }, ce("span", null, "Hace 12 semanas"), ce("span", {
-      style: {
-        display: "flex",
-        gap: 4,
-        alignItems: "center"
-      }
-    }, "Menos", [{
-      n: 0
-    }, {
-      n: 1
-    }, {
-      n: 4
-    }, {
-      n: 9
-    }].map((c, i) => ce("span", {
-      key: i,
-      style: {
-        width: 11,
-        height: 11,
-        borderRadius: 2,
-        background: heatBg(c)
-      }
-    })), "más"))),
+      return ce(React.Fragment, null, ce("div", {
+        style: {
+          display: "flex",
+          alignItems: "baseline",
+          justifyContent: "space-between",
+          gap: 10,
+          flexWrap: "wrap",
+          marginBottom: 10
+        }
+      }, ce("div", {
+        style: {
+          ...sub,
+          marginBottom: 0
+        }
+      }, "\xDAltimas 12 semanas"), plannedPast > 0 && ce("span", {
+        style: {
+          fontSize: 14,
+          color: C.muted
+        }
+      }, "Entrenaste ", ce("b", {
+        style: {
+          color: C.text,
+          fontWeight: 600
+        }
+      }, doneN, " de ", plannedPast), " d\xEDas de tu plan", extraN ? ` y ${extraN} fuera de plan` : "")), ce("div", {
+        role: "img",
+        "aria-label": `\xDAltimas 12 semanas: ${doneN} de ${plannedPast} d\xEDas de tu plan entrenados` + (extraN ? `, ${extraN} fuera de plan` : "") + `, ${flat.filter(c => c.st === "miss").length} faltados.`,
+        style: {
+          display: "grid",
+          gridTemplateColumns: "16px repeat(12, 1fr)",
+          gap: 3
+        }
+      }, ce("span", null), monthLbl.map((m, i) => ce("span", {
+        key: "m" + i,
+        "aria-hidden": true,
+        style: {
+          fontSize: 11,
+          color: C.muted,
+          whiteSpace: "nowrap",
+          overflow: "visible",
+          height: 14
+        }
+      }, m)), WD.map((dl, d) => [ce("span", {
+        key: "d" + d,
+        "aria-hidden": true,
+        style: {
+          fontSize: 11,
+          color: C.muted,
+          display: "flex",
+          alignItems: "center"
+        }
+      }, dl.charAt(0)), ...grid.map((week, wi) => {
+        const cell = week[d];
+        const [bg, bd] = look[cell.st];
+        return ce("span", {
+          key: cell.key,
+          "aria-hidden": true,
+          title: cell.key,
+          style: {
+            aspectRatio: "1",
+            borderRadius: 3,
+            background: bg,
+            border: bd,
+            boxShadow: cell.key === today ? `0 0 0 2px ${C.yellow}` : "none"
+          }
+        });
+      })])), ce("div", {
+        "aria-hidden": true,
+        style: {
+          display: "flex",
+          gap: 14,
+          flexWrap: "wrap",
+          fontSize: 13,
+          color: C.muted,
+          marginTop: 10
+        }
+      }, [["Hecho", "done"], ["Fuera de plan", "extra"], ["Faltaste", "miss"], ["Descanso", "rest"]].map(([l, st]) => ce("span", {
+        key: st,
+        style: {
+          display: "flex",
+          alignItems: "center",
+          gap: 5
+        }
+      }, ce("span", {
+        style: {
+          width: 11,
+          height: 11,
+          borderRadius: 2,
+          background: look[st][0],
+          border: look[st][1]
+        }
+      }), l))));
+    })()),
     // 3. Volumen
     ce("section", {
       "aria-labelledby": "pr-vol",
