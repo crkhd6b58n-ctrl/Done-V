@@ -11621,7 +11621,10 @@ function App() {
   }, [autoWeek]);
 
   //  Consistencia 
-  const streaks = useMemo(() => planStreaks(activeDaySet(alog, exSets), split, startD), [alog, exSets, split, startD, clockTick]);
+  const actDays = useMemo(() => activeDaySet(alog, exSets), [alog, exSets]);
+  const streaks = useMemo(() => planStreaks(actDays, split, startD), [actDays, split, startD, clockTick]);
+  // Hoy toca y aún no entrenas: la racha sigue viva, pero depende de hoy
+  const streakDue = !!startD && split.includes(tdIdx) && !actDays.has(dateStr());
   const streakNow = streaks.now;
   const bestStreak = streaks.best;
 
@@ -11995,34 +11998,55 @@ function App() {
     }
   }, ce("button", {
     onClick: () => changeTab("prs"),
-    "aria-label": `Racha: ${streakNow} ${streakNow === 1 ? "día" : "días"} de tu plan seguidos. Ver PRs`,
+    "aria-label": `Racha: ${streakNow} ${streakNow === 1 ? "día" : "días"} de tu plan seguidos.${streakDue ? " Hoy toca para mantenerla." : ""} Ver PRs`,
     style: {
+      position: "relative",
       display: "flex",
-      alignItems: "center",
+      alignItems: "baseline",
       gap: 5,
+      height: 40,
       background: "transparent",
       border: `1.5px solid ${C.border}`,
       borderRadius: 6,
-      padding: "6px 10px",
-      color: streakNow > 0 ? C.text : C.muted,
-      fontFamily: FONT_D,
-      fontSize: 18,
-      fontWeight: 700,
+      padding: "0 11px",
       cursor: "pointer"
     }
   }, ce("span", {
     "aria-hidden": true,
     style: {
-      fontSize: 15
+      fontFamily: FONT_D,
+      fontSize: 24,
+      fontWeight: 800,
+      lineHeight: "38px",
+      color: streakNow > 0 ? C.teal : C.muted
     }
-  }, "🔥"), streakNow), ce("button", {
+  }, streakNow), ce("span", {
+    "aria-hidden": true,
+    style: {
+      fontSize: 13,
+      color: C.muted
+    }
+  }, "racha"), streakDue && ce("span", {
+    "aria-hidden": true,
+    style: {
+      position: "absolute",
+      top: -4,
+      right: -4,
+      width: 10,
+      height: 10,
+      borderRadius: "50%",
+      background: C.yellow,
+      boxShadow: `0 0 0 2px ${C.bg}`
+    }
+  })), ce("button", {
     onClick: () => setShowTimer(true),
     "aria-label": "Abrir cronómetro",
     style: {
+      height: 40,
       background: "transparent",
       border: `1.5px solid ${C.border}`,
       borderRadius: 6,
-      padding: "6px 11px",
+      padding: "0 11px",
       color: C.text,
       fontFamily: "inherit",
       fontSize: 17,
