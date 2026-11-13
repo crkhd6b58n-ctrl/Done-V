@@ -9736,13 +9736,14 @@ function ExMedia({
   const ex = EXERCISES.find(e => e.id === id);
   const tb = on => ({
     flex: 1,
-    padding: "7px 6px",
-    background: on ? col + "20" : "transparent",
-    border: `1px solid ${on ? col + "70" : C.border}`,
+    minHeight: 40,
+    padding: "6px 8px",
+    background: on ? C.text : "transparent",
+    border: `1.5px solid ${on ? C.text : C.border}`,
     borderRadius: 6,
-    color: on ? col : C.muted,
+    color: on ? C.bg : C.text,
     fontFamily: FONT_D,
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: 700,
     cursor: "pointer"
   });
@@ -9754,25 +9755,26 @@ function ExMedia({
     }
   }, has && /*#__PURE__*/React.createElement("button", {
     onClick: () => setTab("foto"),
+    "aria-pressed": tab === "foto",
     style: tb(tab === "foto")
   }, "Foto real"), /*#__PURE__*/React.createElement("button", {
     onClick: () => setTab("tec"),
+    "aria-pressed": tab === "tec",
     style: tb(tab === "tec")
   }, "T\xE9cnica"), /*#__PURE__*/React.createElement("a", {
     href: videoUrl(ex ? ex.name : id),
     target: "_blank",
     rel: "noopener noreferrer",
+    "aria-label": "Ver videos en YouTube (abre otra pesta\xF1a)",
     style: {
       ...tb(false),
       flex: "0 0 auto",
       textDecoration: "none",
-      color: C.red,
-      borderColor: C.red + "60",
       display: "flex",
       alignItems: "center",
       justifyContent: "center"
     }
-  }, "\u25B6 Video")), tab === "foto" && has ? /*#__PURE__*/React.createElement(ExPhoto, {
+  }, "Video \u2197")), tab === "foto" && has ? /*#__PURE__*/React.createElement(ExPhoto, {
     id: id,
     color: col
   }) : /*#__PURE__*/React.createElement(ExAnim, {
@@ -10951,6 +10953,7 @@ function App() {
   const [sd, setSd] = useState(null);
   const [eb, setEb] = useState(null);
   const [exF, setExF] = useState("all");
+  const [exQ, setExQ] = useState("");
   const [exO, setExO] = useState(null);
   const [tn, setTn] = useState(null);
   const [pw, setPw] = useState(0);
@@ -11353,6 +11356,7 @@ function App() {
   const goGuide = id => {
     changeTab("tecnica");
     setExF("all");
+    setExQ("");
     setExO(id);
     setTimeout(() => {
       try {
@@ -14355,227 +14359,294 @@ function App() {
         }, "Elegir este sub-path"))
       });
     })))));
-  })(), tab === "tecnica" && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 4,
-      flexWrap: "wrap",
-      marginBottom: 12
-    }
-  }, CAT_FILTER.map(f => /*#__PURE__*/React.createElement("button", {
-    key: f.id,
-    onClick: () => {
-      setExF(f.id);
-      setExO(null);
-    },
-    style: {
-      padding: "5px 11px",
-      borderRadius: 20,
-      border: "none",
-      cursor: "pointer",
-      fontFamily: "inherit",
-      fontSize: 14,
-      fontWeight: "bold",
-      transition: "all .15s",
-      background: exF === f.id ? C.yellow : C.card,
-      color: exF === f.id ? C.bg : C.muted
-    }
-  }, f.label))), fEx.map(ex => {
-    const isO = exO === ex.id;
-    const sc = {
-      "📘 Playbook": C.yellow,
-      "📘 David": C.teal,
-      "📖 Rolette": C.orange,
-      "🔍 Research": C.purple
-    }[ex.src] || C.muted;
-    return /*#__PURE__*/React.createElement("div", {
-      key: ex.id,
-      id: "ex-" + ex.id,
+  })(), tab === "tecnica" && (() => {
+    const q = exQ.trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+    const norm = s => String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+    const list = q ? fEx.filter(e => norm(e.name).includes(q) || e.muscles.some(m => norm(m).includes(q))) : fEx;
+    const srcName = s => String(s || "").replace(/^\S+\s/, "");
+    const joinY = a0 => {
+      const arr = a0.map((m, i) => i ? m.charAt(0).toLowerCase() + m.slice(1) : m);
+      return arr.length > 1 ? arr.slice(0, -1).join(", ") + " y " + arr[arr.length - 1] : arr[0] || "";
+    };
+    const sub = {
+      fontFamily: FONT_D,
+      fontSize: 20,
+      fontWeight: 700,
+      marginBottom: 6
+    };
+    return ce(React.Fragment, null, ce("h2", {
       style: {
-        scrollMarginTop: 110,
-        background: C.card,
-        borderRadius: 8,
-        overflow: "hidden",
-        border: `1px solid ${isO ? "#E8FF3A40" : C.border}`,
+        fontFamily: FONT_D,
+        fontSize: 30,
+        fontWeight: 800,
+        lineHeight: 1,
+        letterSpacing: -0.3,
         marginBottom: 6
       }
-    }, /*#__PURE__*/React.createElement("button", {
-      onClick: () => setExO(isO ? null : ex.id),
+    }, "Biblioteca de ejercicios"), ce("p", {
+      style: {
+        fontSize: 15,
+        color: C.muted,
+        lineHeight: 1.5,
+        marginBottom: 14,
+        maxWidth: "62ch"
+      }
+    }, EXERCISES.length, " ejercicios con animaci\xF3n, cues y errores comunes. Abre uno para verlo en movimiento."), ce("input", {
+      type: "search",
+      value: exQ,
+      onChange: e => {
+        setExQ(e.target.value);
+        setExO(null);
+      },
+      placeholder: "Busca por nombre o m\xFAsculo",
+      "aria-label": "Buscar ejercicio",
       style: {
         width: "100%",
-        padding: "12px 14px",
-        background: isO ? "#E8FF3A08" : "transparent",
-        border: "none",
-        color: C.text,
-        cursor: "pointer",
-        display: "flex",
-        gap: 10,
-        alignItems: "center",
-        textAlign: "left",
-        fontFamily: "inherit"
-      }
-    }, ANIM[ex.id] && /*#__PURE__*/React.createElement("div", {
-      style: {
-        width: 46,
-        flexShrink: 0,
-        opacity: isO ? 1 : 0.75
-      }
-    }, /*#__PURE__*/React.createElement(ExAnim, {
-      id: ex.id,
-      animate: false,
-      height: 42
-    })), /*#__PURE__*/React.createElement("div", {
-      style: {
-        flex: 1
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 16,
-        fontWeight: "bold"
-      }
-    }, ex.name), /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        gap: 5,
-        marginTop: 3,
-        flexWrap: "wrap"
-      }
-    }, /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontSize: 13,
-        padding: "2px 6px",
-        borderRadius: 4,
-        fontWeight: "bold",
-        background: sc + "25",
-        color: sc
-      }
-    }, ex.src), ex.muscles.slice(0, 2).map(m => /*#__PURE__*/React.createElement("span", {
-      key: m,
-      style: {
-        fontSize: 13,
-        padding: "2px 6px",
-        borderRadius: 4,
-        background: C.card2,
-        color: C.muted
-      }
-    }, m)))), /*#__PURE__*/React.createElement("span", {
-      style: {
-        color: isO ? C.yellow : C.dim,
-        fontSize: 16
-      }
-    }, isO ? "▲" : "▼")), isO && /*#__PURE__*/React.createElement("div", {
-      style: {
-        padding: "0 14px 12px"
-      }
-    }, ANIM[ex.id] && /*#__PURE__*/React.createElement("div", {
-      style: {
-        background: C.card2,
+        background: C.card,
+        border: `1.5px solid ${C.border}`,
         borderRadius: 6,
-        border: `1px solid ${C.border}`,
-        marginBottom: 10,
-        padding: "8px 6px 4px"
-      }
-    }, /*#__PURE__*/React.createElement(ExMedia, {
-      id: ex.id,
-      height: 168
-    }), /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 14,
-    fontFamily: FONT_D,
-    fontWeight: 600,
-        color: C.dim,
-        textAlign: "center",
-        padding: "2px 0 3px"
-      }
-    }, "Toca la foto o la figura para pausar")), /*#__PURE__*/React.createElement("div", {
-      style: {
-        marginBottom: 9
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 16,
-    fontFamily: FONT_D,
-        color: C.yellow,
-        fontWeight: 700,
-        marginBottom: 6
-      }
-    }, "Cues"), ex.cues.map((c, ci) => /*#__PURE__*/React.createElement("div", {
-      key: ci,
-      style: {
-        display: "flex",
-        gap: 7,
-        padding: "5px 0",
-        borderBottom: ci < ex.cues.length - 1 ? `1px solid ${C.border}` : "none"
-      }
-    }, /*#__PURE__*/React.createElement("span", {
-      style: {
-        color: C.yellow,
-        fontSize: 15,
-        flexShrink: 0,
-        marginTop: 1
-      }
-    }, "\u2192"), /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontSize: 15,
+        padding: "12px 14px",
         color: C.text,
-        lineHeight: 1.5
-      }
-    }, c)))), /*#__PURE__*/React.createElement("div", {
-      style: {
-        marginBottom: 9
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
+        fontFamily: "inherit",
         fontSize: 16,
-    fontFamily: FONT_D,
-        color: C.pink,
+        marginBottom: 10
+      }
+    }), ce("div", {
+      role: "group",
+      "aria-label": "Categor\xEDa",
+      style: {
+        display: "flex",
+        gap: 6,
+        overflowX: "auto",
+        scrollbarWidth: "none",
+        marginBottom: 14
+      }
+    }, CAT_FILTER.map(f => ce("button", {
+      key: f.id,
+      onClick: () => {
+        setExF(f.id);
+        setExO(null);
+      },
+      "aria-pressed": exF === f.id,
+      style: {
+        flex: "0 0 auto",
+        minHeight: 40,
+        padding: "6px 14px",
+        borderRadius: 6,
+        border: `1.5px solid ${exF === f.id ? C.text : C.border}`,
+        background: exF === f.id ? C.text : "transparent",
+        color: exF === f.id ? C.bg : C.text,
+        fontFamily: FONT_D,
+        fontSize: 17,
         fontWeight: 700,
-        marginBottom: 6
+        cursor: "pointer"
       }
-    }, "Errores comunes"), ex.mistakes.map((m, mi) => /*#__PURE__*/React.createElement("div", {
-      key: mi,
-      style: {
-        display: "flex",
-        gap: 7,
-        padding: "5px 0",
-        borderBottom: mi < ex.mistakes.length - 1 ? `1px solid ${C.border}` : "none"
-      }
-    }, /*#__PURE__*/React.createElement("span", {
-      style: {
-        color: C.pink,
-        fontSize: 15,
-        flexShrink: 0,
-        marginTop: 1
-      }
-    }, "\u2717"), /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontSize: 15,
-        color: C.muted,
-        lineHeight: 1.5
-      }
-    }, m)))), /*#__PURE__*/React.createElement("div", {
-      style: {
-        background: C.card2,
-        borderRadius: 8,
-        padding: "9px 11px",
-        borderLeft: `3px solid ${C.yellow}`,
-        display: "flex",
-        gap: 7
-      }
-    }, /*#__PURE__*/React.createElement("span", {
+    }, f.label))), list.length === 0 ? ce("p", {
       style: {
         fontSize: 16,
-        flexShrink: 0
-      }
-    }, "\uD83D\uDCA1"), /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontSize: 15,
         color: C.muted,
-        lineHeight: 1.6,
-        fontStyle: "italic"
+        padding: "18px 0"
       }
-    }, ex.tip))));
-  })), tab === "coach" && /*#__PURE__*/React.createElement(CoachTab, {
+    }, "Ning\xFAn ejercicio coincide con “", exQ.trim(), "”. ", ce("button", {
+      onClick: () => setExQ(""),
+      style: {
+        background: "none",
+        border: "none",
+        padding: 0,
+        color: C.text,
+        fontFamily: "inherit",
+        fontSize: 16,
+        textDecoration: "underline",
+        cursor: "pointer"
+      }
+    }, "Borrar b\xFAsqueda")) : ce("ul", {
+      style: {
+        listStyle: "none",
+        margin: 0,
+        padding: 0,
+        borderTop: `1px solid ${C.border}`
+      }
+    }, list.map(ex => {
+      const isO = exO === ex.id;
+      return ce("li", {
+        key: ex.id,
+        id: "ex-" + ex.id,
+        style: {
+          scrollMarginTop: 110,
+          borderBottom: `1px solid ${C.border}`
+        }
+      }, ce("button", {
+        onClick: () => setExO(isO ? null : ex.id),
+        "aria-expanded": isO,
+        style: {
+          width: "100%",
+          padding: "10px 0",
+          background: "transparent",
+          border: "none",
+          color: C.text,
+          cursor: "pointer",
+          display: "flex",
+          gap: 12,
+          alignItems: "center",
+          textAlign: "left",
+          fontFamily: "inherit"
+        }
+      }, ce("span", {
+        "aria-hidden": true,
+        style: {
+          width: 4,
+          alignSelf: "stretch",
+          borderRadius: 2,
+          background: isO ? C.yellow : "transparent"
+        }
+      }), ANIM[ex.id] && ce("span", {
+        "aria-hidden": true,
+        style: {
+          width: 58,
+          flexShrink: 0,
+          background: C.card,
+          borderRadius: 6,
+          padding: "2px 4px"
+        }
+      }, ce(ExAnim, {
+        id: ex.id,
+        animate: false,
+        height: 44
+      })), ce("span", {
+        style: {
+          flex: 1,
+          minWidth: 0
+        }
+      }, ce("span", {
+        style: {
+          display: "block",
+          fontFamily: FONT_D,
+          fontSize: 21,
+          fontWeight: 700,
+          lineHeight: 1.1
+        }
+      }, ex.name), ce("span", {
+        style: {
+          display: "block",
+          fontSize: 14,
+          color: C.muted,
+          marginTop: 2
+        }
+      }, joinY(ex.muscles.slice(0, 3)))), ce("span", {
+        "aria-hidden": true,
+        style: {
+          color: isO ? C.text : C.muted,
+          fontSize: 14,
+          paddingRight: 2
+        }
+      }, isO ? "▲" : "▼")), isO && ce("div", {
+        style: {
+          padding: "4px 0 22px 16px"
+        }
+      }, ANIM[ex.id] && ce("div", {
+        style: {
+          background: C.card,
+          borderRadius: 8,
+          padding: "10px 8px 6px",
+          marginBottom: 20
+        }
+      }, ce(ExMedia, {
+        id: ex.id,
+        height: 190
+      }), ce("div", {
+        style: {
+          fontSize: 13,
+          color: C.muted,
+          textAlign: "center",
+          padding: "6px 0 2px"
+        }
+      }, "Toca la foto o la figura para pausar")), ce("div", {
+        style: sub
+      }, "Cues"), ce("ul", {
+        style: {
+          listStyle: "none",
+          margin: "0 0 20px",
+          padding: 0
+        }
+      }, ex.cues.map((c, ci) => ce("li", {
+        key: ci,
+        style: {
+          display: "flex",
+          gap: 10,
+          padding: "7px 0",
+          borderTop: ci ? `1px solid ${C.border}` : "none"
+        }
+      }, ce("span", {
+        "aria-hidden": true,
+        style: {
+          flexShrink: 0,
+          marginTop: 3
+        }
+      }, ce(Waymark, {
+        size: 16
+      })), ce("span", {
+        style: {
+          fontSize: 16,
+          lineHeight: 1.45
+        }
+      }, c)))), ce("div", {
+        style: sub
+      }, "Errores comunes"), ce("ul", {
+        style: {
+          listStyle: "none",
+          margin: "0 0 20px",
+          padding: 0
+        }
+      }, ex.mistakes.map((m, mi) => ce("li", {
+        key: mi,
+        style: {
+          display: "flex",
+          gap: 10,
+          padding: "7px 0",
+          borderTop: mi ? `1px solid ${C.border}` : "none"
+        }
+      }, ce("span", {
+        "aria-hidden": true,
+        style: {
+          color: C.red,
+          fontWeight: 700,
+          width: 16,
+          textAlign: "center",
+          flexShrink: 0
+        }
+      }, "✕"), ce("span", {
+        style: {
+          fontSize: 16,
+          lineHeight: 1.45,
+          color: C.text,
+          opacity: 0.85
+        }
+      }, m)))), ex.tip && ce("div", {
+        style: {
+          borderLeft: `3px solid ${C.yellow}`,
+          padding: "2px 0 2px 14px",
+          marginBottom: 14
+        }
+      }, ce("div", {
+        style: {
+          ...sub,
+          fontSize: 18,
+          marginBottom: 2
+        }
+      }, "Consejo"), ce("p", {
+        style: {
+          fontSize: 16,
+          lineHeight: 1.5,
+          maxWidth: "62ch"
+        }
+      }, ex.tip)), ex.src && ce("div", {
+        style: {
+          fontSize: 13,
+          color: C.muted
+        }
+      }, "Fuente: ", srcName(ex.src))));
+    })));
+  })(), tab === "coach" && /*#__PURE__*/React.createElement(CoachTab, {
     weeks: adh,
     verdict,
     vol: volData,
