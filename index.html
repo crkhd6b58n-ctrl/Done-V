@@ -9803,18 +9803,19 @@ function AnimThumb({
     "aria-label": "Ver animación del ejercicio",
     style: {
       flexShrink: 0,
-      width: 34,
-      height: 24,
-      padding: 1,
-      background: open ? color + "20" : "transparent",
-      border: `1px solid ${open ? color + "60" : C.border}`,
+      width: 48,
+      height: 34,
+      padding: 2,
+      background: open ? C.card2 : "transparent",
+      border: `1.5px solid ${open ? C.text : C.border}`,
       borderRadius: 6,
       cursor: "pointer"
-    }
+    },
+    "aria-expanded": !!open
   }, /*#__PURE__*/React.createElement(ExAnim, {
     id,
-    height: 20,
-    color: open ? color : C.muted,
+    height: 28,
+    color: open ? C.text : C.muted,
     at: 0.5
   }));
 }
@@ -9827,12 +9828,11 @@ function ItemAnim({
   return /*#__PURE__*/React.createElement("div", {
     onClick: e => e.stopPropagation(),
     style: {
-      marginTop: 9,
-      marginLeft: 28,
-      background: C.card2,
+      marginTop: 10,
+      marginLeft: 36,
+      background: C.card,
       borderRadius: 8,
-      padding: "8px 8px 6px",
-      border: `1px solid ${C.border}`,
+      padding: "10px 8px 8px",
       cursor: "default"
     }
   }, /*#__PURE__*/React.createElement(ExMedia, {
@@ -9846,20 +9846,22 @@ function ItemAnim({
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 16,
-    fontFamily: FONT_D,
-      color,
+      fontSize: 20,
+      fontFamily: FONT_D,
+      color: C.text,
       fontWeight: 700,
       marginBottom: 4
     }
   }, ex.name), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 14,
-      color: C.orange,
+      fontSize: 15,
+      color: C.text,
       marginTop: 4,
-      lineHeight: 1.4
+      lineHeight: 1.45,
+      borderLeft: `3px solid ${C.red}`,
+      paddingLeft: 10
     }
-  }, "⚠ ", ex.mistakes[0]), onGuide && /*#__PURE__*/React.createElement("button", {
+  }, "Ojo: ", ex.mistakes[0]), onGuide && /*#__PURE__*/React.createElement("button", {
     onClick: () => onGuide(id),
     style: {
       marginTop: 7,
@@ -9867,11 +9869,11 @@ function ItemAnim({
       border: "none",
       padding: 0,
       color: C.muted,
-      fontFamily: FONT_D,
-      fontSize: 16,
-    fontWeight: 600,
+      fontFamily: "inherit",
+      fontSize: 15,
       cursor: "pointer",
-      textDecoration: "underline"
+      textDecoration: "underline",
+      textUnderlineOffset: 3
     }
   }, "Ver ficha completa en T\u00E9cnica")));
 }
@@ -12304,78 +12306,86 @@ function App() {
       }
     })))));
   }))))),tab === "semana" && dd && (() => {
-    const col = TC[dd.type] || C.dim;
+    const col = TC[dd.type] || C.muted;
     const {
       done,
       total
     } = dcRes(res, sd);
-    return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    const lastDay = split.length - 1;
+    const navBtn = off => ({
+      width: 44,
+      height: 44,
+      background: "transparent",
+      border: `1.5px solid ${C.border}`,
+      borderRadius: 6,
+      color: off ? C.dim : C.text,
+      cursor: off ? "default" : "pointer",
+      fontFamily: FONT_D,
+      fontSize: 26,
+      lineHeight: 1
+    });
+    const blockDone = bi => dd.blocks[bi].i.filter((_, ii) => chk[wkKey(res, sd, bi, ii)]).length;
+    const firstOpen = dd.blocks.findIndex((b, bi) => blockDone(bi) < b.i.length);
+    // "PUSH (16 min)" -> ["Push", "16 min"]
+    const splitBlock = t => {
+      const s = String(t).replace(/^(\p{Extended_Pictographic}\uFE0F?\s*)+/u, "");
+      const m = s.match(/^(.*?)\s*\(([^)]*)\)\s*$/);
+      return m ? [cueCase(m[1]), m[2]] : [cueCase(s), ""];
+    };
+    return ce(React.Fragment, null, ce("div", {
       style: {
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        marginBottom: 12
+        gap: 8,
+        marginBottom: 14
       }
-    }, /*#__PURE__*/React.createElement("button", {
+    }, ce("button", {
       onClick: () => setSd(null),
       style: {
         background: "none",
         border: "none",
-        color: C.muted,
+        color: C.text,
         fontFamily: "inherit",
         fontSize: 15,
         cursor: "pointer",
-        padding: 0
+        padding: "8px 0"
       }
-    }, "\u2190 Semana ", wd.week), /*#__PURE__*/React.createElement("div", {
+    }, "← Semana ", wd.week), ce("div", {
       style: {
         display: "flex",
-        gap: 5
+        gap: 6
       }
-    }, /*#__PURE__*/React.createElement("button", {
+    }, ce("button", {
       onClick: () => {
         setSd(d => Math.max(0, d - 1));
         setEb(null);
       },
-      style: {
-        background: C.card,
-        border: `1px solid ${C.border}`,
-        borderRadius: 6,
-        padding: "5px 9px",
-        color: sd === 0 ? C.dim : C.text,
-        cursor: sd === 0 ? "default" : "pointer",
-        fontFamily: "inherit"
-      }
-    }, "\u2190"), /*#__PURE__*/React.createElement("button", {
+      disabled: sd === 0,
+      "aria-label": "D\xEDa anterior",
+      style: navBtn(sd === 0)
+    }, "‹"), ce("button", {
       onClick: () => setShowTimer(true),
+      "aria-label": "Abrir temporizador",
       style: {
-        background: C.yellow + "15",
-        border: `1px solid ${C.yellow}40`,
-        borderRadius: 6,
-        padding: "5px 12px",
-        color: C.yellow,
-        fontFamily: "inherit",
-        fontSize: 15,
-        cursor: "pointer",
-        fontWeight: "bold"
+        ...navBtn(false),
+        width: "auto",
+        padding: "0 12px",
+        fontFamily: FONT_D,
+        fontSize: 17,
+        fontWeight: 700
       }
-    }, "\u23F1 Timer"), /*#__PURE__*/React.createElement("button", {
+    }, "⏱ Timer"), ce("button", {
       onClick: () => {
-        setSd(d => Math.min(split.length - 1, d + 1));
+        setSd(d => Math.min(lastDay, d + 1));
         setEb(null);
       },
+      disabled: sd >= lastDay,
+      "aria-label": "D\xEDa siguiente",
+      style: navBtn(sd >= lastDay)
+    }, "›"))), ce("section", {
       style: {
-        background: C.card,
-        border: `1px solid ${C.border}`,
-        borderRadius: 6,
-        padding: "5px 9px",
-        color: sd === 6 ? C.dim : C.text,
-        cursor: sd === 6 ? "default" : "pointer",
-        fontFamily: "inherit"
-      }
-    }, "\u2192"))), ce("section", {
-      style: {
-        marginBottom: 22
+        marginBottom: 26
       }
     }, ce("div", {
       style: {
@@ -12422,7 +12432,18 @@ function App() {
         fontSize: 15,
         color: C.muted
       }
-    }, done === total && total > 0 ? " hecho" : " ejercicios"))), ce("div", {
+    }, done === total && total > 0 ? " hecho" : " ejercicios")), ce("div", null, ce("span", {
+      style: {
+        fontFamily: FONT_D,
+        fontSize: 26,
+        fontWeight: 700
+      }
+    }, dd.blocks.length), ce("span", {
+      style: {
+        fontSize: 15,
+        color: C.muted
+      }
+    }, dd.blocks.length === 1 ? " bloque" : " bloques"))), ce("div", {
       role: "progressbar",
       "aria-valuemin": 0,
       "aria-valuemax": total,
@@ -12441,78 +12462,116 @@ function App() {
         background: col,
         transition: "width .3s"
       }
-    }))), dd.blocks.map((block, bi) => {
-      const isO = eb === bi;
-      const bDone = block.i.filter((_, ii) => chk[wkKey(res, sd, bi, ii)]).length;
-      return /*#__PURE__*/React.createElement("div", {
+    }))), ce("ol", {
+      "aria-label": "Bloques de la sesi\xF3n",
+      style: {
+        listStyle: "none",
+        margin: 0,
+        padding: 0
+      }
+    }, dd.blocks.map((block, bi) => {
+      const isO = eb === bi || eb === null && bi === firstOpen;
+      const bDone = blockDone(bi);
+      const full = bDone === block.i.length;
+      const last = bi === dd.blocks.length - 1;
+      const [bName, bDur] = splitBlock(block.t);
+      return ce("li", {
         key: bi,
         style: {
-          background: C.card,
-          borderRadius: 8,
-          overflow: "hidden",
-          marginBottom: 6,
-          border: `1px solid ${bDone === block.i.length ? col + "60" : C.border}`
+          position: "relative",
+          paddingLeft: 42,
+          paddingBottom: last ? 0 : 6
         }
-      }, /*#__PURE__*/React.createElement("button", {
-        onClick: () => setEb(isO ? null : bi),
+      }, !last && ce("span", {
+        "aria-hidden": true,
+        style: {
+          position: "absolute",
+          left: 13,
+          top: 30,
+          bottom: 0,
+          width: 2,
+          background: full ? col : C.border
+        }
+      }), ce("span", {
+        "aria-hidden": true,
+        style: {
+          position: "absolute",
+          left: 0,
+          top: 10,
+          width: 28,
+          height: 28,
+          borderRadius: "50%",
+          border: `2.5px solid ${full ? col : isO ? C.text : C.border}`,
+          background: full ? col : C.bg,
+          color: full ? C.bg : C.text,
+          fontFamily: FONT_D,
+          fontSize: 15,
+          fontWeight: 700,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center"
+        }
+      }, full ? "✓" : bi + 1), ce("button", {
+        onClick: () => setEb(isO ? -1 : bi),
+        "aria-expanded": isO,
         style: {
           width: "100%",
-          padding: "12px 14px",
-          background: isO ? col + "08" : "transparent",
+          display: "flex",
+          alignItems: "baseline",
+          gap: 10,
+          padding: "10px 0",
+          background: "transparent",
           border: "none",
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          gap: 9,
-          textAlign: "left",
-          fontFamily: "inherit"
-        }
-      }, /*#__PURE__*/React.createElement("div", {
-        style: {
-          width: 26,
-          height: 26,
-          borderRadius: 6,
-          background: bDone === block.i.length ? col : C.card2,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: 15,
-          color: bDone === block.i.length ? C.bg : C.muted,
-          fontWeight: "bold",
-          flexShrink: 0
-        }
-      }, bDone === block.i.length ? "✓" : bi + 1), /*#__PURE__*/React.createElement("div", {
-        style: {
-          flex: 1
-        }
-      }, /*#__PURE__*/React.createElement("div", {
-        style: {
-          fontSize: 15,
-          fontWeight: "bold",
           color: C.text,
-          fontFamily: "inherit"
+          fontFamily: "inherit",
+          textAlign: "left",
+          cursor: "pointer"
         }
-      }, block.t), /*#__PURE__*/React.createElement("div", {
+      }, ce("span", {
+        style: {
+          flex: 1,
+          minWidth: 0
+        }
+      }, ce("span", {
+        style: {
+          fontFamily: FONT_D,
+          fontSize: 23,
+          fontWeight: 700
+        }
+      }, bName), bDur && ce("span", {
+        style: {
+          fontSize: 14,
+          color: C.muted,
+          marginLeft: 8
+        }
+      }, bDur)), ce("span", {
+        style: {
+          fontFamily: FONT_D,
+          fontSize: 17,
+          fontWeight: 700,
+          color: full ? col : bDone > 0 ? C.text : C.muted
+        }
+      }, bDone, " de ", block.i.length), ce("span", {
+        "aria-hidden": true,
         style: {
           fontSize: 13,
           color: C.muted,
-          marginTop: 2
+          width: 14,
+          textAlign: "right"
         }
-      }, bDone, "/", block.i.length, " completados")), /*#__PURE__*/React.createElement("span", {
+      }, isO ? "▲" : "▼")), isO && ce("ul", {
         style: {
-          color: isO ? col : C.dim,
-          fontSize: 16
-        }
-      }, isO ? "▲" : "▼")), isO && /*#__PURE__*/React.createElement("div", {
-        style: {
-          padding: "0 14px 12px"
+          listStyle: "none",
+          margin: "0 0 14px",
+          padding: 0
         }
       }, block.i.map((item, ii) => {
         // La llave sale del texto ORIGINAL: cambiar de equipo
         // nunca mueve las palomitas.
         const k = wkKey(res, sd, bi, ii);
-        const done = chk[k];
+        const isDone = !!chk[k];
         const sb = subFor(item, gear);
+        const blocked = sb.kind === "blocked";
         const shown = sb.text;
         const pr = parsePresc(shown);
         const rec = exSets[k];
@@ -12520,276 +12579,294 @@ function App() {
         const isOpen = openSets === k;
         const rows = rowsFor(k, item);
         const prev = isOpen ? lastTimeFor(k, item) : null;
-        const unit = pr.secs ? "s" : "reps";
+        const unit = pr.secs ? "seg" : "reps";
         const aid = animFor(shown);
         const isAnim = aid && openAnim === k;
-        return /*#__PURE__*/React.createElement("div", {
+        const inp = {
+          width: 72,
+          background: C.bg,
+          border: `1.5px solid ${C.border}`,
+          borderRadius: 6,
+          color: C.text,
+          fontFamily: FONT_D,
+          fontSize: 20,
+          fontWeight: 700,
+          padding: "8px 6px",
+          textAlign: "center"
+        };
+        return ce("li", {
           key: ii,
           style: {
-            borderBottom: ii < block.i.length - 1 ? `1px solid ${C.border}` : "none",
-            padding: "8px 0"
+            borderTop: `1px solid ${C.border}`,
+            padding: "10px 0"
           }
-        }, /*#__PURE__*/React.createElement("div", {
+        }, ce("div", {
           style: {
             display: "flex",
-            gap: 9,
+            gap: 12,
             alignItems: "flex-start"
           }
-        }, /*#__PURE__*/React.createElement("div", {
-          onClick: () => sb.kind !== "blocked" && tick(k),
+        }, ce("button", {
+          role: "checkbox",
+          "aria-checked": isDone,
+          "aria-disabled": blocked,
+          onClick: () => !blocked && tick(k),
           style: {
-            width: 19,
-            height: 19,
-            borderRadius: 4,
-            flexShrink: 0,
+            flex: 1,
+            minWidth: 0,
+            display: "flex",
+            gap: 12,
+            alignItems: "flex-start",
+            background: "transparent",
+            border: "none",
+            padding: 0,
+            textAlign: "left",
+            color: C.text,
+            fontFamily: "inherit",
+            cursor: blocked ? "default" : "pointer"
+          }
+        }, ce("span", {
+          "aria-hidden": true,
+          style: {
+            width: 24,
+            height: 24,
             marginTop: 1,
-            transition: "all .15s",
-            border: `2px solid ${sb.kind === "blocked" ? C.border : done ? col : C.dim}`,
-            background: done ? col : "transparent",
+            borderRadius: 5,
+            flexShrink: 0,
+            border: `2px solid ${blocked ? C.border : isDone ? col : C.dim}`,
+            background: isDone ? col : "transparent",
+            color: C.bg,
+            fontWeight: 700,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            cursor: sb.kind === "blocked" ? "default" : "pointer",
-            opacity: sb.kind === "blocked" ? 0.4 : 1
+            opacity: blocked ? 0.5 : 1
           }
-        }, done && /*#__PURE__*/React.createElement("span", {
+        }, isDone ? "✓" : ""), ce("span", {
           style: {
-            color: C.bg,
+            fontSize: 16,
+            lineHeight: 1.45,
+            color: blocked || isDone ? C.muted : C.text,
+            textDecoration: isDone ? "line-through" : "none"
+          }
+        }, shown, sb.kind === "sub" && ce("span", {
+          style: {
+            display: "block",
             fontSize: 14,
-            fontWeight: "bold"
-          }
-        }, "\u2713")), /*#__PURE__*/React.createElement("span", {
-          onClick: () => sb.kind !== "blocked" && tick(k),
-          style: {
-            flex: 1,
-            fontSize: 15,
-            color: sb.kind === "blocked" ? C.dim : done ? col : C.text,
-            lineHeight: 1.5,
-            textDecoration: done ? "line-through" : "none",
-            cursor: sb.kind === "blocked" ? "default" : "pointer"
-          }
-        }, shown, sb.kind === "sub" && /*#__PURE__*/React.createElement("span", {
-          style: {
-            display: "block",
-            fontSize: 13,
             color: C.muted,
-            marginTop: 2
+            marginTop: 2,
+            textDecoration: "none"
           }
-        }, /*#__PURE__*/React.createElement("span", {
-          style: {
-            color: C.teal,
-            fontWeight: "bold",
-            letterSpacing: 1
-          }
-        }, "Sustituye"), " ", sb.orig), sb.kind === "blocked" && /*#__PURE__*/React.createElement("span", {
+        }, "En lugar de: ", sb.orig), blocked && ce("span", {
           style: {
             display: "block",
-            fontSize: 13,
+            fontSize: 14,
             color: C.orange,
             marginTop: 2
           }
-        }, "Necesita ", sb.need === "dip" ? "paralelas o anillas" : "barra o anillas", " \u2014 no cuenta para el d\xEDa")), aid && /*#__PURE__*/React.createElement(AnimThumb, {
+        }, "Necesita ", sb.need === "dip" ? "paralelas o anillas" : "barra o anillas", ". No cuenta para el d\xEDa."))), aid && ce(AnimThumb, {
           id: aid,
           color: col,
           open: isAnim,
           onClick: () => setOpenAnim(v => v === k ? null : k)
-        }), /*#__PURE__*/React.createElement("button", {
+        }), !blocked && ce("button", {
           onClick: () => setOpenSets(v => v === k ? null : k),
+          "aria-expanded": isOpen,
+          "aria-label": logged > 0 ? `${logged} series anotadas. Editar` : "Anotar series",
           style: {
             flexShrink: 0,
-            background: logged > 0 ? col + "20" : "transparent",
-            border: `1px solid ${logged > 0 ? col + "50" : C.border}`,
+            minWidth: 44,
+            height: 34,
+            background: logged > 0 ? C.card2 : "transparent",
+            border: `1.5px solid ${isOpen ? C.text : C.border}`,
             borderRadius: 6,
-            padding: "3px 7px",
-            color: logged > 0 ? col : C.muted,
-            fontFamily: "inherit",
-            fontSize: 13,
-            fontWeight: "bold",
-            cursor: "pointer",
-            letterSpacing: .5
+            padding: "0 9px",
+            color: C.text,
+            fontFamily: FONT_D,
+            fontSize: 16,
+            fontWeight: 700,
+            cursor: "pointer"
           }
-        }, logged > 0 ? `${logged} ✎` : "✎")), isAnim && /*#__PURE__*/React.createElement(ItemAnim, {
+        }, logged > 0 ? `${logged} ✎` : "✎")), isAnim && ce(ItemAnim, {
           id: aid,
           color: col,
           onGuide: goGuide
-        }), isOpen && /*#__PURE__*/React.createElement("div", {
+        }), isOpen && ce("div", {
           style: {
-            marginTop: 9,
-            marginLeft: 28,
-            background: C.card2,
+            marginTop: 10,
+            marginLeft: 36,
+            background: C.card,
             borderRadius: 8,
-            padding: "10px 11px",
-            border: `1px solid ${C.border}`
+            padding: "12px 12px 14px"
           }
-        }, prev ? /*#__PURE__*/React.createElement("div", {
+        }, ce("div", {
           style: {
-            fontSize: 13,
-            color: C.teal,
-            marginBottom: 9,
-            lineHeight: 1.5
+            fontFamily: FONT_D,
+            fontSize: 19,
+            fontWeight: 700,
+            marginBottom: 2
           }
-        }, "La vez pasada (", prev.d, "): ", prev.s.filter(x => x.r !== null && x.r !== "").map(x => `${x.r}${x.w ? `×${x.w}kg` : ""}`).join(" · ")) : /*#__PURE__*/React.createElement("div", {
+        }, "Series"), ce("p", {
           style: {
-            fontSize: 13,
-            color: C.dim,
-            marginBottom: 9
+            fontSize: 14,
+            color: C.muted,
+            lineHeight: 1.45,
+            marginBottom: 10
           }
-        }, "Primera vez que registras este movimiento."), /*#__PURE__*/React.createElement("div", {
+        }, prev ? `La vez pasada (${prev.d}): ${prev.s.filter(x => x.r !== null && x.r !== "").map(x => `${x.r}${x.w ? ` con ${x.w} kg` : ""}`).join(", ")}.` : "Primera vez que anotas este movimiento."), ce("div", {
+          "aria-hidden": true,
           style: {
             display: "flex",
-            gap: 6,
-            fontSize: 14,
-    fontFamily: FONT_D,
-    fontWeight: 600,
+            gap: 8,
+            fontSize: 13,
             color: C.muted,
-            marginBottom: 5,
-            paddingLeft: 24
+            marginBottom: 4,
+            paddingLeft: 26
           }
-        }, /*#__PURE__*/React.createElement("span", {
+        }, ce("span", {
           style: {
-            width: 62
+            width: 72,
+            textAlign: "center"
           }
-        }, unit), /*#__PURE__*/React.createElement("span", {
+        }, unit), ce("span", {
           style: {
-            width: 62
+            width: 72,
+            textAlign: "center"
           }
-        }, "KG")), rows.map((row, si) => /*#__PURE__*/React.createElement("div", {
+        }, "kg")), rows.map((row, si) => ce("div", {
           key: si,
           style: {
             display: "flex",
-            gap: 6,
+            gap: 8,
             alignItems: "center",
-            marginBottom: 5
+            marginBottom: 6
           }
-        }, /*#__PURE__*/React.createElement("span", {
+        }, ce("span", {
           style: {
             width: 18,
-            fontSize: 13,
+            fontFamily: FONT_D,
+            fontSize: 16,
+            fontWeight: 700,
             color: C.muted,
             flexShrink: 0
           }
-        }, si + 1), /*#__PURE__*/React.createElement("input", {
+        }, si + 1), ce("input", {
           inputMode: "numeric",
+          "aria-label": `Serie ${si + 1}, ${unit}`,
           value: row.r === null ? "" : row.r,
           onChange: e => {
             const v = e.target.value;
-            const n = rows.map((x, j) => j === si ? {
+            writeSets(k, item, rows.map((x, j) => j === si ? {
               ...x,
               r: v === "" ? null : v
-            } : x);
-            writeSets(k, item, n);
+            } : x));
           },
-          placeholder: pr.reps !== null ? String(pr.reps) : "--",
-          style: {
-            width: 62,
-            background: C.card,
-            border: `1px solid ${C.border}`,
-            borderRadius: 6,
-            color: C.text,
-            fontFamily: "inherit",
-            fontSize: 17,
-            padding: "7px 8px",
-            outline: "none",
-            textAlign: "center"
-          }
-        }), /*#__PURE__*/React.createElement("input", {
+          placeholder: pr.reps !== null ? String(pr.reps) : "—",
+          style: inp
+        }), ce("input", {
           inputMode: "decimal",
+          "aria-label": `Serie ${si + 1}, kg`,
           value: row.w === null || row.w === undefined ? "" : row.w,
           onChange: e => {
             const v = e.target.value;
-            const n = rows.map((x, j) => j === si ? {
+            writeSets(k, item, rows.map((x, j) => j === si ? {
               ...x,
               w: v === "" ? null : v
-            } : x);
-            writeSets(k, item, n);
+            } : x));
           },
-          placeholder: "--",
-          style: {
-            width: 62,
-            background: C.card,
-            border: `1px solid ${C.border}`,
-            borderRadius: 6,
-            color: C.text,
-            fontFamily: "inherit",
-            fontSize: 17,
-            padding: "7px 8px",
-            outline: "none",
-            textAlign: "center"
-          }
-        }), rows.length > 1 && /*#__PURE__*/React.createElement("button", {
+          placeholder: "—",
+          style: inp
+        }), rows.length > 1 && ce("button", {
           onClick: () => writeSets(k, item, rows.filter((_, j) => j !== si)),
+          "aria-label": `Quitar serie ${si + 1}`,
           style: {
+            width: 36,
+            height: 36,
             background: "none",
             border: "none",
-            color: C.dim,
+            color: C.muted,
             cursor: "pointer",
-            fontSize: 16,
-            fontFamily: "inherit",
-            padding: "0 4px"
+            fontSize: 15
           }
-        }, "\u2715"))), /*#__PURE__*/React.createElement("div", {
+        }, "✕"))), ce("div", {
           style: {
             display: "flex",
-            gap: 6,
-            marginTop: 8
+            gap: 8,
+            marginTop: 10
           }
-        }, /*#__PURE__*/React.createElement("button", {
+        }, ce("button", {
           onClick: () => writeSets(k, item, [...rows, {
             r: pr.reps,
             w: pr.kg
           }]),
           style: {
             flex: 1,
+            minHeight: 44,
             background: "transparent",
-            border: `1px solid ${C.border}`,
+            border: `1.5px solid ${C.border}`,
             borderRadius: 6,
-            padding: "8px 6px",
-            color: C.muted,
+            color: C.text,
             fontFamily: FONT_D,
-            fontSize: 16,
+            fontSize: 17,
             fontWeight: 700,
             cursor: "pointer"
           }
-        }, "+ Serie"), /*#__PURE__*/React.createElement("button", {
+        }, "+ Serie"), ce("button", {
           onClick: () => {
-            if (!done) tick(k);
+            if (!isDone) tick(k);
             setOpenSets(null);
           },
           style: {
             flex: 1,
-            background: col + "18",
-            border: `1px solid ${col}50`,
+            minHeight: 44,
+            background: C.yellow,
+            border: "none",
             borderRadius: 6,
-            padding: "8px 6px",
-            color: col,
+            color: C.bg,
             fontFamily: FONT_D,
-            fontSize: 16,
+            fontSize: 17,
             fontWeight: 700,
             cursor: "pointer"
           }
-        }, "\u2713 Listo"))));
+        }, "Listo"))));
       })));
-    }), done === total && total > 0 ? /*#__PURE__*/React.createElement("div", {
+    })), done === total && total > 0 ? ce("div", {
+      role: "status",
       style: {
-        textAlign: "center",
-        padding: "14px 0",
-        color: col,
-        fontSize: 17,
-    fontFamily: FONT_D,
-        fontWeight: 700
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        padding: "18px 0 6px"
       }
-    }, "\xA1D\xEDa completado!") : /*#__PURE__*/React.createElement("button", {
+    }, ce(Waymark, {
+      size: 34
+    }), ce("div", null, ce("div", {
+      style: {
+        fontFamily: FONT_D,
+        fontSize: 30,
+        fontWeight: 800,
+        lineHeight: 1
+      }
+    }, "D\xEDa completado"), ce("div", {
+      style: {
+        fontSize: 15,
+        color: C.muted,
+        marginTop: 2
+      }
+    }, sd < lastDay ? `Lo siguiente: ${WD_FULL[split[sd + 1]].toLowerCase()}, ${shortType(wd.days[sd + 1].type).toLowerCase()}.` : "Cerraste la semana."))) : ce("button", {
+      // Solo marca lo pendiente: tick() alterna, y antes desmarcaba lo ya hecho
       onClick: () => dd.blocks.forEach((b, bi) => b.i.forEach((it, ii) => {
-        if (subFor(it, gear).kind !== "blocked") tick(wkKey(res, sd, bi, ii));
+        const key = wkKey(res, sd, bi, ii);
+        if (!chk[key] && subFor(it, gear).kind !== "blocked") tick(key);
       })),
       style: {
         width: "100%",
-        marginTop: 12,
-        padding: "14px 12px",
-        background: C.yellow,
-        border: "none",
+        marginTop: 18,
+        minHeight: 52,
+        background: "transparent",
+        border: `1.5px solid ${C.border}`,
         borderRadius: 6,
-        color: C.bg,
+        color: C.text,
         fontFamily: FONT_D,
         fontWeight: 700,
         fontSize: 19,
@@ -12799,58 +12876,54 @@ function App() {
       const scope = dayScope(res, sd);
       if (!scope) return null;
       const note = notes[scope];
-      return /*#__PURE__*/React.createElement("div", {
+      return ce("section", {
         style: {
-          background: C.card,
-          borderRadius: 8,
-          padding: 13,
-          marginTop: 14,
-          border: `1px solid ${note ? col + "40" : C.border}`
+          marginTop: 30
         }
-      }, /*#__PURE__*/React.createElement("div", {
+      }, ce("div", {
         style: {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "baseline",
-          marginBottom: 7
+          marginBottom: 8
         }
-      }, /*#__PURE__*/React.createElement("span", {
+      }, ce("label", {
+        htmlFor: "day-note",
         style: {
-          fontSize: 14,
-    fontFamily: FONT_D,
-          color: C.muted,
+          fontFamily: FONT_D,
+          fontSize: 24,
           fontWeight: 700
         }
-      }, "Notas de la sesi\xF3n"), note && /*#__PURE__*/React.createElement("span", {
+      }, "Notas de la sesi\xF3n"), note && ce("span", {
         style: {
-          fontSize: 12,
-          color: C.dim
+          fontSize: 13,
+          color: C.muted
         }
-      }, note.d)), /*#__PURE__*/React.createElement("textarea", {
+      }, note.d)), ce("textarea", {
+        id: "day-note",
         value: note ? note.t : "",
         onChange: e => saveNote(scope, e.target.value),
-        placeholder: "C\xF3mo te sentiste, qu\xE9 peso usaste, qu\xE9 fall\xF3, qu\xE9 ajustar la pr\xF3xima vez...",
+        placeholder: "C\xF3mo te sentiste, qu\xE9 peso usaste, qu\xE9 fall\xF3, qu\xE9 ajustar la pr\xF3xima vez…",
         style: {
           width: "100%",
-          minHeight: 74,
-          background: C.card2,
-          border: `1px solid ${C.border}`,
-          borderRadius: 8,
+          minHeight: 96,
+          background: C.card,
+          border: `1.5px solid ${C.border}`,
+          borderRadius: 6,
           color: C.text,
           fontFamily: "inherit",
-          fontSize: 15,
-          lineHeight: 1.6,
-          padding: 10,
-          resize: "vertical",
-          outline: "none"
+          fontSize: 16,
+          lineHeight: 1.5,
+          padding: 12,
+          resize: "vertical"
         }
-      }), /*#__PURE__*/React.createElement("div", {
+      }), ce("div", {
         style: {
-          fontSize: 12,
-          color: C.dim,
-          marginTop: 5
+          fontSize: 13,
+          color: C.muted,
+          marginTop: 6
         }
-      }, "Se guarda solo."));
+      }, "Se guarda sola mientras escribes."));
     })());
   })(), tab === "prs" && (() => {
     const H2 = {
@@ -14018,7 +14091,10 @@ function App() {
           fontWeight: 700
         }
       }, "\xA1D\xEDa completado!") : /*#__PURE__*/React.createElement("button", {
-        onClick: () => day.blocks.forEach((b, bi) => b.i.forEach((_, ii) => tick(pk(path.id, pw, pathDayArbol, bi, ii)))),
+        onClick: () => day.blocks.forEach((b, bi) => b.i.forEach((_, ii) => {
+          const key = pk(path.id, pw, pathDayArbol, bi, ii);
+          if (!chk[key]) tick(key);
+        })),
         style: {
           width: "100%",
           marginTop: 12,
