@@ -1,6 +1,6 @@
 // Dan&Van Fit - service worker
-// Build: b0127060d72c
-const CACHE = "danvanfit-b0127060d72c";
+// Build: 5794e27d5ff0
+const CACHE = "danvanfit-5794e27d5ff0";
 const SHELL = "./__app_shell__";   // copia del HTML para responder navegaciones sin red
 
 self.addEventListener("install", (e) => self.skipWaiting());
