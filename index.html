@@ -4774,14 +4774,14 @@ const ANIM = {
      63.1,
      69.2
     ],
-    "torso": 100,
+    "torso": 104,
     "hand": [
      62.0,
      12.0
     ],
     "ankle": [
-     89.5,
-     86.1
+     80.7,
+     82.9
     ],
     "eb": 1,
     "kb": -1,
@@ -5627,7 +5627,7 @@ const ANIM = {
      73.5
     ],
     "ankle2": [
-     40.0,
+     40,
      95.5
     ],
     "eb": 1,
@@ -5637,7 +5637,30 @@ const ANIM = {
    },
    {
     "hip": [
-     66.0,
+     55,
+     38.5
+    ],
+    "torso": 88,
+    "hand": [
+     55.5,
+     45
+    ],
+    "ankle": [
+     66,
+     73.5
+    ],
+    "ankle2": [
+     47,
+     72
+    ],
+    "eb": 1,
+    "kb": -1,
+    "kb2": -1,
+    "footT": 0
+   },
+   {
+    "hip": [
+     66,
      28.5
     ],
     "torso": 90,
@@ -5646,12 +5669,12 @@ const ANIM = {
      34.6
     ],
     "ankle": [
-     66.0,
+     66,
      73.5
     ],
     "ankle2": [
-     39.1,
-     61.1
+     70,
+     59
     ],
     "eb": 1,
     "kb": -1,
@@ -5696,8 +5719,8 @@ const ANIM = {
     ],
     "torso": 48,
     "hand": [
-     37.7,
-     87.1
+     31,
+     81
     ],
     "ankle": [
      50.0,
@@ -5706,6 +5729,24 @@ const ANIM = {
     "eb": 1,
     "kb": -1,
     "footT": 0
+   },
+   {
+    "hip": [
+     44.3,
+     58
+    ],
+    "torso": 70,
+    "hand": [
+     80,
+     38
+    ],
+    "ankle": [
+     50.5,
+     95.5
+    ],
+    "eb": 1,
+    "kb": -1,
+    "footT": -25
    },
    {
     "hip": [
@@ -6727,8 +6768,8 @@ const ANIM = {
      95.5
     ],
     "ankle": [
-     23.4,
-     84.8
+     22.5,
+     75.5
     ],
     "eb": 1,
     "kb": -1,
@@ -6746,8 +6787,8 @@ const ANIM = {
      95.5
     ],
     "ankle": [
-     23.4,
-     84.8
+     22.5,
+     75.5
     ],
     "eb": 1,
     "kb": -1,
@@ -8726,7 +8767,7 @@ const ANIM = {
    },
    {
     "t": "wall",
-    "x": 26.5,
+    "x": 44,
     "y1": 0
    }
   ],
@@ -8738,8 +8779,8 @@ const ANIM = {
     ],
     "torso": 90,
     "hand": [
-     29.5,
-     9.6
+     44,
+     10
     ],
     "ankle": [
      46.0,
@@ -8756,8 +8797,8 @@ const ANIM = {
     ],
     "torso": 82,
     "hand": [
-     29.5,
-     9.6
+     44,
+     10
     ],
     "ankle": [
      58.3,
@@ -9777,7 +9818,9 @@ const M3_HANDW = {
   "push-up": 11,
   archer: 11,
   oapu: 6,
-  "ring-support": 13.5
+  "ring-support": 13.5,
+  // 90/90 en el marco: brazo abierto al lado, antebrazo vertical
+  "door-opener": 25
 };
 // Rieles paralelos (apoyo) vs barra transversal (remo)
 const M3_ROWBAR = {
@@ -10463,6 +10506,13 @@ function makeRig(T, root, spec, mu) {
         aim(s + "Foot", sole, flat ? [0, 1, 0] : legUp);
       };
       let A = L.A.slice();
+      // pies en el aire (planche, levers, colgado): se copia cuanto se
+      // estira la pierna en la pose y su direccion, no el punto exacto del
+      // tobillo; asi la pierna recta sigue recta aunque la cadera se mueva
+      if (L.A[1] > 0.15 && L.toe[1] > 0.15) {
+        const r = Math.min(1, v3.len(v3.sub(L.A, L.HP)) / ((SEG.thigh + SEG.shin) * M3K));
+        A = v3.add(hp, v3.mul(norm3(v3.sub(L.A, hp)), r * (j.th + j.sn)));
+      }
       solve(A);
       // apoyo: talon y dedos sobre el piso (el tobillo del modelo va mas alto
       // que el de la figura) sin hundirse ni flotar
@@ -10787,8 +10837,16 @@ function build3D(T, host, id, spec, st, apiRef, view0) {
   const L = (x, y, z = 0) => [(x - I.cx) * M3K, (I.ground - y) * M3K, z];
   const props = new T.Group();
   scene.add(props);
-  const pcyl = (a, b, r) => {
-    const m = new T.Mesh(new T.CylinderGeometry(r, r, 1, 14), mProp);
+  // postes de la barra semitransparentes: de lado tapaban el cuerpo
+  const mPost = new T.MeshStandardMaterial({
+    color: 0x6b747a,
+    roughness: 0.55,
+    transparent: true,
+    opacity: 0.35,
+    depthWrite: false
+  });
+  const pcyl = (a, b, r, m0) => {
+    const m = new T.Mesh(new T.CylinderGeometry(r, r, 1, 14), m0 || mProp);
     m.castShadow = true;
     m.receiveShadow = true;
     props.add(m);
@@ -10801,8 +10859,8 @@ function build3D(T, host, id, spec, st, apiRef, view0) {
       const y = (I.ground - pr.y) * M3K,
         x = P0.HL[0];
       pcyl([x, y, -0.6], [x, y, 0.6], 0.016);
-      pcyl([x, 0, -0.6], [x, y, -0.6], 0.025);
-      pcyl([x, 0, 0.6], [x, y, 0.6], 0.025);
+      pcyl([x, 0, -0.6], [x, y, -0.6], 0.025, mPost).castShadow = false;
+      pcyl([x, 0, 0.6], [x, y, 0.6], 0.025, mPost).castShadow = false;
     } else if (pr.t === "parallettes") {
       const y = (I.ground - pr.y) * M3K;
       if (M3_ROWBAR[id]) {
@@ -10827,6 +10885,18 @@ function build3D(T, host, id, spec, st, apiRef, view0) {
       b.position.set((x1 + x2) / 2, y / 2, 0);
       b.castShadow = b.receiveShadow = true;
       props.add(b);
+    } else if (pr.t === "wall" && id === "door-opener") {
+      // marco de puerta: dos postes a los lados, donde apoyan los antebrazos
+      const x = (pr.x - I.cx) * M3K - 0.04;
+      [1, -1].forEach(sd => {
+        const j = new T.Mesh(new T.BoxGeometry(0.08, 2.1, 0.1), mat(0x8f9893));
+        j.position.set(x, 1.05, sd * (I.hw + 0.07));
+        j.castShadow = j.receiveShadow = true;
+        props.add(j);
+      });
+      const lintel = new T.Mesh(new T.BoxGeometry(0.08, 0.1, 2 * I.hw + 0.24), mat(0x8f9893));
+      lintel.position.set(x, 2.1, 0);
+      props.add(lintel);
     } else if (pr.t === "wall" && !I.front) {
       const x = (pr.x - I.cx) * M3K;
       const w = new T.Mesh(new T.BoxGeometry(0.04, 2.2, 1.4), mat(0x3a4146));
