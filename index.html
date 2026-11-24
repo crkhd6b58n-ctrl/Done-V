@@ -9641,6 +9641,771 @@ function ExAnim({
   }, "\uD83D\uDD12 ", LOCK_TXT[spec.lk]))));
 }
 
+//  MUÑECO 3D
+// La misma pose de tecnica (FK/IK en 2D, ya validada) se levanta a 3D: el
+// plano sagital es X-Y y cada lado del cuerpo va a +Z/-Z. Los codos se
+// resuelven con IK en 3D y se abren hacia afuera segun la direccion correcta
+// de cada ejercicio (45° en push-ups, pegados en dips, abiertos en dominadas),
+// que de perfil no se podia ver. three.js va en vendor/three-lite.js y se
+// carga solo al abrir esta vista.
+let _threeP = null;
+const loadThree = () => _threeP || (_threeP = import("./vendor/three-lite.js").catch(e => {
+  _threeP = null;
+  throw e;
+}));
+const M3K = 0.02; // unidades de la figura 2D -> metros
+const M3_SHW = 9,
+  M3_HPW = 5.5; // medio ancho de hombros / caderas
+// Agarre (medio ancho de manos) cuando no va bajo los hombros
+const M3_HANDW = {
+  pullup: 15,
+  "neg-pull": 15,
+  "muscle-up": 12,
+  "band-pulldown": 15,
+  hang: 13,
+  "scap-pull": 13,
+  "knee-raise": 13,
+  "skin-cat": 13,
+  dips: 11.5,
+  lsit: 11,
+  planche: 12,
+  "tuck-planche": 12,
+  "planche-lean": 12,
+  "front-lever": 13,
+  "tuck-fl": 13,
+  "back-lever": 13,
+  australian: 13,
+  "tricep-ext": 8,
+  "face-pull": 9,
+  "push-up": 11,
+  archer: 11,
+  oapu: 6
+};
+// Rieles paralelos (apoyo) vs barra transversal (remo)
+const M3_ROWBAR = {
+  australian: 1,
+  "tricep-ext": 1
+};
+const v3 = {
+  add: (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]],
+  sub: (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]],
+  mul: (a, k) => [a[0] * k, a[1] * k, a[2] * k],
+  dot: (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2],
+  cross: (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]],
+  len: a => Math.hypot(a[0], a[1], a[2]),
+  // Rodrigues: gira v alrededor del eje unitario u
+  rot: (v, u, th) => {
+    const c = Math.cos(th),
+      s = Math.sin(th),
+      d = v3.dot(u, v),
+      x = v3.cross(u, v);
+    return [v[0] * c + x[0] * s + u[0] * d * (1 - c), v[1] * c + x[1] * s + u[1] * d * (1 - c), v[2] * c + x[2] * s + u[2] * d * (1 - c)];
+  }
+};
+// Dos huesos en 3D: la articulacion sale hacia "pole" (proyectado al plano)
+const ik3 = (S, H, l1, l2, pole) => {
+  const d = v3.sub(H, S),
+    raw = v3.len(d) || 1e-4,
+    u = v3.mul(d, 1 / raw);
+  const D = Math.max(Math.abs(l1 - l2) + 1e-4, Math.min(l1 + l2 - 1e-4, raw));
+  const x = (D * D + l1 * l1 - l2 * l2) / (2 * D),
+    h = Math.sqrt(Math.max(0, l1 * l1 - x * x));
+  let pp = v3.sub(pole, v3.mul(u, v3.dot(pole, u)));
+  let pl = v3.len(pp);
+  if (pl < 1e-6) {
+    pp = v3.cross(u, [0, 0, 1]);
+    pl = v3.len(pp) || 1;
+  }
+  pp = v3.mul(pp, 1 / pl);
+  return {
+    j: v3.add(v3.add(S, v3.mul(u, x)), v3.mul(pp, h)),
+    e: v3.add(S, v3.mul(u, D)),
+    u
+  };
+};
+// Abre la articulacion hacia el lado de afuera (zs = +1 izquierda, -1 derecha)
+const flare = (pole, u, deg, zs, axis = 2) => {
+  if (!deg) return pole;
+  const th = deg * Math.PI / 180,
+    a = v3.rot(pole, u, th),
+    b = v3.rot(pole, u, -th);
+  return a[axis] * zs >= b[axis] * zs ? a : b;
+};
+const _m3Cache = {};
+const m3Info = id => {
+  if (_m3Cache[id]) return _m3Cache[id];
+  const spec = ANIM[id];
+  const ground = spec.p.some(pr => pr.t === "floor" || pr.t === "box" || pr.t === "parallettes" || pr.t === "wall") ? 98 : (() => {
+    let m = 0;
+    for (let i = 0; i <= 24; i++) {
+      const f = buildFig(poseAt(spec, i / 24));
+      m = Math.max(m, f.ankle[1], f.ankle2 ? f.ankle2[1] : 0);
+    }
+    return m + 14;
+  })();
+  let cx = 0;
+  spec.f.forEach(f => cx += f.hip[0]);
+  cx /= spec.f.length;
+  const el = spec.el;
+  return _m3Cache[id] = {
+    ground,
+    cx,
+    front: !!spec.front,
+    hw: (M3_HANDW[id] || M3_SHW) * M3K,
+    phi: el ? el.v === "top" ? el.a : el.v === "pull" ? 55 : el.v === "high" ? 80 : 12 : 12
+  };
+};
+// Pose 3D completa para el instante t
+const pose3D = (id, t, spec) => {
+  spec = spec || ANIM[id];
+  const I = m3Info(id),
+    K = M3K;
+  const p = poseAt(spec, t),
+    f = buildFig(p);
+  const L = (q, z = 0) => [(q[0] - I.cx) * K, (I.ground - q[1]) * K, z];
+  const pole2 = (a, b, s) => {
+    // lado del codo/rodilla en 2D (mismo criterio que ik() del motor 2D)
+    const dx = b[0] - a[0],
+      dy = b[1] - a[1],
+      l = Math.hypot(dx, dy) || 1;
+    const px = -dy / l * (s === undefined ? 1 : s),
+      py = dx / l * (s === undefined ? 1 : s);
+    return [px, -py, 0];
+  };
+  const UA = SEG.uarm * K,
+    FA = SEG.farm * K,
+    TH = SEG.thigh * K,
+    SN = SEG.shin * K;
+  const o = {
+    f,
+    p
+  };
+  if (I.front) {
+    // Vista de frente: el ancho ya viene en X; la cara mira a +Z
+    o.SL = L(f.shA);
+    o.SR = L(f.shB);
+    o.HPL = L(f.hpA);
+    o.HPR = L(f.hpB);
+    const aL = ik3(o.SL, L(f.hand), UA, FA, v3.add(pole2(f.shA, f.hand, p.eb), [0, 0, 0.15]));
+    const aR = ik3(o.SR, L(f.hand2 || f.hand), UA, FA, v3.add(pole2(f.shB, f.hand2 || f.hand, p.eb2), [0, 0, 0.15]));
+    const lL = ik3(o.HPL, L(f.ankle), TH, SN, v3.add(pole2(f.hpA, f.ankle, p.kb), [0, 0, 0.6]));
+    const lR = ik3(o.HPR, L(f.ankle2 || f.ankle), TH, SN, v3.add(pole2(f.hpB, f.ankle2 || f.ankle, p.kb2), [0, 0, 0.6]));
+    Object.assign(o, {
+      EL: aL.j,
+      HL: aL.e,
+      ER: aR.j,
+      HR: aR.e,
+      KL: lL.j,
+      AL: lL.e,
+      KR: lR.j,
+      AR: lR.e
+    });
+    o.face = [0, 0, 1];
+    o.side = [1, 0, 0];
+    o.toeL = v3.add(o.AL, [0, -0.02, 0.15]);
+    o.toeR = v3.add(o.AR, [0, -0.02, 0.15]);
+  } else {
+    const sw = M3_SHW * K,
+      hp = M3_HPW * K;
+    o.SL = L(f.shoulder, sw);
+    o.SR = L(f.shoulder, -sw);
+    o.HPL = L(f.hip, hp);
+    o.HPR = L(f.hip, -hp);
+    // manos: bajo los hombros salvo agarre especial; el brazo lejano usa hand2
+    let hL = L(f.hand, I.hw),
+      hR = L(f.hand2 || f.hand, -I.hw);
+    if (id === "archer") hR = [(f.hand[0] - I.cx) * K, hL[1], -(M3_SHW + 27) * K];
+    const poleL = flare(pole2(f.shA, f.hand, p.eb), v3.mul(v3.sub(hL, o.SL), 1 / (v3.len(v3.sub(hL, o.SL)) || 1)), I.phi, 1);
+    const poleR = flare(pole2(f.shB, f.hand2 || f.hand, f.hand2 ? p.eb2 : p.eb), v3.mul(v3.sub(hR, o.SR), 1 / (v3.len(v3.sub(hR, o.SR)) || 1)), I.phi, -1);
+    const aL = ik3(o.SL, hL, UA, FA, poleL),
+      aR = ik3(o.SR, hR, UA, FA, poleR);
+    const aLft = L(f.ankle, hp),
+      aRgt = L(f.ankle2 || f.ankle, -hp);
+    const kL = flare(pole2(f.hpA, f.ankle, p.kb), v3.mul(v3.sub(aLft, o.HPL), 1 / (v3.len(v3.sub(aLft, o.HPL)) || 1)), 6, 1);
+    const kR = flare(pole2(f.hpB, f.ankle2 || f.ankle, f.ankle2 ? p.kb2 : p.kb), v3.mul(v3.sub(aRgt, o.HPR), 1 / (v3.len(v3.sub(aRgt, o.HPR)) || 1)), 6, -1);
+    const lL = ik3(o.HPL, aLft, TH, SN, kL),
+      lR = ik3(o.HPR, aRgt, TH, SN, kR);
+    Object.assign(o, {
+      EL: aL.j,
+      HL: aL.e,
+      ER: aR.j,
+      HR: aR.e,
+      KL: lL.j,
+      AL: lL.e,
+      KR: lR.j,
+      AR: lR.e
+    });
+    const fa = (f.torsoA + (f.headT || 0) - 90 * (spec.fc || 1)) * Math.PI / 180;
+    o.face = [Math.cos(fa), Math.sin(fa), 0];
+    o.side = [0, 0, 1];
+    const td = v3.sub(L(f.toe), L(f.ankle));
+    o.toeL = v3.add(o.AL, td);
+    o.toeR = v3.add(o.AR, td);
+  }
+  o.SC = L(f.shoulder);
+  o.HC = L(f.hip);
+  o.NK = L(f.neck);
+  // cabeza pegada al cuello (en 2D el centro iba mas lejos para el ojo)
+  o.HD = v3.add(o.NK, v3.mul(v3.sub(L(f.head), o.NK), 0.62));
+  // espalda curva (gato/vaca, puente): punto medio desplazado
+  const back = (f.torsoA + 90 * (spec.fc || 1)) * Math.PI / 180;
+  const mid2 = [(f.hip[0] + f.shoulder[0]) / 2 + Math.cos(back) * (f.bend || 0) * 2, (f.hip[1] + f.shoulder[1]) / 2 - Math.sin(back) * (f.bend || 0) * 2];
+  o.MID = L(mid2);
+  return o;
+};
+function Ex3D({
+  id,
+  height = 250
+}) {
+  const spec = ANIM[id];
+  const hostRef = useRef(null);
+  const st = useRef({
+    t: 0.3,
+    spd: ANIM_SPEED_DEFAULT,
+    paused: _reduceMotion(),
+    view: "34"
+  });
+  const [status, setStatus] = useState("loading");
+  const [ui, setUi] = useState({
+    t: 0.3
+  });
+  const [spd, setSpd] = useState(ANIM_SPEED_DEFAULT);
+  const [paused, setPaused] = useState(st.current.paused);
+  const [view, setView] = useState("34");
+  const apiRef = useRef(null);
+  useEffect(() => {
+    st.current.spd = spd;
+  }, [spd]);
+  useEffect(() => {
+    st.current.paused = paused;
+  }, [paused]);
+  useEffect(() => {
+    if (apiRef.current) apiRef.current.setView(view);
+  }, [view]);
+  useEffect(() => {
+    if (!spec) return;
+    let dead = false,
+      cleanup = null;
+    loadThree().then(T => {
+      if (dead || !hostRef.current) return;
+      try {
+        cleanup = build3D(T, hostRef.current, id, spec, st, apiRef, view);
+        setStatus("ok");
+      } catch (e) {
+        setStatus("nogl");
+      }
+    }).catch(() => !dead && setStatus("offline"));
+    const tick = setInterval(() => setUi({
+      t: st.current.t
+    }), 150);
+    return () => {
+      dead = true;
+      clearInterval(tick);
+      if (cleanup) cleanup();
+      apiRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
+  if (!spec) return null;
+  const ph = _phase(spec, ui.t);
+  const phase = spec.m === "hold" ? "Mantén y respira" : spec.ph ? cueCase(spec.ph[ph.half]) : ph.half ? "Regreso" : "Ida";
+  const stepIdx = spec.st ? spec.m === "hold" ? Math.floor(Math.max(0, ui.t)) % spec.st.length : Math.min(ph.half, spec.st.length - 1) : 0;
+  const btn = on => ({
+    background: on ? C.yellow : "transparent",
+    border: `1.5px solid ${on ? C.yellow : C.border}`,
+    borderRadius: 6,
+    color: on ? C.bg : C.text,
+    fontFamily: FONT_D,
+    fontSize: 16,
+    fontWeight: 700,
+    minHeight: 34,
+    padding: "4px 10px",
+    cursor: "pointer"
+  });
+  const views = [["34", "3/4"], ["side", "Lado"], ["front", "Frente"], ["top", "Arriba"]];
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "relative",
+      height,
+      borderRadius: 8,
+      overflow: "hidden",
+      background: C.bg,
+      touchAction: "none"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    ref: hostRef,
+    style: {
+      position: "absolute",
+      inset: 0
+    },
+    "aria-label": "Muñeco 3D del ejercicio. Arrastra para girar la cámara.",
+    role: "img"
+  }), status !== "ok" && /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "absolute",
+      inset: 0,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      textAlign: "center",
+      padding: 18,
+      color: C.muted,
+      fontSize: 15,
+      lineHeight: 1.45
+    }
+  }, status === "loading" ? "Cargando el muñeco 3D…" : status === "nogl" ? "Tu navegador no puede mostrar 3D. Usa la pestaña Técnica." : "No se pudo cargar el 3D. Ábrelo una vez con internet y quedará guardado."), status === "ok" && /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "absolute",
+      left: 8,
+      bottom: 6,
+      fontSize: 13,
+      color: C.muted,
+      pointerEvents: "none"
+    }
+  }, "Arrastra para girar")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 5,
+      padding: "7px 4px 2px",
+      flexWrap: "wrap"
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setPaused(v => !v),
+    style: btn(paused),
+    "aria-label": paused ? "Reanudar" : "Pausar"
+  }, paused ? "▶" : "❚❚"), ANIM_SPEEDS.map(v => /*#__PURE__*/React.createElement("button", {
+    key: v,
+    onClick: () => setSpd(v),
+    style: btn(spd === v)
+  }, v, "x")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      textAlign: "right",
+      fontSize: 22,
+      fontFamily: FONT_D,
+      fontWeight: 800,
+      color: C.yellow,
+      whiteSpace: "nowrap"
+    }
+  }, phase)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 5,
+      padding: "5px 4px 2px",
+      flexWrap: "wrap"
+    }
+  }, views.map(([k, l]) => /*#__PURE__*/React.createElement("button", {
+    key: k,
+    onClick: () => setView(k),
+    "aria-pressed": view === k,
+    style: btn(view === k)
+  }, l))), spec.st && /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "8px 6px 2px",
+      display: "flex",
+      gap: 7,
+      alignItems: "flex-start"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      flexShrink: 0,
+      width: 22,
+      height: 22,
+      borderRadius: 11,
+      background: C.yellow,
+      color: C.bg,
+      fontFamily: FONT_D,
+      fontSize: 15,
+      fontWeight: "bold",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      marginTop: 1
+    }
+  }, stepIdx + 1), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 16,
+      color: C.text,
+      lineHeight: 1.45
+    }
+  }, spec.st[stepIdx])), /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "6px 6px 0",
+      fontSize: 14,
+      color: C.muted,
+      lineHeight: 1.5
+    }
+  }, spec.mu && /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.orange
+    }
+  }, "●"), " m\xFAsculos que trabajan  "), spec.lk && /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.teal
+    }
+  }, "●"), " codo bloqueado")), spec.el && /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "6px 6px 0",
+      fontSize: 15,
+      lineHeight: 1.45,
+      color: C.text
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontFamily: FONT_D,
+      fontSize: 18,
+      fontWeight: 700
+    }
+  }, "Direcci\xF3n de codos: "), spec.el.n, " ", /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.muted
+    }
+  }, "Toca “Arriba” o “Frente” para verlos.")), spec.lk && /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "4px 6px 0",
+      fontSize: 15,
+      color: C.teal
+    }
+  }, "🔒 ", LOCK_TXT[spec.lk]));
+}
+
+// Construye la escena; devuelve la funcion de limpieza.
+function build3D(T, host, id, spec, st, apiRef, view0) {
+  const I = m3Info(id);
+  const W = () => host.clientWidth || 300,
+    H = () => host.clientHeight || 250;
+  const renderer = new T.WebGLRenderer({
+    antialias: true,
+    alpha: false
+  });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setSize(W(), H());
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = T.PCFShadowMap;
+  renderer.toneMapping = T.ACESFilmicToneMapping;
+  host.appendChild(renderer.domElement);
+  renderer.domElement.style.display = "block";
+  const scene = new T.Scene();
+  scene.background = new T.Color(C.bg);
+  const camera = new T.PerspectiveCamera(35, W() / H(), 0.05, 50);
+  scene.add(new T.HemisphereLight(0xffffff, 0x30363b, 1.6));
+  const sun = new T.DirectionalLight(0xffffff, 2.4);
+  sun.position.set(1.6, 3.2, 2.4);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(1024, 1024);
+  const sc = sun.shadow.camera;
+  sc.left = -1.8;
+  sc.right = 1.8;
+  sc.top = 1.8;
+  sc.bottom = -1.8;
+  sc.near = 0.5;
+  sc.far = 8;
+  scene.add(sun);
+
+  //  Materiales
+  const mat = c => new T.MeshStandardMaterial({
+    color: c,
+    roughness: 0.55,
+    metalness: 0.05
+  });
+  const mSkin = mat(0xd8dcd5),
+    mJoint = mat(0x3b4247),
+    mMus = mat(C.orange),
+    mLock = mat(C.teal),
+    mEye = mat(0x15181a),
+    mProp = mat(0x6b747a),
+    mFloor = new T.MeshStandardMaterial({
+      color: C.card,
+      roughness: 1
+    });
+  mMus.emissive = new T.Color(C.orange);
+  mMus.emissiveIntensity = 0.25;
+  mLock.emissive = new T.Color(C.teal);
+  mLock.emissiveIntensity = 0.35;
+  const mu = new Set(spec.mu || []);
+  const segMat = k => mu.has(k) ? mMus : mSkin;
+
+  //  Piso
+  const floor = new T.Mesh(new T.CircleGeometry(3, 48), mFloor);
+  floor.rotation.x = -Math.PI / 2;
+  floor.receiveShadow = true;
+  scene.add(floor);
+  const grid = new T.GridHelper(6, 30, C.dim, C.border);
+  grid.position.y = 0.001;
+  grid.material.transparent = true;
+  grid.material.opacity = 0.45;
+  scene.add(grid);
+
+  //  Cuerpo: huesos (cilindros) + articulaciones (esferas), tipo maniqui
+  const UP = new T.Vector3(0, 1, 0),
+    tmpA = new T.Vector3(),
+    tmpB = new T.Vector3();
+  const body = new T.Group();
+  scene.add(body);
+  const cyl = (r, m) => {
+    const g = new T.Mesh(new T.CylinderGeometry(r, r, 1, 18), m);
+    g.castShadow = true;
+    body.add(g);
+    return g;
+  };
+  const sph = (r, m) => {
+    const g = new T.Mesh(new T.SphereGeometry(r, 20, 14), m);
+    g.castShadow = true;
+    body.add(g);
+    return g;
+  };
+  const place = (mesh, a, b) => {
+    tmpA.set(a[0], a[1], a[2]);
+    tmpB.set(b[0], b[1], b[2]);
+    const len = tmpA.distanceTo(tmpB) || 1e-4;
+    mesh.position.copy(tmpA).add(tmpB).multiplyScalar(0.5);
+    mesh.quaternion.setFromUnitVectors(UP, tmpB.sub(tmpA).normalize());
+    mesh.scale.set(1, len, 1);
+  };
+  const at = (mesh, a) => mesh.position.set(a[0], a[1], a[2]);
+  const B = {
+    torsoLo: cyl(0.1, segMat("tr")),
+    torsoHi: cyl(0.125, segMat("tr")),
+    chest: sph(0.125, segMat("tr")),
+    belly: sph(0.1, segMat("tr")),
+    shBar: cyl(0.06, segMat("tr")),
+    pelvis: cyl(0.085, mSkin),
+    neck: cyl(0.04, mSkin),
+    head: sph(0.11, mSkin),
+    eyeL: sph(0.016, mEye),
+    eyeR: sph(0.016, mEye),
+    uaL: cyl(0.045, segMat("ua")),
+    uaR: cyl(0.045, segMat("ua")),
+    faL: cyl(0.037, segMat("fa")),
+    faR: cyl(0.037, segMat("fa")),
+    thL: cyl(0.062, segMat("th")),
+    thR: cyl(0.062, segMat("th")),
+    snL: cyl(0.048, segMat("sn")),
+    snR: cyl(0.048, segMat("sn")),
+    ftL: cyl(0.035, mSkin),
+    ftR: cyl(0.035, mSkin),
+    shL: sph(0.062, mJoint),
+    shR: sph(0.062, mJoint),
+    elL: sph(0.05, mJoint),
+    elR: sph(0.05, mJoint),
+    hnL: sph(0.045, mSkin),
+    hnR: sph(0.045, mSkin),
+    hpL: sph(0.075, mJoint),
+    hpR: sph(0.075, mJoint),
+    knL: sph(0.058, mJoint),
+    knR: sph(0.058, mJoint),
+    anL: sph(0.045, mJoint),
+    anR: sph(0.045, mJoint)
+  };
+
+  //  Aparatos
+  const P0 = pose3D(id, 0, spec);
+  const L = (x, y, z = 0) => [(x - I.cx) * M3K, (I.ground - y) * M3K, z];
+  const props = new T.Group();
+  scene.add(props);
+  const pcyl = (a, b, r) => {
+    const m = new T.Mesh(new T.CylinderGeometry(r, r, 1, 14), mProp);
+    m.castShadow = true;
+    m.receiveShadow = true;
+    props.add(m);
+    place(m, a, b);
+    return m;
+  };
+  const dyn = []; // aparatos que siguen a las manos (cuerda, banda, pesas, anillas)
+  spec.p.forEach(pr => {
+    if (pr.t === "bar") {
+      const y = (I.ground - pr.y) * M3K,
+        x = P0.HL[0];
+      pcyl([x, y, -0.6], [x, y, 0.6], 0.016);
+      pcyl([x, 0, -0.6], [x, y, -0.6], 0.025);
+      pcyl([x, 0, 0.6], [x, y, 0.6], 0.025);
+    } else if (pr.t === "parallettes") {
+      const y = (I.ground - pr.y) * M3K;
+      if (M3_ROWBAR[id]) {
+        const x = (P0.HL[0] + P0.HR[0]) / 2;
+        pcyl([x, y, -0.6], [x, y, 0.6], 0.016);
+        pcyl([x, 0, -0.6], [x, y, -0.6], 0.025);
+        pcyl([x, 0, 0.6], [x, y, 0.6], 0.025);
+      } else {
+        const x1 = (pr.x1 - I.cx) * M3K,
+          x2 = (pr.x2 - I.cx) * M3K;
+        [I.hw, -I.hw].forEach(z => {
+          pcyl([x1, y, z], [x2, y, z], 0.018);
+          pcyl([x1 + 0.04, 0, z], [x1 + 0.04, y, z], 0.02);
+          pcyl([x2 - 0.04, 0, z], [x2 - 0.04, y, z], 0.02);
+        });
+      }
+    } else if (pr.t === "box") {
+      const x1 = (pr.x1 - I.cx) * M3K,
+        x2 = (pr.x2 - I.cx) * M3K,
+        y = (I.ground - pr.y) * M3K;
+      const b = new T.Mesh(new T.BoxGeometry(x2 - x1, y, 0.6), mat(0x4b5358));
+      b.position.set((x1 + x2) / 2, y / 2, 0);
+      b.castShadow = b.receiveShadow = true;
+      props.add(b);
+    } else if (pr.t === "wall" && !I.front) {
+      const x = (pr.x - I.cx) * M3K;
+      const w = new T.Mesh(new T.BoxGeometry(0.04, 2.2, 1.4), mat(0x3a4146));
+      w.position.set(x - 0.02, 1.1, 0);
+      w.receiveShadow = true;
+      props.add(w);
+    } else if (pr.t === "roller") {
+      const p = L(pr.x, pr.y);
+      const r = new T.Mesh(new T.CylinderGeometry(pr.r * M3K, pr.r * M3K, 0.55, 24), mat(0x4cc9f0));
+      r.rotation.x = Math.PI / 2;
+      r.position.set(p[0], p[1], 0);
+      r.castShadow = true;
+      props.add(r);
+    } else if (pr.t === "rings") {
+      ["HL", "HR"].forEach(k => {
+        const ring = new T.Mesh(new T.TorusGeometry(0.06, 0.011, 10, 28), mProp);
+        const strap = new T.Mesh(new T.CylinderGeometry(0.008, 0.008, 1, 6), mat(0x8f9893));
+        props.add(ring, strap);
+        const top = (I.ground - pr.top) * M3K;
+        dyn.push(o => {
+          at(ring, o[k]);
+          place(strap, [o[k][0], o[k][1] + 0.06, o[k][2]], [o[k][0], Math.max(top, o[k][1] + 0.1), o[k][2]]);
+        });
+      });
+    } else if (pr.t === "band") {
+      const a = L(pr.x, pr.y);
+      const bandL = new T.Mesh(new T.CylinderGeometry(0.008, 0.008, 1, 6), mat(C.orange));
+      const bandR = bandL.clone();
+      props.add(bandL, bandR);
+      dyn.push(o => {
+        place(bandL, [a[0], a[1], 0.1], o.HL);
+        place(bandR, [a[0], a[1], -0.1], o.HR);
+      });
+    } else if (pr.t === "kb") {
+      ["HL", "HR"].forEach(k => {
+        const kb = new T.Mesh(new T.BoxGeometry(0.12, 0.16, 0.12), mat(0x4b5358));
+        kb.castShadow = true;
+        props.add(kb);
+        dyn.push(o => kb.position.set(o[k][0], o[k][1] - 0.11, o[k][2]));
+      });
+    }
+  });
+
+  //  Actualizar la pose
+  const lockOn = !!spec.lk;
+  const update = t => {
+    const o = pose3D(id, t, spec);
+    place(B.torsoLo, o.HC, o.MID);
+    place(B.torsoHi, o.MID, o.SC);
+    at(B.belly, o.MID);
+    at(B.chest, v3.add(o.SC, v3.mul(v3.sub(o.MID, o.SC), 0.25)));
+    place(B.shBar, o.SL, o.SR);
+    place(B.pelvis, o.HPL, o.HPR);
+    place(B.neck, o.SC, o.NK);
+    at(B.head, o.HD);
+    // ojos: hacia donde mira la cara, separados a los lados
+    const up = v3.sub(o.HD, o.NK),
+      ul = v3.len(up) || 1;
+    const eyeBase = v3.add(v3.add(o.HD, v3.mul(o.face, 0.092)), v3.mul(up, 0.02 / ul));
+    at(B.eyeL, v3.add(eyeBase, v3.mul(o.side, 0.042)));
+    at(B.eyeR, v3.add(eyeBase, v3.mul(o.side, -0.042)));
+    place(B.uaL, o.SL, o.EL);
+    place(B.faL, o.EL, o.HL);
+    place(B.uaR, o.SR, o.ER);
+    place(B.faR, o.ER, o.HR);
+    place(B.thL, o.HPL, o.KL);
+    place(B.snL, o.KL, o.AL);
+    place(B.thR, o.HPR, o.KR);
+    place(B.snR, o.KR, o.AR);
+    place(B.ftL, o.AL, o.toeL);
+    place(B.ftR, o.AR, o.toeR);
+    [["shL", "SL"], ["shR", "SR"], ["elL", "EL"], ["elR", "ER"], ["hnL", "HL"], ["hnR", "HR"], ["hpL", "HPL"], ["hpR", "HPR"], ["knL", "KL"], ["knR", "KR"], ["anL", "AL"], ["anR", "AR"]].forEach(([m, k]) => at(B[m], o[k]));
+    // codo verde cuando debe ir bloqueado y lo esta
+    const ph = _phase(spec, t);
+    const want = lockOn && _guideOn(spec.lk, ph, spec.m === "hold");
+    const angL = v3.len(v3.sub(o.HL, o.SL)) / ((SEG.uarm + SEG.farm) * M3K);
+    const lockedL = want && angL > 0.985;
+    B.elL.material = lockedL ? mLock : mJoint;
+    B.elR.material = lockedL ? mLock : mJoint;
+    dyn.forEach(fn => fn(o));
+  };
+
+  //  Camara: encuadre del ciclo completo y vistas predefinidas
+  const lo = [1e9, 1e9, 1e9],
+    hi = [-1e9, -1e9, -1e9];
+  for (let i = 0; i <= 16; i++) {
+    const o = pose3D(id, i / 32, spec);
+    ["SL", "SR", "HL", "HR", "AL", "AR", "HD", "KL", "KR", "HC"].forEach(k => {
+      for (let a = 0; a < 3; a++) {
+        lo[a] = Math.min(lo[a], o[k][a]);
+        hi[a] = Math.max(hi[a], o[k][a]);
+      }
+    });
+  }
+  const center = new T.Vector3((lo[0] + hi[0]) / 2, (lo[1] + hi[1]) / 2, (lo[2] + hi[2]) / 2);
+  const radius = Math.max(0.6, Math.hypot(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]) / 2 + 0.15);
+  const dist = radius / Math.sin(camera.fov * Math.PI / 360) * 0.88;
+  const controls = new T.OrbitControls(camera, renderer.domElement);
+  controls.target.copy(center);
+  controls.enablePan = false;
+  controls.enableDamping = true;
+  controls.minDistance = dist * 0.5;
+  controls.maxDistance = dist * 2;
+  controls.maxPolarAngle = Math.PI * 0.495; // no pasar bajo el piso
+  const VIEWS = I.front ? {
+    "34": [0.6, 0.35, 0.75],
+    side: [1, 0.12, 0.001],
+    front: [0.001, 0.12, 1],
+    top: [0.001, 1, 0.08]
+  } : {
+    "34": [0.6, 0.35, 0.75],
+    side: [0.001, 0.12, 1],
+    front: [1, 0.12, 0.001],
+    top: [0.001, 1, 0.08]
+  };
+  const setView = v => {
+    const d = new T.Vector3(...(VIEWS[v] || VIEWS["34"])).normalize().multiplyScalar(dist);
+    camera.position.copy(center).add(d);
+    camera.lookAt(center);
+    controls.update();
+  };
+  setView(view0);
+  apiRef.current = {
+    setView
+  };
+  update(st.current.t);
+
+  //  Bucle
+  let last = performance.now();
+  renderer.setAnimationLoop(() => {
+    const now = performance.now(),
+      dt = Math.min(0.1, (now - last) / 1000);
+    last = now;
+    if (!st.current.paused) {
+      st.current.t += dt / spec.s * st.current.spd;
+      update(st.current.t);
+    }
+    controls.update();
+    renderer.render(scene, camera);
+  });
+  const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(() => {
+    camera.aspect = W() / H();
+    camera.updateProjectionMatrix();
+    renderer.setSize(W(), H());
+  }) : null;
+  if (ro) ro.observe(host);
+  return () => {
+    renderer.setAnimationLoop(null);
+    if (ro) ro.disconnect();
+    controls.dispose();
+    const mats = new Set([mSkin, mJoint, mMus, mLock, mEye, mProp, mFloor]);
+    scene.traverse(o => {
+      if (o.geometry) o.geometry.dispose();
+      if (o.material) mats.add(o.material);
+    });
+    mats.forEach(m => m.dispose());
+    renderer.dispose();
+    renderer.forceContextLoss();
+    if (renderer.domElement.parentNode) renderer.domElement.parentNode.removeChild(renderer.domElement);
+  };
+}
+
 //  FOTOS REALES Y VIDEO 
 // Fotos de free-exercise-db (github.com/yuhonas/free-exercise-db, dominio
 // publico): posicion inicial y final de una persona real. Se guardan en
@@ -9782,7 +10547,8 @@ function ExMedia({
 }) {
   const col = color || C.yellow;
   const has = !!photoFrames(id);
-  const [tab, setTab] = useState(has ? "foto" : "tec");
+  // El muñeco 3D primero: se puede girar para ver codos y alineacion
+  const [tab, setTab] = useState("3d");
   const ex = EXERCISES.find(e => e.id === id);
   const tb = on => ({
     flex: 1,
@@ -9803,7 +10569,11 @@ function ExMedia({
       gap: 5,
       marginBottom: 8
     }
-  }, has && /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setTab("3d"),
+    "aria-pressed": tab === "3d",
+    style: tb(tab === "3d")
+  }, "3D"), has && /*#__PURE__*/React.createElement("button", {
     onClick: () => setTab("foto"),
     "aria-pressed": tab === "foto",
     style: tb(tab === "foto")
@@ -9824,7 +10594,9 @@ function ExMedia({
       alignItems: "center",
       justifyContent: "center"
     }
-  }, "Video \u2197")), tab === "foto" && has ? /*#__PURE__*/React.createElement(ExPhoto, {
+  }, "Video \u2197")), tab === "3d" ? /*#__PURE__*/React.createElement(Ex3D, {
+    id: id
+  }) : tab === "foto" && has ? /*#__PURE__*/React.createElement(ExPhoto, {
     id: id,
     color: col
   }) : /*#__PURE__*/React.createElement(ExAnim, {
