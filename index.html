@@ -9720,7 +9720,8 @@ const ik3 = (S, H, l1, l2, pole) => {
   return {
     j: v3.add(v3.add(S, v3.mul(u, x)), v3.mul(pp, h)),
     e: v3.add(S, v3.mul(u, D)),
-    u
+    u,
+    pp
   };
 };
 // Abre la articulacion hacia el lado de afuera (zs = +1 izquierda, -1 derecha)
@@ -9741,7 +9742,13 @@ const m3Info = id => {
       const f = buildFig(poseAt(spec, i / 24));
       m = Math.max(m, f.ankle[1], f.ankle2 ? f.ankle2[1] : 0);
     }
-    return m + 14;
+    // barra/anillas: altura minima para colgar (front/back lever lejos del piso)
+    let g = m + 14;
+    spec.p.forEach(pr => {
+      if (pr.t === "bar") g = Math.max(g, pr.y + 112);
+      if (pr.t === "rings") g = Math.max(g, pr.top + 112);
+    });
+    return g;
   })();
   let cx = 0;
   spec.f.forEach(f => cx += f.hip[0]);
@@ -10070,6 +10077,238 @@ function Ex3D({
   }, "🔒 ", LOCK_TXT[spec.lk]));
 }
 
+//  MODELO HUMANO CON ESQUELETO
+// Microsoft Rocketbox (MIT, ver vendor/models/LICENSE.txt), reducido a
+// camiseta + pantalon. Se mueve con la misma pose de tecnica: tronco y cabeza
+// se orientan hueso por hueso, y brazos y piernas usan IK de dos huesos hacia
+// las manos y tobillos de pose3D, con el codo/rodilla hacia el mismo lado.
+const RIG_URL = "./vendor/models/athlete.glb";
+let _rigBuf = null;
+const loadRigBuf = () => _rigBuf || (_rigBuf = fetch(RIG_URL).then(r => {
+  if (!r.ok) throw new Error("rig " + r.status);
+  return r.arrayBuffer();
+}).catch(e => {
+  _rigBuf = null;
+  throw e;
+}));
+const norm3 = a => v3.mul(a, 1 / (v3.len(a) || 1));
+const perp3 = (a, u) => v3.sub(a, v3.mul(u, v3.dot(a, u)));
+function makeRig(T, root, spec, mu) {
+  const bone = n => root.getObjectByName("mixamorig" + n);
+  const P = n => {
+    const v = new T.Vector3();
+    bone(n).getWorldPosition(v);
+    return [v.x, v.y, v.z];
+  };
+  root.updateMatrixWorld(true);
+  // escala: que la pierna del modelo mida lo mismo que la de la figura
+  const leg0 = v3.len(v3.sub(P("LeftLeg"), P("LeftUpLeg"))) + v3.len(v3.sub(P("LeftFoot"), P("LeftLeg")));
+  root.scale.setScalar((SEG.thigh + SEG.shin) * M3K / leg0);
+  root.updateMatrixWorld(true);
+  const M = new T.Matrix4(),
+    vx = new T.Vector3(),
+    vy = new T.Vector3(),
+    vz = new T.Vector3(),
+    qa = new T.Quaternion(),
+    qb = new T.Quaternion();
+  // base ortonormal: Y = a lo largo del hueso, Z = referencia lateral
+  const basis = (q, along, side) => {
+    vy.set(along[0], along[1], along[2]).normalize();
+    vz.set(side[0], side[1], side[2]);
+    vz.addScaledVector(vy, -vz.dot(vy));
+    if (vz.lengthSq() < 1e-10) vz.set(vy.y, -vy.x, 0.3);
+    vz.normalize();
+    vx.crossVectors(vy, vz);
+    return q.setFromRotationMatrix(M.makeBasis(vx, vy, vz));
+  };
+  const J = {};
+  // cada hueso guarda su rotacion de reposo y su base de reposo
+  const def = (n, along, side) => {
+    const b = bone(n),
+      q = new T.Quaternion();
+    b.getWorldQuaternion(q);
+    J[n] = {
+      b,
+      q0: q,
+      inv: basis(new T.Quaternion(), along, side).invert(),
+      p0: b.position.clone()
+    };
+  };
+  const FWD = [0, 0, 1],
+    UPV = [0, 1, 0];
+  const thumb0 = s => v3.sub(P(s + "HandIndex1"), P(s + "HandPinky1"));
+  def("Hips", UPV, FWD);
+  def("Spine", v3.sub(P("Spine1"), P("Spine")), FWD);
+  def("Spine1", v3.sub(P("Spine2"), P("Spine1")), FWD);
+  def("Spine2", v3.sub(P("Neck"), P("Spine2")), FWD);
+  def("Neck", v3.sub(P("Head"), P("Neck")), FWD);
+  def("Head", UPV, FWD);
+  ["Left", "Right"].forEach(s => {
+    def(s + "Arm", v3.sub(P(s + "ForeArm"), P(s + "Arm")), [0, 0, -1]);
+    def(s + "ForeArm", v3.sub(P(s + "Hand"), P(s + "ForeArm")), thumb0(s));
+    def(s + "Hand", v3.sub(P(s + "HandMiddle1"), P(s + "Hand")), thumb0(s));
+    def(s + "UpLeg", v3.sub(P(s + "Leg"), P(s + "UpLeg")), FWD);
+    def(s + "Leg", v3.sub(P(s + "Foot"), P(s + "Leg")), FWD);
+    def(s + "Foot", v3.sub(P(s + "ToeBase"), P(s + "Foot")), UPV);
+    J[s] = {
+      ua: v3.len(v3.sub(P(s + "ForeArm"), P(s + "Arm"))),
+      fa: v3.len(v3.sub(P(s + "Hand"), P(s + "ForeArm"))),
+      th: v3.len(v3.sub(P(s + "Leg"), P(s + "UpLeg"))),
+      sn: v3.len(v3.sub(P(s + "Foot"), P(s + "Leg"))),
+      ank: P(s + "Foot")[1]
+    };
+  });
+  // gira el hueso para que su base de reposo quede en (along, side) en mundo
+  const aim = (n, along, side) => {
+    const j = J[n];
+    basis(qa, along, side).multiply(j.inv).multiply(j.q0);
+    j.b.parent.getWorldQuaternion(qb);
+    j.b.quaternion.copy(qb.invert().multiply(qa));
+    j.b.updateMatrixWorld(true);
+  };
+  // materiales: camiseta amarilla, pantalon oscuro, brillo naranja en los
+  // musculos que trabajan
+  const mats = [];
+  root.traverse(o => {
+    if (!o.isMesh) return;
+    o.castShadow = true;
+    o.receiveShadow = true;
+    o.frustumCulled = false;
+    const m = o.material = o.material.clone();
+    mats.push(m);
+    const glow = k => {
+      if (k) {
+        m.emissive = new T.Color(C.orange);
+        m.emissiveIntensity = 0.22;
+      }
+    };
+    if (o.name === "Top_tee") {
+      m.color = new T.Color(C.yellow);
+      glow(mu.has("tr"));
+    } else if (o.name === "Trousers") {
+      m.color = new T.Color(0x4a535a);
+      // sin brillo: sobre gris oscuro se veia rojo
+    } else if (o.name === "Skin_tee") glow(mu.has("ua") || mu.has("fa"));
+  });
+  const hipsW = new T.Vector3();
+  const pose = o => {
+    const up = norm3(v3.sub(o.SC, o.HC)),
+      fwd = norm3(perp3(o.face, up));
+    // tronco: cadera -> medio -> hombros (curva de gato/vaca y puente)
+    const lo = norm3(v3.sub(o.MID, o.HC)),
+      hi = norm3(v3.sub(o.SC, o.MID));
+    const hips = J.Hips.b;
+    hipsW.set(o.HC[0], o.HC[1], o.HC[2]);
+    hips.parent.updateWorldMatrix(true, false);
+    hips.position.copy(hips.parent.worldToLocal(hipsW));
+    aim("Hips", lo, fwd);
+    aim("Spine", lo, fwd);
+    aim("Spine1", norm3(v3.add(lo, hi)), fwd);
+    aim("Spine2", hi, fwd);
+    const hUp = norm3(v3.sub(o.HD, o.NK)),
+      hF = norm3(perp3(o.face, hUp));
+    aim("Neck", hUp, hF);
+    aim("Head", hUp, hF);
+    // lado izquierdo del modelo = up x fwd; la pose usa +Z como izquierda
+    const left = v3.cross(up, fwd),
+      sw = v3.dot(v3.sub(o.SL, o.SR), left) < 0;
+    const side = [{
+      s: "Left",
+      sd: 1,
+      H: sw ? o.HR : o.HL,
+      E: sw ? o.ER : o.EL,
+      S: sw ? o.SR : o.SL,
+      K: sw ? o.KR : o.KL,
+      HP: sw ? o.HPR : o.HPL,
+      A: sw ? o.AR : o.AL,
+      toe: sw ? o.toeR : o.toeL
+    }, {
+      s: "Right",
+      sd: -1,
+      H: sw ? o.HL : o.HR,
+      E: sw ? o.EL : o.ER,
+      S: sw ? o.SL : o.SR,
+      K: sw ? o.KL : o.KR,
+      HP: sw ? o.HPL : o.HPR,
+      A: sw ? o.AL : o.AR,
+      toe: sw ? o.toeL : o.toeR
+    }];
+    side.forEach(L => {
+      const s = L.s,
+        j = J[s];
+      // pierna: IK de la cadera del modelo al tobillo de la pose
+      const hp = P(s + "UpLeg");
+      const A = [L.A[0], Math.max(L.A[1], j.ank * 0.85), L.A[2]];
+      const lk = ik3(hp, A, j.th, j.sn, v3.sub(L.K, L.HP));
+      aim(s + "UpLeg", v3.sub(lk.j, hp), lk.pp);
+      aim(s + "Leg", v3.sub(lk.e, lk.j), lk.pp);
+      aim(s + "Foot", v3.sub(L.toe, L.A), v3.sub(L.K, L.A));
+      // brazo: IK del hombro del modelo a la muneca
+      const sh = P(s + "Arm");
+      const floor = L.H[1] < 0.08,
+        over = L.H[1] > L.S[1] + 0.05;
+      let fing, palm;
+      if (floor) {
+        // apoyada: palma al piso, dedos hacia adelante
+        fing = [up[0], 0, up[2]];
+        if (v3.len(fing) < 0.3) fing = [fwd[0], 0, fwd[2]];
+        fing = norm3(fing);
+        palm = [0, -1, 0];
+      } else {
+        fing = norm3(v3.sub(L.H, L.E));
+        // colgado: agarre prono (palma al frente); si no, palma hacia adentro
+        palm = over ? fwd : v3.mul(left, -L.sd);
+      }
+      let W;
+      if (floor) W = v3.add([L.H[0], Math.max(L.H[1], 0) + 0.03, L.H[2]], v3.mul(fing, -0.035));else W = v3.sub(L.H, v3.mul(norm3(v3.sub(L.H, sh)), over ? 0.075 : 0.05));
+      const ak = ik3(sh, W, j.ua, j.fa, v3.sub(L.E, L.S));
+      // pulgar: izquierda palma = dedos x pulgar, derecha al reves
+      const th = L.sd > 0 ? v3.cross(palm, fing) : v3.cross(fing, palm);
+      aim(s + "Arm", v3.sub(ak.j, sh), v3.mul(ak.pp, 1));
+      aim(s + "ForeArm", v3.sub(ak.e, ak.j), th);
+      aim(s + "Hand", floor ? fing : v3.sub(ak.e, ak.j), th);
+      // dedos: cerrados alrededor de la barra/anilla, sueltos si no agarra
+      const hf = floor ? fing : norm3(v3.sub(ak.e, ak.j));
+      curl(s, norm3(v3.cross(hf, palm)), floor ? 0.08 : grip ? 0.95 : 0.3);
+    });
+  };
+  const grip = spec.p.some(pr => /^(bar|rings|parallettes|kb|band)$/.test(pr.t));
+  const FING = ["Index", "Middle", "Ring", "Pinky"];
+  const qc = new T.Quaternion(),
+    ax = new T.Vector3();
+  const turn = (b, axis, ang) => {
+    b.getWorldQuaternion(qa);
+    qc.setFromAxisAngle(ax.set(axis[0], axis[1], axis[2]), ang);
+    qa.premultiply(qc);
+    b.parent.getWorldQuaternion(qb);
+    b.quaternion.copy(qb.invert().multiply(qa));
+    b.updateMatrixWorld(true);
+  };
+  const fb = {};
+  const fbone = n => fb[n] || (fb[n] = bone(n));
+  function curl(s, axis, ang) {
+    FING.forEach(f => [1, 2, 3].forEach(k => {
+      const b = fbone(s + "Hand" + f + k);
+      if (!b) return;
+      b.quaternion.copy(b.userData.q0 || (b.userData.q0 = b.quaternion.clone()));
+      b.updateMatrixWorld(true);
+      turn(b, axis, ang);
+    }));
+  }
+  const elbow = s => P(s + "ForeArm");
+  return {
+    pose,
+    elbow,
+    dispose: () => {
+      mats.forEach(m => {
+        ["map", "normalMap", "roughnessMap", "metalnessMap", "alphaMap"].forEach(k => m[k] && m[k].dispose());
+        m.dispose();
+      });
+      root.traverse(o => o.geometry && o.geometry.dispose());
+    }
+  };
+}
+
 // Construye la escena; devuelve la funcion de limpieza.
 function build3D(T, host, id, spec, st, apiRef, view0) {
   const I = m3Info(id);
@@ -10276,6 +10515,22 @@ function build3D(T, host, id, spec, st, apiRef, view0) {
   };
   B.lockL.castShadow = B.lockR.castShadow = false;
 
+  //  Modelo humano con esqueleto: reemplaza al muñeco cuando carga. Si no
+  // carga (sin red y sin cache), se queda el muñeco anatomico.
+  let rig = null,
+    dead = false,
+    lastT = 0;
+  loadRigBuf().then(buf => new T.GLTFLoader().parseAsync(buf.slice(0), "./vendor/models/")).then(g => {
+    if (dead) return;
+    const r = makeRig(T, g.scene, spec, mu);
+    scene.add(g.scene);
+    body.children.forEach(m => {
+      if (m !== B.lockL && m !== B.lockR) m.visible = false;
+    });
+    rig = r;
+    update(lastT);
+  }).catch(() => {});
+
   //  Aparatos
   const P0 = pose3D(id, 0, spec);
   const L = (x, y, z = 0) => [(x - I.cx) * M3K, (I.ground - y) * M3K, z];
@@ -10368,7 +10623,13 @@ function build3D(T, host, id, spec, st, apiRef, view0) {
   const lockOn = !!spec.lk;
   const norm = a => v3.mul(a, 1 / (v3.len(a) || 1));
   const update = t => {
+    lastT = t;
     const o = pose3D(id, t, spec);
+    if (rig) {
+      rig.pose(o);
+      lockAndProps(o, t, rig.elbow("Left"), rig.elbow("Right"));
+      return;
+    }
     const up = norm(v3.sub(o.SC, o.HC)),
       fwd = o.face,
       lat = norm(v3.cross(up, norm(v3.sub(fwd, v3.mul(up, v3.dot(fwd, up))))));
@@ -10410,8 +10671,6 @@ function build3D(T, host, id, spec, st, apiRef, view0) {
         ell(hand, v3.add(H, v3.mul(along, 0.03)), along, fwd, 0.042, 0.085, 0.024);
         ell(thumb, v3.add(v3.add(H, v3.mul(along, 0.0)), v3.mul(fwd, 0.028)), along, fwd, 0.015, 0.032, 0.015);
       }
-      lk.visible = false;
-      if (lockOn) at(lk, E), lk.scale.setScalar(0.062);
     };
     arm(o.SL, o.EL, o.HL, B.deltL, B.uaL, B.elbL, B.faL, B.handL, B.thumbL, B.lockL, 1);
     arm(o.SR, o.ER, o.HR, B.deltR, B.uaR, B.elbR, B.faR, B.handR, B.thumbR, B.lockR, -1);
@@ -10427,13 +10686,22 @@ function build3D(T, host, id, spec, st, apiRef, view0) {
     };
     leg(o.HPL, o.KL, o.AL, o.toeL, B.shortL, B.thL, B.kneeL, B.snL, B.shoeL);
     leg(o.HPR, o.KR, o.AR, o.toeR, B.shortR, B.thR, B.kneeR, B.snR, B.shoeR);
-    // codo verde (halo) cuando debe ir bloqueado y lo esta
+    lockAndProps(o, t, o.EL, o.ER);
+  };
+  // codo verde (halo) cuando debe ir bloqueado y lo esta; aparatos que siguen a las manos
+  function lockAndProps(o, t, eL, eR) {
     const ph = _phase(spec, t);
     const want = lockOn && _guideOn(spec.lk, ph, spec.m === "hold");
     const straight = v3.len(v3.sub(o.HL, o.SL)) / ((SEG.uarm + SEG.farm) * M3K) > 0.985;
     B.lockL.visible = B.lockR.visible = want && straight;
+    if (B.lockL.visible) {
+      at(B.lockL, eL);
+      at(B.lockR, eR);
+      B.lockL.scale.setScalar(0.062);
+      B.lockR.scale.setScalar(0.062);
+    }
     dyn.forEach(fn => fn(o));
-  };
+  }
 
   //  Camara: encuadre del ciclo completo y vistas predefinidas
   const lo = [1e9, 1e9, 1e9],
@@ -10448,7 +10716,7 @@ function build3D(T, host, id, spec, st, apiRef, view0) {
     });
   }
   const center = new T.Vector3((lo[0] + hi[0]) / 2, (lo[1] + hi[1]) / 2, (lo[2] + hi[2]) / 2);
-  const radius = Math.max(0.6, Math.hypot(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]) / 2 + 0.15);
+  const radius = Math.max(0.6, Math.hypot(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]) / 2 + 0.24);
   const dist = radius / Math.sin(camera.fov * Math.PI / 360) * 0.88;
   const controls = new T.OrbitControls(camera, renderer.domElement);
   controls.target.copy(center);
@@ -10500,6 +10768,8 @@ function build3D(T, host, id, spec, st, apiRef, view0) {
   }) : null;
   if (ro) ro.observe(host);
   return () => {
+    dead = true;
+    if (rig) rig.dispose();
     renderer.setAnimationLoop(null);
     if (ro) ro.disconnect();
     controls.dispose();
