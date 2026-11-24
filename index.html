@@ -3559,13 +3559,21 @@ const buildFig = p => {
 const _lerp = (a, b, t) => a + (b - a) * t;
 const _lerpP = (a, b, t) => [_lerp(a[0], b[0], t), _lerp(a[1], b[1], t)];
 const _ease = t => t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-const mixPose = (a, b, t) => {
-  const e = _ease(t);
+// Perfil de minimo jerk (como se mueve un brazo humano): arranca y frena suave
+const _mj = t => t * t * t * (10 + t * (6 * t - 15));
+// angulos: por el camino corto (311° -> -33° son 15°, no casi una vuelta)
+const _lerpA = (a, b, t) => {
+  let d = b - a;
+  if (d > 180) d -= 360;else if (d < -180) d += 360;
+  return a + d * t;
+};
+const mixPose = (a, b, t, lin) => {
+  const e = lin ? t : _ease(t);
   const o = {
     hip: _lerpP(a.hip, b.hip, e),
     hand: _lerpP(a.hand, b.hand, e),
     ankle: _lerpP(a.ankle, b.ankle, e),
-    torso: _lerp(a.torso, b.torso, e),
+    torso: _lerpA(a.torso, b.torso, e),
     sh: _lerp(a.sh || 0, b.sh || 0, e),
     headT: _lerp(a.headT || 0, b.headT || 0, e),
     bend: _lerp(a.bend || 0, b.bend || 0, e),
@@ -3577,24 +3585,62 @@ const mixPose = (a, b, t) => {
   };
   if (a.hand2 && b.hand2) o.hand2 = _lerpP(a.hand2, b.hand2, e);
   if (a.ankle2 && b.ankle2) o.ankle2 = _lerpP(a.ankle2, b.ankle2, e);
-  if (a.footT !== undefined || b.footT !== undefined) o.footT = _lerp(a.footT === undefined ? a.torso : a.footT, b.footT === undefined ? b.torso : b.footT, e);
+  if (a.footT !== undefined || b.footT !== undefined) o.footT = _lerpA(a.footT === undefined ? a.torso : a.footT, b.footT === undefined ? b.torso : b.footT, e);
   return o;
 };
 
 // "hold" = isometrico, oscila poquito. "rep" = va y viene entre keyframes.
 // "d" = fraccion del ciclo que la figura se queda quieta en cada extremo: sin
 // esa pausa el movimiento parecia un pendulo y no una repeticion con control.
+// Tempo: fraccion del ciclo que dura la ida (frame 0 -> ultimo). La fase
+// excentrica (bajar con control) dura mas que la concentrica (empujar/jalar).
+const TEMPO = {
+  "push-up": 0.62,
+  archer: 0.62,
+  oapu: 0.62,
+  "pike-push": 0.62,
+  hspu: 0.62,
+  dips: 0.62,
+  "tricep-ext": 0.6,
+  pullup: 0.38,
+  "muscle-up": 0.45,
+  "knee-raise": 0.4,
+  australian: 0.4,
+  "band-pulldown": 0.38,
+  "face-pull": 0.4,
+  "neg-pull": 0.8,
+  "deep-squat": 0.58,
+  pistol: 0.62,
+  lunge: 0.58,
+  bulgarian: 0.6,
+  "step-up": 0.42,
+  tibialis: 0.4,
+  bridge: 0.45,
+  "planche-lean": 0.55
+};
+const _cyc = (spec, t) => {
+  const c = (t % 1 + 1) % 1,
+    a = spec.tp || 0.5;
+  return {
+    c,
+    half: c < a ? 0 : 1,
+    tri: c < a ? c / a : (1 - c) / (1 - a)
+  };
+};
 const poseAt = (spec, t) => {
   const f = spec.f;
   if (f.length === 1) return f[0];
   if (spec.m === "hold") return mixPose(f[0], f[1] || f[0], (Math.sin(t * Math.PI * 2) + 1) / 2 * 0.35);
-  const c = (t % 1 + 1) % 1,
-    tri = c < 0.5 ? c * 2 : (1 - c) * 2,
+  const {
+      tri
+    } = _cyc(spec, t),
     dw = spec.d === undefined ? 0.08 : spec.d,
-    pp = Math.max(0, Math.min(1, (tri - dw) / (1 - 2 * dw))),
+    pp = _mj(Math.max(0, Math.min(1, (tri - dw) / (1 - 2 * dw)))),
     seg = pp * (f.length - 1);
   const i = Math.min(f.length - 2, Math.floor(seg));
-  return mixPose(f[i], f[i + 1], seg - i);
+  // con 3+ poses: interpolacion lineal entre ellas y una sola curva suave
+  // para todo el recorrido, asi no frena en cada pose intermedia
+  return mixPose(f[i], f[i + 1], seg - i, f.length > 2);
 };
 // Poses generadas por angulos de articulacion (cinematica directa) para que
 // la tecnica sea correcta: brazos rectos de verdad, manos y pies apoyados, y
@@ -4354,7 +4400,7 @@ const ANIM = {
    {
     "hip": [
      63.4,
-     49.7
+     45.2
     ],
     "torso": 102,
     "hand": [
@@ -4363,7 +4409,7 @@ const ANIM = {
     ],
     "ankle": [
      72.7,
-     93.8
+     89.3
     ],
     "eb": 1,
     "kb": 1,
@@ -4471,7 +4517,7 @@ const ANIM = {
    {
     "hip": [
      63.4,
-     49.7
+     45.2
     ],
     "torso": 102,
     "hand": [
@@ -4480,7 +4526,7 @@ const ANIM = {
     ],
     "ankle": [
      72.7,
-     93.8
+     89.3
     ],
     "eb": 1,
     "kb": 1,
@@ -4572,7 +4618,7 @@ const ANIM = {
    {
     "hip": [
      66.4,
-     49.7
+     45.2
     ],
     "torso": 102,
     "hand": [
@@ -4581,7 +4627,7 @@ const ANIM = {
     ],
     "ankle": [
      72.7,
-     93.8
+     89.3
     ],
     "eb": 1,
     "kb": 1,
@@ -8699,6 +8745,9 @@ const ANIM = {
   ]
  }
 };
+Object.keys(TEMPO).forEach(k => {
+  if (ANIM[k]) ANIM[k].tp = TEMPO[k];
+});
 
 //  ANIMACION DE CADA ITEM DEL ENTRENO 
 // Los items son texto libre ("Ring rows 3x10 -- pecho a la anilla"), asi que
@@ -8941,12 +8990,15 @@ const _phase = (spec, t) => {
     pp: 0.5,
     half: 0
   };
-  const tri = c < 0.5 ? c * 2 : (1 - c) * 2,
+  const {
+      tri,
+      half
+    } = _cyc(spec, t),
     dw = spec.d === undefined ? 0.08 : spec.d;
   return {
     c,
     pp: Math.max(0, Math.min(1, (tri - dw) / (1 - 2 * dw))),
-    half: c < 0.5 ? 0 : 1
+    half
   };
 };
 const _guideOn = (on, ph, hold) => {
@@ -9679,7 +9731,8 @@ const M3_HANDW = {
   "face-pull": 9,
   "push-up": 11,
   archer: 11,
-  oapu: 6
+  oapu: 6,
+  "ring-support": 13.5
 };
 // Rieles paralelos (apoyo) vs barra transversal (remo)
 const M3_ROWBAR = {
@@ -9736,7 +9789,17 @@ const _m3Cache = {};
 const m3Info = id => {
   if (_m3Cache[id]) return _m3Cache[id];
   const spec = ANIM[id];
-  const ground = spec.p.some(pr => pr.t === "floor" || pr.t === "box" || pr.t === "parallettes" || pr.t === "wall") ? 98 : (() => {
+  // apoyo en barras paralelas con los pies en el aire (dips): las barras a
+  // la altura real, para que rodillas y pies no rocen el piso
+  const freeBars = spec.p.some(pr => pr.t === "parallettes") && !M3_ROWBAR[id] && !spec.p.some(pr => pr.t === "box" || pr.t === "wall");
+  let low = 0,
+    feetDown = false;
+  if (freeBars) for (let i = 0; i <= 24; i++) {
+    const f = buildFig(poseAt(spec, i / 24));
+    low = Math.max(low, f.knee[1], f.ankle[1], f.toe[1]);
+    if (f.ankle[1] > 92) feetDown = true;
+  }
+  const ground = freeBars && !feetDown ? Math.max(98, low + 26) : spec.p.some(pr => pr.t === "floor" || pr.t === "box" || pr.t === "parallettes" || pr.t === "wall") ? 98 : (() => {
     let m = 0;
     for (let i = 0; i <= 24; i++) {
       const f = buildFig(poseAt(spec, i / 24));
@@ -10204,13 +10267,21 @@ function makeRig(T, root, spec, mu) {
     def(s + "Hand", v3.sub(P(s + "HandMiddle1"), P(s + "Hand")), thumb0(s));
     def(s + "UpLeg", v3.sub(P(s + "Leg"), P(s + "UpLeg")), FWD);
     def(s + "Leg", v3.sub(P(s + "Foot"), P(s + "Leg")), FWD);
-    def(s + "Foot", v3.sub(P(s + "ToeBase"), P(s + "Foot")), UPV);
+    // pie: la base es la planta (adelante y arriba), no el hueso inclinado
+    def(s + "Foot", FWD, UPV);
+    const sh0 = bone(s + "Shoulder");
+    J[s[0] + "sh"] = J[s + "Sh"] = {
+      b: sh0,
+      q: sh0.quaternion.clone()
+    };
     J[s] = {
       ua: v3.len(v3.sub(P(s + "ForeArm"), P(s + "Arm"))),
       fa: v3.len(v3.sub(P(s + "Hand"), P(s + "ForeArm"))),
       th: v3.len(v3.sub(P(s + "Leg"), P(s + "UpLeg"))),
       sn: v3.len(v3.sub(P(s + "Foot"), P(s + "Leg"))),
-      ank: P(s + "Foot")[1]
+      ank: P(s + "Foot")[1],
+      // del tobillo a la base de los dedos, en reposo
+      toe: v3.sub(P(s + "ToeBase"), P(s + "Foot"))
     };
   });
   // gira el hueso para que su base de reposo quede en (along, side) en mundo
@@ -10231,6 +10302,8 @@ function makeRig(T, root, spec, mu) {
     o.frustumCulled = false;
     const m = o.material = o.material.clone();
     mats.push(m);
+    // al flexionar se ve por dentro de la camiseta y el short
+    if (o.name === "Top_tee" || o.name === "Outfit_original") m.side = T.DoubleSide;
     const glow = k => {
       if (k) {
         m.emissive = new T.Color(C.orange);
@@ -10247,6 +10320,7 @@ function makeRig(T, root, spec, mu) {
     } else if (o.name === "Skin_tee") glow(mu.has("ua") || mu.has("fa"));
   });
   const hipsW = new T.Vector3();
+  const hangSpec = spec.p.some(pr => pr.t === "bar" || pr.t === "rings" || pr.t === "parallettes");
   const pose = o => {
     const up = norm3(v3.sub(o.SC, o.HC)),
       fwd = norm3(perp3(o.face, up));
@@ -10265,6 +10339,22 @@ function makeRig(T, root, spec, mu) {
       hF = norm3(perp3(o.face, hUp));
     aim("Neck", hUp, hF);
     aim("Head", hUp, hF);
+    // El torso del modelo es mas largo que el de la figura. Si el peso va en
+    // las manos (barra, paralelas, parada de manos) se alinean los hombros con
+    // la pose en vez de la cadera; con manos y pies en el piso, a la mitad.
+    const handsLow = Math.min(o.HL[1], o.HR[1]) < 0.08,
+      feetLow = Math.min(o.AL[1], o.AR[1]) < 0.16;
+    const wA = hangSpec || handsLow ? feetLow ? 0.5 : 1 : 0;
+    if (wA) {
+      J.Lsh.b.quaternion.copy(J.Lsh.q);
+      J.Rsh.b.quaternion.copy(J.Rsh.q);
+      hips.updateMatrixWorld(true);
+      const msc = v3.mul(v3.add(P("LeftArm"), P("RightArm")), 0.5);
+      const d = v3.mul(v3.sub(o.SC, msc), wA);
+      hipsW.set(o.HC[0] + d[0], o.HC[1] + d[1], o.HC[2] + d[2]);
+      hips.position.copy(hips.parent.worldToLocal(hipsW));
+      hips.updateMatrixWorld(true);
+    }
     // lado izquierdo del modelo = up x fwd; la pose usa +Z como izquierda
     const left = v3.cross(up, fwd),
       sw = v3.dot(v3.sub(o.SL, o.SR), left) < 0;
@@ -10292,13 +10382,39 @@ function makeRig(T, root, spec, mu) {
     side.forEach(L => {
       const s = L.s,
         j = J[s];
+      // escapulas: suben al elevar el brazo (ritmo escapulohumeral ~1:3),
+      // se encogen/hunden segun la tecnica (sh) y se adelantan al empujar
+      const sj = J[s + "Sh"];
+      sj.b.quaternion.copy(sj.q);
+      sj.b.updateMatrixWorld(true);
+      const ad = norm3(v3.sub(L.E, L.S)),
+        elevA = Math.acos(Math.max(-1, Math.min(1, -v3.dot(ad, up)))) * 180 / Math.PI;
+      const el = Math.max(-10, Math.min(30, Math.max(0, elevA - 30) * 0.24 + (o.p.sh || 0) * 4));
+      const pro = Math.max(0, v3.dot(norm3(v3.sub(L.H, L.S)), fwd)) * 9;
+      turn(sj.b, v3.mul(fwd, L.sd), el * Math.PI / 180);
+      turn(sj.b, v3.mul(up, -L.sd), pro * Math.PI / 180);
       // pierna: IK de la cadera del modelo al tobillo de la pose
       const hp = P(s + "UpLeg");
-      const A = [L.A[0], Math.max(L.A[1], j.ank * 0.85), L.A[2]];
-      const lk = ik3(hp, A, j.th, j.sn, v3.sub(L.K, L.HP));
-      aim(s + "UpLeg", v3.sub(lk.j, hp), lk.pp);
-      aim(s + "Leg", v3.sub(lk.e, lk.j), lk.pp);
-      aim(s + "Foot", v3.sub(L.toe, L.A), v3.sub(L.K, L.A));
+      // planta: direccion de la pose; parado, punta un poco hacia afuera
+      let sole = norm3(v3.sub(L.toe, L.A));
+      const flat = Math.abs(sole[1]) < 0.35 && L.A[1] < 0.12;
+      if (flat) sole = norm3(v3.add([sole[0], 0, sole[2]], v3.mul(left, L.sd * 0.16)));
+      const legUp = v3.sub(L.K, L.A);
+      const solve = A => {
+        const lk = ik3(hp, A, j.th, j.sn, v3.sub(L.K, L.HP));
+        aim(s + "UpLeg", v3.sub(lk.j, hp), lk.pp);
+        aim(s + "Leg", v3.sub(lk.e, lk.j), lk.pp);
+        aim(s + "Foot", sole, flat ? [0, 1, 0] : legUp);
+      };
+      let A = L.A.slice();
+      solve(A);
+      // apoyo: talon y dedos sobre el piso (el tobillo del modelo va mas alto
+      // que el de la figura) sin hundirse ni flotar
+      if (Math.min(L.A[1], L.toe[1]) < 0.09) {
+        const toeW = v3.sub(P(s + "ToeBase"), P(s + "Foot"));
+        A = [A[0], Math.max(j.ank * (flat ? 1 : 0.6), 0.012 - toeW[1]), A[2]];
+        solve(A);
+      }
       // brazo: IK del hombro del modelo a la muneca
       const sh = P(s + "Arm");
       const floor = L.H[1] < 0.08,
@@ -10308,7 +10424,10 @@ function makeRig(T, root, spec, mu) {
         // apoyada: palma al piso, dedos hacia adelante
         fing = [up[0], 0, up[2]];
         if (v3.len(fing) < 0.3) fing = [fwd[0], 0, fwd[2]];
-        fing = norm3(fing);
+        // boca arriba (puente, rueda): dedos hacia los pies
+        if (fwd[1] > 0.3) fing = v3.mul(fing, -1);
+        // dedos un poco hacia afuera, como al apoyar de verdad
+        fing = norm3(v3.add(norm3(fing), v3.mul(left, L.sd * 0.2)));
         palm = [0, -1, 0];
       } else {
         fing = norm3(v3.sub(L.H, L.E));
@@ -10355,6 +10474,7 @@ function makeRig(T, root, spec, mu) {
   return {
     pose,
     elbow,
+    P,
     dispose: () => {
       mats.forEach(m => {
         ["map", "normalMap", "roughnessMap", "metalnessMap", "alphaMap"].forEach(k => m[k] && m[k].dispose());
@@ -10780,7 +10900,9 @@ function build3D(T, host, id, spec, st, apiRef, view0) {
     hi = [-1e9, -1e9, -1e9];
   for (let i = 0; i <= 16; i++) {
     const o = pose3D(id, i / 32, spec);
-    ["SL", "SR", "HL", "HR", "AL", "AR", "HD", "KL", "KR", "HC"].forEach(k => {
+    // coronilla del modelo (va mas arriba que el centro de la cabeza)
+    o.TOP = v3.add(o.HD, v3.mul(norm(v3.sub(o.HD, o.NK)), 0.2));
+    ["SL", "SR", "HL", "HR", "AL", "AR", "HD", "KL", "KR", "HC", "TOP"].forEach(k => {
       for (let a = 0; a < 3; a++) {
         lo[a] = Math.min(lo[a], o[k][a]);
         hi[a] = Math.max(hi[a], o[k][a]);
@@ -10817,6 +10939,15 @@ function build3D(T, host, id, spec, st, apiRef, view0) {
   setView(view0);
   apiRef.current = {
     setView
+  };
+  // para pruebas automaticas: fija el instante del ciclo
+  host.__m3d = {
+    setT: t => {
+      st.current.t = t;
+      update(t);
+    },
+    rig: () => !!rig,
+    P: n => rig && rig.P(n)
   };
   update(st.current.t);
 
