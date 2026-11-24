@@ -1,7 +1,7 @@
 athlete.glb: personaje "Ethan" (m002) de la Microsoft Rocketbox Avatar Library
 (https://github.com/microsoft/Microsoft-Rocketbox), en la version GLB de
 avatar-studio (https://github.com/memoriesrohit/avatar-studio).
-Modificado para Dan&Van Fit: solo camiseta y pantalon, sin animaciones ni
+Modificado para Dan&Van Fit: camiseta y shorts (recortados de su ropa original), sin animaciones ni
 morphs, texturas WebP 512 px y geometria cuantizada (gltf-transform).
 
 == Microsoft Rocketbox Avatar Library ==

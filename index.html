@@ -9873,6 +9873,8 @@ function Ex3D({
     view: "34"
   });
   const [status, setStatus] = useState("loading");
+  const [err, setErr] = useState("");
+  const [tryN, setTryN] = useState(0);
   const [ui, setUi] = useState({
     t: 0.3
   });
@@ -9899,6 +9901,8 @@ function Ex3D({
         cleanup = build3D(T, hostRef.current, id, spec, st, apiRef, view);
         setStatus("ok");
       } catch (e) {
+        console.error("3D", e);
+        setErr(String(e && e.message || e));
         setStatus("nogl");
       }
     }).catch(() => !dead && setStatus("offline"));
@@ -9912,8 +9916,59 @@ function Ex3D({
       apiRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  }, [id, tryN]);
   if (!spec) return null;
+  // Sin 3D: la animacion de tecnica en su lugar, con el motivo y para reintentar
+  if (status === "nogl" || status === "offline") return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8,
+      alignItems: "center",
+      padding: "8px 10px",
+      marginBottom: 8,
+      border: `1px solid ${C.border}`,
+      borderRadius: 8,
+      fontSize: 14,
+      lineHeight: 1.45,
+      color: C.muted
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      flex: 1
+    }
+  }, status === "offline" ? "El 3D necesita internet la primera vez. Mientras, aquí está la técnica." : err === "webgl2" ? "Este navegador no tiene WebGL 2, que necesita el 3D. Actualiza el sistema o el navegador, o revisa que la aceleración por hardware esté activa. Mientras, aquí está la técnica." : "El 3D no pudo arrancar en este teléfono. Mientras, aquí está la técnica.", err && err !== "webgl2" && /*#__PURE__*/React.createElement("span", {
+    style: {
+      display: "block",
+      fontSize: 12,
+      color: C.dim,
+      marginTop: 2
+    }
+  }, "Detalle: ", err.slice(0, 120))), /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      setErr("");
+      setStatus("loading");
+      setTryN(n => n + 1);
+    },
+    style: {
+      flexShrink: 0,
+      minHeight: 36,
+      padding: "4px 12px",
+      background: "transparent",
+      border: `1.5px solid ${C.border}`,
+      borderRadius: 6,
+      color: C.text,
+      fontFamily: FONT_D,
+      fontSize: 16,
+      fontWeight: 700,
+      cursor: "pointer"
+    }
+  }, "Reintentar")), /*#__PURE__*/React.createElement(ExAnim, {
+    id,
+    animate: true,
+    controls: true,
+    height: 185,
+    color: C.yellow
+  }));
   const ph = _phase(spec, ui.t);
   const phase = spec.m === "hold" ? "Mantén y respira" : spec.ph ? cueCase(spec.ph[ph.half]) : ph.half ? "Regreso" : "Ida";
   const stepIdx = spec.st ? spec.m === "hold" ? Math.floor(Math.max(0, ui.t)) % spec.st.length : Math.min(ph.half, spec.st.length - 1) : 0;
@@ -9960,7 +10015,7 @@ function Ex3D({
       fontSize: 15,
       lineHeight: 1.45
     }
-  }, status === "loading" ? "Cargando el muñeco 3D…" : status === "nogl" ? "Tu navegador no puede mostrar 3D. Usa la pestaña Técnica." : "No se pudo cargar el 3D. Ábrelo una vez con internet y quedará guardado."), status === "ok" && /*#__PURE__*/React.createElement("div", {
+  }, "Cargando el muñeco 3D…"), status === "ok" && /*#__PURE__*/React.createElement("div", {
     style: {
       position: "absolute",
       left: 8,
@@ -10079,7 +10134,7 @@ function Ex3D({
 
 //  MODELO HUMANO CON ESQUELETO
 // Microsoft Rocketbox (MIT, ver vendor/models/LICENSE.txt), reducido a
-// camiseta + pantalon. Se mueve con la misma pose de tecnica: tronco y cabeza
+// camiseta + shorts. Se mueve con la misma pose de tecnica: tronco y cabeza
 // se orientan hueso por hueso, y brazos y piernas usan IK de dos huesos hacia
 // las manos y tobillos de pose3D, con el codo/rodilla hacia el mismo lado.
 const RIG_URL = "./vendor/models/athlete.glb";
@@ -10185,9 +10240,10 @@ function makeRig(T, root, spec, mu) {
     if (o.name === "Top_tee") {
       m.color = new T.Color(C.yellow);
       glow(mu.has("tr"));
-    } else if (o.name === "Trousers") {
-      m.color = new T.Color(0x4a535a);
-      // sin brillo: sobre gris oscuro se veia rojo
+    } else if (o.name === "Outfit_original") {
+      // shorts, piernas y tenis (una sola malla)
+      glow(mu.has("th") || mu.has("sn"));
+      m.emissiveIntensity = 0.12;
     } else if (o.name === "Skin_tee") glow(mu.has("ua") || mu.has("fa"));
   });
   const hipsW = new T.Vector3();
@@ -10310,14 +10366,30 @@ function makeRig(T, root, spec, mu) {
 }
 
 // Construye la escena; devuelve la funcion de limpieza.
+// Algunos telefonos rechazan el contexto con antialias: se reintenta sin el
+const mk3Renderer = T => {
+  const c = document.createElement("canvas");
+  if (!c.getContext("webgl2")) throw new Error("webgl2");
+  let last;
+  for (const o of [{
+    antialias: true
+  }, {
+    antialias: false,
+    powerPreference: "low-power"
+  }]) {
+    try {
+      return new T.WebGLRenderer(o);
+    } catch (e) {
+      last = e;
+    }
+  }
+  throw last;
+};
 function build3D(T, host, id, spec, st, apiRef, view0) {
   const I = m3Info(id);
   const W = () => host.clientWidth || 300,
     H = () => host.clientHeight || 250;
-  const renderer = new T.WebGLRenderer({
-    antialias: true,
-    alpha: false
-  });
+  const renderer = mk3Renderer(T);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.setSize(W(), H());
   renderer.shadowMap.enabled = true;
