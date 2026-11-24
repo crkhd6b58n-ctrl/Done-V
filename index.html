@@ -10103,28 +10103,64 @@ function build3D(T, host, id, spec, st, apiRef, view0) {
   sc.far = 8;
   scene.add(sun);
 
-  //  Materiales
+  // Luz de contorno: separa la silueta del fondo y marca el volumen
+  const rim = new T.DirectionalLight(0x9fb8ff, 1.2);
+  rim.position.set(-2.2, 2.4, -2.0);
+  scene.add(rim);
+
+  //  Materiales: piel, ropa (camiseta amarilla del Camino, short, tenis)
   const mat = c => new T.MeshStandardMaterial({
     color: c,
     roughness: 0.55,
     metalness: 0.05
   });
-  const mSkin = mat(0xd8dcd5),
-    mJoint = mat(0x3b4247),
-    mMus = mat(C.orange),
-    mLock = mat(C.teal),
+  const skinOpt = {
+    color: 0xc99272,
+    roughness: 0.6,
+    metalness: 0
+  };
+  const glow = (m, c) => {
+    m.emissive = new T.Color(c);
+    m.emissiveIntensity = 0.34;
+    return m;
+  };
+  const mSkin = new T.MeshStandardMaterial(skinOpt),
+    mSkinMu = glow(new T.MeshStandardMaterial(skinOpt), C.orange),
+    mShirt = new T.MeshStandardMaterial({
+      color: C.yellow,
+      roughness: 0.85
+    }),
+    mShirtMu = glow(new T.MeshStandardMaterial({
+      color: C.yellow,
+      roughness: 0.85
+    }), C.orange),
+    mShorts = new T.MeshStandardMaterial({
+      color: 0x2b3136,
+      roughness: 0.85
+    }),
+    mShoe = new T.MeshStandardMaterial({
+      color: 0x1d2124,
+      roughness: 0.7
+    }),
+    mHair = new T.MeshStandardMaterial({
+      color: 0x2a1d16,
+      roughness: 0.9
+    }),
     mEye = mat(0x15181a),
     mProp = mat(0x6b747a),
+    mLock = new T.MeshBasicMaterial({
+      color: C.teal,
+      transparent: true,
+      opacity: 0.55,
+      depthWrite: false
+    }),
     mFloor = new T.MeshStandardMaterial({
       color: C.card,
       roughness: 1
     });
-  mMus.emissive = new T.Color(C.orange);
-  mMus.emissiveIntensity = 0.25;
-  mLock.emissive = new T.Color(C.teal);
-  mLock.emissiveIntensity = 0.35;
   const mu = new Set(spec.mu || []);
-  const segMat = k => mu.has(k) ? mMus : mSkin;
+  const skinFor = k => mu.has(k) ? mSkinMu : mSkin;
+  const shirt = mu.has("tr") ? mShirtMu : mShirt;
 
   //  Piso
   const floor = new T.Mesh(new T.CircleGeometry(3, 48), mFloor);
@@ -10137,24 +10173,24 @@ function build3D(T, host, id, spec, st, apiRef, view0) {
   grid.material.opacity = 0.45;
   scene.add(grid);
 
-  //  Cuerpo: huesos (cilindros) + articulaciones (esferas), tipo maniqui
+  //  Cuerpo anatomico. Cada segmento es un torno (LatheGeometry) con el
+  // perfil de su musculo; torso, cabeza, manos y pies son elipsoides
+  // orientados con una base (lateral, eje, frente) que sigue la pose.
   const UP = new T.Vector3(0, 1, 0),
     tmpA = new T.Vector3(),
     tmpB = new T.Vector3();
   const body = new T.Group();
   scene.add(body);
-  const cyl = (r, m) => {
-    const g = new T.Mesh(new T.CylinderGeometry(r, r, 1, 18), m);
+  const add = (geo, m) => {
+    const g = new T.Mesh(geo, m);
     g.castShadow = true;
+    g.receiveShadow = true;
     body.add(g);
     return g;
   };
-  const sph = (r, m) => {
-    const g = new T.Mesh(new T.SphereGeometry(r, 20, 14), m);
-    g.castShadow = true;
-    body.add(g);
-    return g;
-  };
+  // perfil [[s 0..1 a lo largo del hueso, radio en metros], ...]
+  const lathe = (prof, m) => add(new T.LatheGeometry(prof.map(([q, r]) => new T.Vector2(Math.max(r, 1e-4), q - 0.5)), 24), m);
+  const ball = (m, seg = 22) => add(new T.SphereGeometry(1, seg, Math.round(seg * 0.7)), m);
   const place = (mesh, a, b) => {
     tmpA.set(a[0], a[1], a[2]);
     tmpB.set(b[0], b[1], b[2]);
@@ -10164,40 +10200,81 @@ function build3D(T, host, id, spec, st, apiRef, view0) {
     mesh.scale.set(1, len, 1);
   };
   const at = (mesh, a) => mesh.position.set(a[0], a[1], a[2]);
-  const B = {
-    torsoLo: cyl(0.1, segMat("tr")),
-    torsoHi: cyl(0.125, segMat("tr")),
-    chest: sph(0.125, segMat("tr")),
-    belly: sph(0.1, segMat("tr")),
-    shBar: cyl(0.06, segMat("tr")),
-    pelvis: cyl(0.085, mSkin),
-    neck: cyl(0.04, mSkin),
-    head: sph(0.11, mSkin),
-    eyeL: sph(0.016, mEye),
-    eyeR: sph(0.016, mEye),
-    uaL: cyl(0.045, segMat("ua")),
-    uaR: cyl(0.045, segMat("ua")),
-    faL: cyl(0.037, segMat("fa")),
-    faR: cyl(0.037, segMat("fa")),
-    thL: cyl(0.062, segMat("th")),
-    thR: cyl(0.062, segMat("th")),
-    snL: cyl(0.048, segMat("sn")),
-    snR: cyl(0.048, segMat("sn")),
-    ftL: cyl(0.035, mSkin),
-    ftR: cyl(0.035, mSkin),
-    shL: sph(0.062, mJoint),
-    shR: sph(0.062, mJoint),
-    elL: sph(0.05, mJoint),
-    elR: sph(0.05, mJoint),
-    hnL: sph(0.045, mSkin),
-    hnR: sph(0.045, mSkin),
-    hpL: sph(0.075, mJoint),
-    hpR: sph(0.075, mJoint),
-    knL: sph(0.058, mJoint),
-    knR: sph(0.058, mJoint),
-    anL: sph(0.045, mJoint),
-    anR: sph(0.045, mJoint)
+  const M4 = new T.Matrix4(),
+    vX = new T.Vector3(),
+    vY = new T.Vector3(),
+    vZ = new T.Vector3();
+  const orient = (mesh, up, fwd) => {
+    vY.set(up[0], up[1], up[2]).normalize();
+    vZ.set(fwd[0], fwd[1], fwd[2]);
+    vZ.addScaledVector(vY, -vZ.dot(vY));
+    if (vZ.lengthSq() < 1e-8) vZ.set(vY.y, -vY.x, 0);
+    vZ.normalize();
+    vX.crossVectors(vY, vZ);
+    M4.makeBasis(vX, vY, vZ);
+    mesh.quaternion.setFromRotationMatrix(M4);
   };
+  // segmento con seccion eliptica (kz = profundidad frente/espalda)
+  const segB = (mesh, a, b, fwd, kz = 1) => {
+    const d = v3.sub(b, a);
+    mesh.position.set((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2);
+    orient(mesh, d, fwd);
+    mesh.scale.set(1, v3.len(d) || 1e-4, kz);
+  };
+  const ell = (mesh, c, up, fwd, sx, sy, sz) => {
+    at(mesh, c);
+    orient(mesh, up, fwd);
+    mesh.scale.set(sx, sy, sz);
+  };
+  const UA_P = [[0, 0], [0.03, 0.042], [0.1, 0.057], [0.24, 0.059], [0.48, 0.05], [0.6, 0.051], [0.84, 0.04], [0.97, 0.033], [1, 0]];
+  const FA_P = [[0, 0], [0.04, 0.036], [0.2, 0.046], [0.36, 0.045], [0.7, 0.033], [0.9, 0.026], [1, 0]];
+  const TH_P = [[0, 0], [0.04, 0.07], [0.16, 0.088], [0.36, 0.087], [0.7, 0.068], [0.9, 0.053], [1, 0]];
+  const SN_P = [[0, 0], [0.05, 0.05], [0.2, 0.057], [0.34, 0.056], [0.7, 0.038], [0.92, 0.031], [1, 0]];
+  const SH_P = [[0, 0], [0.06, 0.094], [0.6, 0.096], [0.96, 0.091], [1, 0.06]];
+  const TL_P = [[0, 0], [0.08, 0.12], [0.25, 0.145], [0.6, 0.137], [1, 0.142]];
+  const TU_P = [[0, 0.142], [0.35, 0.156], [0.7, 0.17], [0.86, 0.165], [0.95, 0.12], [1, 0]];
+  const PV_P = [[0, 0], [0.12, 0.13], [0.45, 0.158], [0.8, 0.152], [1, 0.14]];
+  const B = {
+    torsoLo: lathe(TL_P, shirt),
+    torsoHi: lathe(TU_P, shirt),
+    pelvis: lathe(PV_P, mShorts),
+    gluteL: ball(mShorts),
+    gluteR: ball(mShorts),
+    neck: add(new T.CylinderGeometry(0.047, 0.054, 1, 18), mSkin),
+    head: ball(mSkin, 28),
+    jaw: ball(mSkin),
+    hair: ball(mHair, 26),
+    nose: ball(mSkin, 12),
+    earL: ball(mSkin, 12),
+    earR: ball(mSkin, 12),
+    eyeL: ball(mEye, 10),
+    eyeR: ball(mEye, 10),
+    deltL: ball(skinFor("ua")),
+    deltR: ball(skinFor("ua")),
+    uaL: lathe(UA_P, skinFor("ua")),
+    uaR: lathe(UA_P, skinFor("ua")),
+    faL: lathe(FA_P, skinFor("fa")),
+    faR: lathe(FA_P, skinFor("fa")),
+    elbL: ball(skinFor("ua")),
+    elbR: ball(skinFor("ua")),
+    handL: ball(mSkin),
+    handR: ball(mSkin),
+    thumbL: ball(mSkin, 12),
+    thumbR: ball(mSkin, 12),
+    shortL: lathe(SH_P, mShorts),
+    shortR: lathe(SH_P, mShorts),
+    thL: lathe(TH_P, skinFor("th")),
+    thR: lathe(TH_P, skinFor("th")),
+    kneeL: ball(skinFor("th")),
+    kneeR: ball(skinFor("th")),
+    snL: lathe(SN_P, skinFor("sn")),
+    snR: lathe(SN_P, skinFor("sn")),
+    shoeL: ball(mShoe),
+    shoeR: ball(mShoe),
+    lockL: ball(mLock),
+    lockR: ball(mLock)
+  };
+  B.lockL.castShadow = B.lockR.castShadow = false;
 
   //  Aparatos
   const P0 = pose3D(id, 0, spec);
@@ -10289,40 +10366,72 @@ function build3D(T, host, id, spec, st, apiRef, view0) {
 
   //  Actualizar la pose
   const lockOn = !!spec.lk;
+  const norm = a => v3.mul(a, 1 / (v3.len(a) || 1));
   const update = t => {
     const o = pose3D(id, t, spec);
-    place(B.torsoLo, o.HC, o.MID);
-    place(B.torsoHi, o.MID, o.SC);
-    at(B.belly, o.MID);
-    at(B.chest, v3.add(o.SC, v3.mul(v3.sub(o.MID, o.SC), 0.25)));
-    place(B.shBar, o.SL, o.SR);
-    place(B.pelvis, o.HPL, o.HPR);
-    place(B.neck, o.SC, o.NK);
-    at(B.head, o.HD);
-    // ojos: hacia donde mira la cara, separados a los lados
-    const up = v3.sub(o.HD, o.NK),
-      ul = v3.len(up) || 1;
-    const eyeBase = v3.add(v3.add(o.HD, v3.mul(o.face, 0.092)), v3.mul(up, 0.02 / ul));
-    at(B.eyeL, v3.add(eyeBase, v3.mul(o.side, 0.042)));
-    at(B.eyeR, v3.add(eyeBase, v3.mul(o.side, -0.042)));
-    place(B.uaL, o.SL, o.EL);
-    place(B.faL, o.EL, o.HL);
-    place(B.uaR, o.SR, o.ER);
-    place(B.faR, o.ER, o.HR);
-    place(B.thL, o.HPL, o.KL);
-    place(B.snL, o.KL, o.AL);
-    place(B.thR, o.HPR, o.KR);
-    place(B.snR, o.KR, o.AR);
-    place(B.ftL, o.AL, o.toeL);
-    place(B.ftR, o.AR, o.toeR);
-    [["shL", "SL"], ["shR", "SR"], ["elL", "EL"], ["elR", "ER"], ["hnL", "HL"], ["hnR", "HR"], ["hpL", "HPL"], ["hpR", "HPR"], ["knL", "KL"], ["knR", "KR"], ["anL", "AL"], ["anR", "AR"]].forEach(([m, k]) => at(B[m], o[k]));
-    // codo verde cuando debe ir bloqueado y lo esta
+    const up = norm(v3.sub(o.SC, o.HC)),
+      fwd = o.face,
+      lat = norm(v3.cross(up, norm(v3.sub(fwd, v3.mul(up, v3.dot(fwd, up))))));
+    // torso en V: cadera -> medio -> hombros, seccion aplanada de frente
+    const top = v3.add(o.SC, v3.mul(up, 0.05));
+    segB(B.torsoLo, o.HC, o.MID, fwd, 0.64);
+    segB(B.torsoHi, o.MID, top, fwd, 0.62);
+    segB(B.pelvis, v3.add(o.HC, v3.mul(up, -0.09)), v3.add(o.HC, v3.mul(up, 0.11)), fwd, 0.7);
+    [[B.gluteL, 1], [B.gluteR, -1]].forEach(([g, sd]) => ell(g, v3.add(v3.add(o.HC, v3.mul(lat, 0.065 * sd)), v3.add(v3.mul(fwd, -0.06), v3.mul(up, -0.02))), up, fwd, 0.085, 0.09, 0.075));
+    // cuello y cabeza
+    const hUp = norm(v3.sub(o.HD, o.NK));
+    const hLat = norm(v3.cross(hUp, norm(v3.sub(fwd, v3.mul(hUp, v3.dot(fwd, hUp))))));
+    const hBase = v3.add(o.HD, v3.mul(hUp, -0.08));
+    place(B.neck, v3.add(o.SC, v3.mul(up, -0.02)), hBase);
+    ell(B.head, o.HD, hUp, fwd, 0.08, 0.108, 0.093);
+    ell(B.jaw, v3.add(v3.add(o.HD, v3.mul(hUp, -0.052)), v3.mul(fwd, 0.022)), hUp, fwd, 0.063, 0.05, 0.068);
+    ell(B.hair, v3.add(v3.add(o.HD, v3.mul(hUp, 0.024)), v3.mul(fwd, -0.016)), hUp, fwd, 0.085, 0.098, 0.094);
+    ell(B.nose, v3.add(v3.add(o.HD, v3.mul(fwd, 0.092)), v3.mul(hUp, -0.008)), hUp, fwd, 0.012, 0.02, 0.016);
+    ell(B.earL, v3.add(o.HD, v3.mul(hLat, 0.08)), hUp, fwd, 0.012, 0.024, 0.018);
+    ell(B.earR, v3.add(o.HD, v3.mul(hLat, -0.08)), hUp, fwd, 0.012, 0.024, 0.018);
+    const eyeC = v3.add(v3.add(o.HD, v3.mul(fwd, 0.082)), v3.mul(hUp, 0.016));
+    ell(B.eyeL, v3.add(eyeC, v3.mul(hLat, 0.032)), hUp, fwd, 0.011, 0.011, 0.011);
+    ell(B.eyeR, v3.add(eyeC, v3.mul(hLat, -0.032)), hUp, fwd, 0.011, 0.011, 0.011);
+    // brazos: deltoide, brazo, codo, antebrazo, mano
+    const arm = (S, E, H, dl, ua, el, fa, hand, thumb, lk, sd) => {
+      ell(dl, v3.add(S, v3.mul(up, -0.005)), up, fwd, 0.064, 0.06, 0.06);
+      segB(ua, S, E, fwd);
+      ell(el, E, up, fwd, 0.036, 0.036, 0.036);
+      segB(fa, E, H, fwd);
+      const along = norm(v3.sub(H, E));
+      if (H[1] < 0.07) {
+        // apoyada en el piso: palma plana, dedos hacia adelante
+        let fw = [up[0], 0, up[2]];
+        if (v3.len(fw) < 0.2) fw = [1, 0, 0];
+        fw = norm(fw);
+        ell(hand, [H[0] + fw[0] * 0.035, 0.018, H[2] + fw[2] * 0.035], [0, 1, 0], fw, 0.045, 0.02, 0.085);
+        ell(thumb, [H[0] + fw[0] * 0.015 + (sd > 0 ? 1 : -1) * 0 + lat[0] * 0.04 * sd, 0.02, H[2] + lat[2] * 0.04 * sd], [0, 1, 0], fw, 0.016, 0.014, 0.03);
+      } else {
+        ell(hand, v3.add(H, v3.mul(along, 0.03)), along, fwd, 0.042, 0.085, 0.024);
+        ell(thumb, v3.add(v3.add(H, v3.mul(along, 0.0)), v3.mul(fwd, 0.028)), along, fwd, 0.015, 0.032, 0.015);
+      }
+      lk.visible = false;
+      if (lockOn) at(lk, E), lk.scale.setScalar(0.062);
+    };
+    arm(o.SL, o.EL, o.HL, B.deltL, B.uaL, B.elbL, B.faL, B.handL, B.thumbL, B.lockL, 1);
+    arm(o.SR, o.ER, o.HR, B.deltR, B.uaR, B.elbR, B.faR, B.handR, B.thumbR, B.lockR, -1);
+    // piernas: short, muslo, rodilla, pierna, tenis
+    const leg = (HP, K, A, toe, sh, th, kn, sn, shoe) => {
+      segB(sh, HP, v3.add(HP, v3.mul(v3.sub(K, HP), 0.42)), fwd);
+      segB(th, HP, K, fwd);
+      ell(kn, K, up, fwd, 0.05, 0.05, 0.05);
+      segB(sn, K, A, fwd);
+      const along = norm(v3.sub(toe, A)),
+        legUp = norm(v3.sub(K, A));
+      ell(shoe, v3.add(v3.add(A, v3.mul(along, 0.06)), v3.mul(legUp, -0.025)), legUp, along, 0.048, 0.042, 0.13);
+    };
+    leg(o.HPL, o.KL, o.AL, o.toeL, B.shortL, B.thL, B.kneeL, B.snL, B.shoeL);
+    leg(o.HPR, o.KR, o.AR, o.toeR, B.shortR, B.thR, B.kneeR, B.snR, B.shoeR);
+    // codo verde (halo) cuando debe ir bloqueado y lo esta
     const ph = _phase(spec, t);
     const want = lockOn && _guideOn(spec.lk, ph, spec.m === "hold");
-    const angL = v3.len(v3.sub(o.HL, o.SL)) / ((SEG.uarm + SEG.farm) * M3K);
-    const lockedL = want && angL > 0.985;
-    B.elL.material = lockedL ? mLock : mJoint;
-    B.elR.material = lockedL ? mLock : mJoint;
+    const straight = v3.len(v3.sub(o.HL, o.SL)) / ((SEG.uarm + SEG.farm) * M3K) > 0.985;
+    B.lockL.visible = B.lockR.visible = want && straight;
     dyn.forEach(fn => fn(o));
   };
 
@@ -10394,7 +10503,7 @@ function build3D(T, host, id, spec, st, apiRef, view0) {
     renderer.setAnimationLoop(null);
     if (ro) ro.disconnect();
     controls.dispose();
-    const mats = new Set([mSkin, mJoint, mMus, mLock, mEye, mProp, mFloor]);
+    const mats = new Set([mSkin, mSkinMu, mShirt, mShirtMu, mShorts, mShoe, mHair, mLock, mEye, mProp, mFloor]);
     scene.traverse(o => {
       if (o.geometry) o.geometry.dispose();
       if (o.material) mats.add(o.material);
