@@ -8234,7 +8234,7 @@ const ANIM = {
     ],
     "torso": 90,
     "hand": [
-     42.5,
+     38.5,
      63.8
     ],
     "ankle": [
@@ -8242,7 +8242,7 @@ const ANIM = {
      102.8
     ],
     "hand2": [
-     57.5,
+     61.5,
      63.8
     ],
     "ankle2": [
@@ -8262,7 +8262,7 @@ const ANIM = {
     ],
     "torso": 90,
     "hand": [
-     42.2,
+     38.2,
      64.2
     ],
     "ankle": [
@@ -8270,7 +8270,7 @@ const ANIM = {
      103.2
     ],
     "hand2": [
-     57.8,
+     61.8,
      64.2
     ],
     "ankle2": [
@@ -8404,7 +8404,7 @@ const ANIM = {
     ],
     "torso": 90,
     "hand": [
-     39,
+     36,
      57.1
     ],
     "ankle": [
@@ -8412,7 +8412,7 @@ const ANIM = {
      95.5
     ],
     "hand2": [
-     61,
+     64,
      57.1
     ],
     "ankle2": [
@@ -8433,7 +8433,7 @@ const ANIM = {
     ],
     "torso": 90,
     "hand": [
-     39,
+     36,
      56.8
     ],
     "ankle": [
@@ -8441,7 +8441,7 @@ const ANIM = {
      95.5
     ],
     "hand2": [
-     61,
+     64,
      56.8
     ],
     "ankle2": [
@@ -10375,7 +10375,7 @@ function makeRig(T, root, spec, mu) {
     const hips = J.Hips.b;
     hipsW.set(o.HC[0], o.HC[1], o.HC[2]);
     hips.parent.updateWorldMatrix(true, false);
-    hips.position.copy(hips.parent.worldToLocal(hipsW));
+    hips.position.copy(hips.parent.worldToLocal(hipsW.clone()));
     aim("Hips", lo, fwd);
     aim("Spine", lo, fwd);
     aim("Spine1", norm3(v3.add(lo, hi)), fwd);
@@ -10398,7 +10398,7 @@ function makeRig(T, root, spec, mu) {
     });
     if (lift && wA < 1) {
       hipsW.y += lift * (1 - wA);
-      hips.position.copy(hips.parent.worldToLocal(hipsW));
+      hips.position.copy(hips.parent.worldToLocal(hipsW.clone()));
       hips.updateMatrixWorld(true);
     }
     if (wA) {
@@ -10408,7 +10408,7 @@ function makeRig(T, root, spec, mu) {
       const msc = v3.mul(v3.add(P("LeftArm"), P("RightArm")), 0.5);
       const d = v3.mul(v3.sub(o.SC, msc), wA);
       hipsW.set(o.HC[0] + d[0], o.HC[1] + d[1], o.HC[2] + d[2]);
-      hips.position.copy(hips.parent.worldToLocal(hipsW));
+      hips.position.copy(hips.parent.worldToLocal(hipsW.clone()));
       hips.updateMatrixWorld(true);
     }
     // lado izquierdo del modelo = up x fwd; la pose usa +Z como izquierda
@@ -10527,9 +10527,12 @@ function makeRig(T, root, spec, mu) {
     }));
   }
   const elbow = s => P(s + "ForeArm");
+  // centro de la palma (entre la muneca y los nudillos)
+  const palm = s => v3.mul(v3.add(P(s + "Hand"), P(s + "HandMiddle1")), 0.5);
   return {
     pose,
     elbow,
+    palm,
     P,
     dispose: () => {
       mats.forEach(m => {
@@ -10838,14 +10841,23 @@ function build3D(T, host, id, spec, st, apiRef, view0) {
       r.castShadow = true;
       props.add(r);
     } else if (pr.t === "rings") {
-      ["HL", "HR"].forEach(k => {
-        const ring = new T.Mesh(new T.TorusGeometry(0.06, 0.011, 10, 28), mProp);
-        const strap = new T.Mesh(new T.CylinderGeometry(0.008, 0.008, 1, 6), mat(0x8f9893));
+      // anillas de madera: el aro sube desde la palma del modelo (la mano
+      // apoya sobre el borde de abajo) y la correa va del aro al techo
+      const mRing = new T.MeshStandardMaterial({
+        color: 0xc79a62,
+        roughness: 0.45
+      });
+      ["HL", "HR"].forEach((k, i) => {
+        const ring = new T.Mesh(new T.TorusGeometry(0.09, 0.014, 12, 36), mRing);
+        const strap = new T.Mesh(new T.BoxGeometry(0.036, 1, 0.004), mat(0x8f9893));
+        ring.castShadow = strap.castShadow = true;
         props.add(ring, strap);
         const top = (I.ground - pr.top) * M3K;
         dyn.push(o => {
-          at(ring, o[k]);
-          place(strap, [o[k][0], o[k][1] + 0.06, o[k][2]], [o[k][0], Math.max(top, o[k][1] + 0.1), o[k][2]]);
+          const h = rig ? rig.palm(i ? "Right" : "Left") : o[k];
+          const c = [h[0], h[1] + 0.075, h[2]];
+          at(ring, c);
+          place(strap, [c[0], c[1] + 0.09, c[2]], [c[0], Math.max(top, c[1] + 0.2), c[2]]);
         });
       });
     } else if (pr.t === "band") {
@@ -10854,15 +10866,18 @@ function build3D(T, host, id, spec, st, apiRef, view0) {
       const bandR = bandL.clone();
       props.add(bandL, bandR);
       dyn.push(o => {
-        place(bandL, [a[0], a[1], 0.1], o.HL);
-        place(bandR, [a[0], a[1], -0.1], o.HR);
+        place(bandL, [a[0], a[1], 0.1], rig ? rig.palm("Left") : o.HL);
+        place(bandR, [a[0], a[1], -0.1], rig ? rig.palm("Right") : o.HR);
       });
     } else if (pr.t === "kb") {
-      ["HL", "HR"].forEach(k => {
+      ["HL", "HR"].forEach((k, i) => {
         const kb = new T.Mesh(new T.BoxGeometry(0.12, 0.16, 0.12), mat(0x4b5358));
         kb.castShadow = true;
         props.add(kb);
-        dyn.push(o => kb.position.set(o[k][0], o[k][1] - 0.11, o[k][2]));
+        dyn.push(o => {
+          const h = rig ? rig.palm(i ? "Right" : "Left") : o[k];
+          kb.position.set(h[0], h[1] - 0.1, h[2]);
+        });
       });
     }
   });
