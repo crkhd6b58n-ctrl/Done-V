@@ -3627,8 +3627,50 @@ const _cyc = (spec, t) => {
     tri: c < a ? c / a : (1 - c) / (1 - a)
   };
 };
+// Marcha (caminar, correr): ciclo continuo, no ida y vuelta. Cada pie apoya
+// y empuja hacia atras (st = fraccion del ciclo en el piso), luego se despega,
+// sube el talon y avanza la rodilla hasta caer de nuevo. Los brazos van
+// opuestos a las piernas y la cadera sube y baja con cada paso.
+const gaitPose = (spec, t) => {
+  const g = spec.gait,
+    b = spec.f[0],
+    c = (t % 1 + 1) % 1;
+  const hx = b.hip[0],
+    fs = Math.cos(_rad(b.torso - 90)) >= 0 ? 1 : -1;
+  const X = dx => hx + fs * dx,
+    A = a => fs > 0 ? a : 180 - a;
+  const leg = ph => {
+    if (ph < g.st) {
+      const u = ph / g.st;
+      // en el piso: de adelante hacia atras; el talon se despega al final
+      return [X(g.fx + (g.bx - g.fx) * u), g.gy - g.toe * Math.max(0, (u - 0.6) / 0.4), g.fT[0] + (g.fT[1] - g.fT[0]) * u];
+    }
+    const u = (ph - g.st) / (1 - g.st);
+    return [X(g.bx + (g.fx - g.bx) * _mj(Math.pow(u, g.xk))), g.gy - g.toe - (g.lift + 0) * Math.sin(Math.PI * Math.pow(u, g.sk)) + g.toe * u, g.fT[1] + (g.fT[0] - g.fT[1]) * u];
+  };
+  const p1 = c,
+    p2 = (c + 0.5) % 1;
+  const l1 = leg(p1),
+    l2 = leg(p2);
+  const arm = ph => {
+    const w = 0.5 + 0.5 * Math.cos(2 * Math.PI * ph);
+    return [X(g.hb[0] + (g.hf[0] - g.hb[0]) * w), g.hb[1] + (g.hf[1] - g.hb[1]) * w + g.sag * Math.sin(Math.PI * w)];
+  };
+  // cadera: arriba a media pisada al caminar, en el vuelo al correr
+  const top = g.st < 0.5 ? (g.st + 0.5) / 2 : g.st / 2;
+  return {
+    ...b,
+    hip: [hx, b.hip[1] - g.bob * Math.cos(4 * Math.PI * (c - top))],
+    ankle: [l1[0], l1[1]],
+    ankle2: [l2[0], l2[1]],
+    footT: A(l1[2]),
+    hand: arm(p2),
+    hand2: arm(p1)
+  };
+};
 const poseAt = (spec, t) => {
   const f = spec.f;
+  if (spec.gait) return gaitPose(spec, t);
   if (f.length === 1) return f[0];
   if (spec.m === "hold") return mixPose(f[0], f[1] || f[0], (Math.sin(t * Math.PI * 2) + 1) / 2 * 0.35);
   const {
@@ -3640,7 +3682,8 @@ const poseAt = (spec, t) => {
   const i = Math.min(f.length - 2, Math.floor(seg));
   // con 3+ poses: interpolacion lineal entre ellas y una sola curva suave
   // para todo el recorrido, asi no frena en cada pose intermedia
-  return mixPose(f[i], f[i + 1], seg - i, f.length > 2);
+  const o = mixPose(f[i], f[i + 1], seg - i, f.length > 2);
+  return o;
 };
 // Poses generadas por angulos de articulacion (cinematica directa) para que
 // la tecnica sea correcta: brazos rectos de verdad, manos y pies apoyados, y
@@ -6319,6 +6362,7 @@ const ANIM = {
  },
  "running-form": {
   "m": "rep",
+  "gait": {"cyc": 1, "st": 0.38, "fx": 7, "bx": -14, "gy": 95.5, "lift": 19, "sk": 0.55, "xk": 1.6, "bob": 2.4, "hb": [-4, 44.5], "hf": [18, 33], "sag": 2, "fT": [-5, -50], "toe": 4},
   "s": 1.1,
   "d": 0.02,
   "p": [
@@ -6335,16 +6379,16 @@ const ANIM = {
     ],
     "torso": 84,
     "hand": [
-     55.7,
-     48.7
+     68.5,
+     33
     ],
     "ankle": [
      46.0,
      95.5
     ],
     "hand2": [
-     76.2,
-     31.0
+     45.5,
+     44.5
     ],
     "ankle2": [
      61.2,
@@ -6363,16 +6407,16 @@ const ANIM = {
     ],
     "torso": 84,
     "hand": [
-     78.2,
-     31.0
+     47.5,
+     44.5
     ],
     "ankle": [
      63.2,
      82.3
     ],
     "hand2": [
-     57.7,
-     48.7
+     70.5,
+     33
     ],
     "ankle2": [
      48.0,
@@ -7804,6 +7848,7 @@ const ANIM = {
  },
  "walk": {
   "m": "rep",
+  "gait": {"cyc": 1, "st": 0.6, "fx": 14, "bx": -13, "gy": 94.5, "lift": 6, "sk": 1, "xk": 1, "bob": 1.3, "hb": [-11, 53.5], "hf": [18, 49.5], "sag": 3, "fT": [20, -30], "toe": 3},
   "s": 1.4,
   "d": 0.02,
   "p": [
@@ -7820,25 +7865,25 @@ const ANIM = {
     ],
     "torso": 88,
     "hand": [
-     41.5,
-     56.4
+     36.5,
+     53.5
     ],
     "ankle": [
      60.0,
      94.5
     ],
     "hand2": [
-     61.9,
-     54.4
+     65.5,
+     49.5
     ],
     "ankle2": [
      30.1,
      92.7
     ],
     "eb": 1,
-    "kb": 1,
+    "kb": -1,
     "eb2": 1,
-    "kb2": 1,
+    "kb2": -1,
     "footT": 20
    },
    {
@@ -7848,25 +7893,25 @@ const ANIM = {
     ],
     "torso": 88,
     "hand": [
-     61.9,
-     54.4
+     65.5,
+     49.5
     ],
     "ankle": [
      30.1,
      92.7
     ],
     "hand2": [
-     41.5,
-     56.4
+     36.5,
+     53.5
     ],
     "ankle2": [
      60.0,
      94.5
     ],
     "eb": 1,
-    "kb": 1,
+    "kb": -1,
     "eb2": 1,
-    "kb2": 1,
+    "kb2": -1,
     "footT": -20
    }
   ],
@@ -10345,6 +10390,17 @@ function makeRig(T, root, spec, mu) {
     const handsLow = Math.min(o.HL[1], o.HR[1]) < 0.08,
       feetLow = Math.min(o.AL[1], o.AR[1]) < 0.16;
     const wA = hangSpec || handsLow ? feetLow ? 0.5 : 1 : 0;
+    // el tobillo del modelo va mas alto que el de la figura: con el peso en
+    // los pies se sube la cadera lo mismo, para no caminar con rodillas dobladas
+    let lift = 0;
+    [[o.AL, o.toeL], [o.AR, o.toeR]].forEach(([A, toe]) => {
+      if (A[1] < 0.1 && toe[1] < 0.1) lift = Math.max(lift, J.Left.ank - A[1]);
+    });
+    if (lift && wA < 1) {
+      hipsW.y += lift * (1 - wA);
+      hips.position.copy(hips.parent.worldToLocal(hipsW));
+      hips.updateMatrixWorld(true);
+    }
     if (wA) {
       J.Lsh.b.quaternion.copy(J.Lsh.q);
       J.Rsh.b.quaternion.copy(J.Rsh.q);
